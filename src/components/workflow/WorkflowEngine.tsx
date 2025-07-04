@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useDemoMode } from '@/contexts/DemoModeContext';
 import { CourseConfig, WorkflowState } from '@/types/course';
 import { courseConfigs } from '@/config/courses';
 import StepIndicator from './StepIndicator';
@@ -14,15 +15,33 @@ interface WorkflowEngineProps {
 
 const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
   const { user } = useAuth();
+  const { isDemoMode, getDummyData } = useDemoMode();
   const navigate = useNavigate();
   const courseConfig = courseConfigs[courseId];
   
-  const [workflowState, setWorkflowState] = useState<WorkflowState>({
-    courseId,
-    currentStep: 0,
-    completedSteps: [],
-    stepData: {},
-    isComplete: false
+  const [workflowState, setWorkflowState] = useState<WorkflowState>(() => {
+    const initialStepData = isDemoMode ? {
+      'step-identity': getDummyData('step-identity'),
+      'step-nda': getDummyData('step-nda'),
+      'step-trust-name': getDummyData('step-trust-name'),
+      'step-trust-config': getDummyData('step-trust-config'),
+      'step-ordination': getDummyData('step-ordination'),
+      'step-gmail-setup': getDummyData('step-gmail-setup'),
+      'step-verification-tools': getDummyData('step-verification-tools'),
+      'step-document-assembly': getDummyData('step-document-assembly'),
+      'step-document-generation': getDummyData('step-document-generation'),
+      'step-signatures': getDummyData('step-signatures'),
+      'step-payment': getDummyData('step-payment'),
+      'step-review': getDummyData('step-review')
+    } : {};
+
+    return {
+      courseId,
+      currentStep: 0,
+      completedSteps: [],
+      stepData: initialStepData,
+      isComplete: false
+    };
   });
 
   if (!courseConfig) {

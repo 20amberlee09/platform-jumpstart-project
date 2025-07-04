@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Shield } from 'lucide-react';
 import DocumentUpload from './DocumentUpload';
+import { useDemoMode } from '@/contexts/DemoModeContext';
 
 interface StepIdentityProps {
   onNext: (data: any) => void;
@@ -13,17 +14,20 @@ interface StepIdentityProps {
 }
 
 const StepIdentity = ({ onNext, onPrev, data }: StepIdentityProps) => {
+  const { isDemoMode, getDummyData } = useDemoMode();
+  const demoData = isDemoMode ? getDummyData('step-identity') : {};
+  
   const [formData, setFormData] = useState({
-    fullName: data?.fullName || '',
-    dateOfBirth: data?.dateOfBirth || '',
-    address: data?.address || '',
-    city: data?.city || '',
-    state: data?.state || '',
-    zipCode: data?.zipCode || '',
+    fullName: data?.fullName || demoData?.fullName || '',
+    dateOfBirth: data?.dateOfBirth || demoData?.dateOfBirth || '',
+    address: data?.address || demoData?.address || '',
+    city: data?.city || demoData?.city || '',
+    state: data?.state || demoData?.state || '',
+    zipCode: data?.zipCode || demoData?.zipCode || '',
     ...data
   });
 
-  const [uploadedFiles, setUploadedFiles] = useState(data?.uploadedFiles || []);
+  const [uploadedFiles, setUploadedFiles] = useState(data?.uploadedFiles || demoData?.uploadedFiles || []);
 
   const documentRequirements = [
     {

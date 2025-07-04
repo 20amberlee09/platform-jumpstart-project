@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, CreditCard } from "lucide-react";
+import { CheckCircle, CreditCard, TestTube } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CourseConfig } from "@/types/course";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 
 interface CourseOverviewProps {
   courseConfig: CourseConfig;
@@ -16,6 +17,7 @@ interface CourseOverviewProps {
 const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isDemoMode, setDemoMode } = useDemoMode();
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   const [hasPurchased, setHasPurchased] = useState(false);
 
@@ -93,15 +95,29 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
                 Start Your Course
               </Button>
             ) : (
-              <Button 
-                size="lg" 
-                className="text-lg px-8" 
-                onClick={handlePayment}
-                disabled={isPaymentLoading}
-              >
-                <CreditCard className="mr-2 h-4 w-4" />
-                {isPaymentLoading ? "Processing..." : `Purchase Course - $${courseConfig.price}`}
-              </Button>
+              <>
+                <Button 
+                  size="lg" 
+                  className="text-lg px-8" 
+                  onClick={handlePayment}
+                  disabled={isPaymentLoading}
+                >
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  {isPaymentLoading ? "Processing..." : `Purchase Course - $${courseConfig.price}`}
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="text-lg px-8 border-primary text-primary hover:bg-primary hover:text-white" 
+                  onClick={() => {
+                    setDemoMode(true);
+                    onStartWorkflow();
+                  }}
+                >
+                  <TestTube className="mr-2 h-4 w-4" />
+                  Try Demo Mode
+                </Button>
+              </>
             )}
             <Link to="/courses">
               <Button size="lg" variant="outline" className="text-lg px-8">

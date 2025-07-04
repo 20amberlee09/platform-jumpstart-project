@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, FolderOpen, ExternalLink, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useDemoMode } from '@/contexts/DemoModeContext';
 
 interface StepGmailSetupProps {
   onNext: (data: any) => void;
@@ -13,10 +14,13 @@ interface StepGmailSetupProps {
 }
 
 const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
-  const [gmailAccount, setGmailAccount] = useState(data?.gmailAccount || '');
-  const [googleDriveFolder, setGoogleDriveFolder] = useState(data?.googleDriveFolder || '');
-  const [isGmailCreated, setIsGmailCreated] = useState(data?.isGmailCreated || false);
-  const [isDriveFolderCreated, setIsDriveFolderCreated] = useState(data?.isDriveFolderCreated || false);
+  const { isDemoMode, getDummyData } = useDemoMode();
+  const demoData = isDemoMode ? getDummyData('step-gmail-setup') : {};
+  
+  const [gmailAccount, setGmailAccount] = useState(data?.gmailAccount || demoData?.gmailAccount || '');
+  const [googleDriveFolder, setGoogleDriveFolder] = useState(data?.googleDriveFolder || demoData?.googleDriveFolder || '');
+  const [isGmailCreated, setIsGmailCreated] = useState(data?.isGmailCreated || demoData?.isGmailCreated || false);
+  const [isDriveFolderCreated, setIsDriveFolderCreated] = useState(data?.isDriveFolderCreated || demoData?.isDriveFolderCreated || false);
   
   const { toast } = useToast();
 
