@@ -45,7 +45,7 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/automation">
-              <Button size="lg" className="btn-royal-gold text-lg px-8">
+              <Button size="lg" className="btn-royal-gold text-lg px-8 glow-gold hover:glow-blue transition-all duration-300">
                 Start Boot Camp Process
               </Button>
             </Link>
@@ -64,23 +64,23 @@ const Index = () => {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <Card className="card-royal shadow-royal border-2 border-primary glow-gold">
-              <CardHeader className="pb-6 bg-gradient-gold/10">
+            <Card className="card-royal shadow-royal border-2 border-primary glow-gold hover:glow-blue transition-all duration-500">
+              <CardHeader className="pb-6 bg-gradient-gold/10 border-b-2 border-primary/50 glow-gold">
                 <div className="flex justify-between items-start mb-4">
-                  <Badge variant="secondary" className="bg-primary text-black border-primary glow-gold">
+                  <Badge variant="secondary" className="bg-primary text-black border-2 border-primary glow-gold">
                     Complete Package
                   </Badge>
-                  <div className="text-right">
+                  <div className="text-right p-2 rounded-lg border-2 border-electric-blue glow-blue">
                     <div className="text-3xl font-bold text-primary glow-gold">$150</div>
                     <div className="text-sm text-electric-blue">One-time payment</div>
                   </div>
                 </div>
                 <CardTitle className="text-3xl mb-4 text-primary text-royal-glow">Boot Camp documents</CardTitle>
-                <div className="flex items-center text-electric-blue mb-4">
+                <div className="flex items-center text-electric-blue mb-4 p-2 rounded-lg border border-electric-blue/30 glow-blue">
                   <Clock className="h-5 w-5 mr-2 text-electric-blue glow-blue" />
                   <span>Complete in 8 steps</span>
                 </div>
-                <p className="text-foreground text-lg">
+                <p className="text-foreground text-lg p-3 rounded-lg bg-gradient-royal/20 border border-primary/30 glow-gold">
                   Complete ecclesiastic revocable living trust creation with ministerial ordination, 
                   verification services, and professional documentation. All required documents must be uploaded before completion.
                 </p>
@@ -89,7 +89,7 @@ const Index = () => {
               <CardContent className="pt-0">
                 <div className="grid md:grid-cols-2 gap-4 mb-8">
                   {bootCampFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-start p-2 rounded-lg bg-gradient-royal/20 border border-electric-blue/30">
+                    <div key={index} className="flex items-start p-3 rounded-lg bg-gradient-royal/20 border-2 border-electric-blue/50 glow-blue hover:glow-gold transition-all duration-300">
                       <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0 glow-gold" />
                       <span className="text-sm text-foreground">{feature}</span>
                     </div>
@@ -97,7 +97,7 @@ const Index = () => {
                 </div>
                 
                 <Link to="/automation">
-                  <Button className="w-full btn-royal-gold" size="lg">
+                  <Button className="w-full btn-royal-gold glow-gold hover:glow-blue transition-all duration-300" size="lg">
                     Start Boot Camp Process
                   </Button>
                 </Link>
@@ -108,9 +108,9 @@ const Index = () => {
       </section>
 
       {/* Process Steps */}
-      <section className="py-20 bg-gradient-royal/30 border-y-2 border-primary/50">
+      <section className="py-20 bg-gradient-royal/30 border-y-2 border-primary/50 glow-gold">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 p-6 rounded-lg border-2 border-primary glow-gold">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary text-royal-glow">8-Step Process</h2>
             <p className="text-xl text-foreground max-w-2xl mx-auto">
               Our comprehensive process ensures professional, legally compliant documentation every time
@@ -118,45 +118,45 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="text-center card-royal border-2 border-primary glow-gold">
-              <CardHeader className="bg-gradient-gold/10">
+            <Card className="text-center card-royal border-2 border-primary glow-gold hover:glow-blue transition-all duration-500">
+              <CardHeader className="bg-gradient-gold/10 border-b-2 border-primary/30 glow-gold">
                 <Shield className="h-12 w-12 text-primary mx-auto mb-4 glow-gold" />
                 <CardTitle className="text-xl text-primary">Payment & NDA</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 border-t border-primary/20">
                 <p className="text-foreground"><strong>AUTOMATED:</strong> Payment processing</p>
                 <p className="text-foreground"><strong>GUIDED:</strong> NDA review and signing</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center card-royal border-2 border-electric-blue glow-blue">
-              <CardHeader className="bg-gradient-royal/10">
+            <Card className="text-center card-royal border-2 border-electric-blue glow-blue hover:glow-teal transition-all duration-500">
+              <CardHeader className="bg-gradient-royal/10 border-b-2 border-electric-blue/30 glow-blue">
                 <Scale className="h-12 w-12 text-electric-blue mx-auto mb-4 glow-blue" />
                 <CardTitle className="text-xl text-electric-blue">Identity & Trust Name</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 border-t border-electric-blue/20">
                 <p className="text-foreground"><strong>GUIDED:</strong> ID upload</p>
                 <p className="text-foreground"><strong>AUTOMATED:</strong> Name verification</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center card-royal border-2 border-accent-teal glow-teal">
-              <CardHeader className="bg-gradient-royal/10">
+            <Card className="text-center card-royal border-2 border-accent-teal glow-teal hover:glow-cyan transition-all duration-500">
+              <CardHeader className="bg-gradient-royal/10 border-b-2 border-accent-teal/30 glow-teal">
                 <Award className="h-12 w-12 text-electric-cyan mx-auto mb-4 glow-teal" />
                 <CardTitle className="text-xl text-electric-cyan">Ordination & Setup</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 border-t border-accent-teal/20">
                 <p className="text-foreground"><strong>GUIDED:</strong> Certificate upload</p>
                 <p className="text-foreground"><strong>AUTOMATED:</strong> Gmail/Drive setup</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center card-royal border-2 border-primary glow-gold">
-              <CardHeader className="bg-gradient-gold/10">
+            <Card className="text-center card-royal border-2 border-primary glow-gold hover:glow-blue transition-all duration-500">
+              <CardHeader className="bg-gradient-gold/10 border-b-2 border-primary/30 glow-gold">
                 <CheckCircle className="h-12 w-12 text-primary mx-auto mb-4 glow-gold" />
                 <CardTitle className="text-xl text-primary">Documents & Seals</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 border-t border-primary/20">
                 <p className="text-foreground"><strong>GUIDED:</strong> Seal upload & review</p>
                 <p className="text-foreground"><strong>AUTOMATED:</strong> Document generation</p>
               </CardContent>
@@ -166,36 +166,38 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-royal text-primary border-2 border-primary/50 glow-gold">
+      <section className="py-20 bg-gradient-royal text-primary border-2 border-primary/50 glow-gold hover:glow-blue transition-all duration-700">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-royal-glow">
-            Ready to Create Your Trust?
-          </h2>
-          <p className="text-xl mb-8 text-foreground/90 max-w-2xl mx-auto">
-            Join thousands who have secured their assets with our professional ecclesiastic trust formation process.
-          </p>
-          <Link to="/automation">
-            <Button size="lg" className="btn-royal-gold text-lg px-8 glow-gold">
-              Start Your Boot Camp Process
-            </Button>
-          </Link>
+          <div className="p-8 rounded-lg border-2 border-primary glow-gold">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-royal-glow">
+              Ready to Create Your Trust?
+            </h2>
+            <p className="text-xl mb-8 text-foreground/90 max-w-2xl mx-auto">
+              Join thousands who have secured their assets with our professional ecclesiastic trust formation process.
+            </p>
+            <Link to="/automation">
+              <Button size="lg" className="btn-royal-gold text-lg px-8 glow-gold hover:glow-blue transition-all duration-300">
+                Start Your Boot Camp Process
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-royal-black text-foreground py-12">
+      <footer className="bg-royal-black text-foreground py-12 border-t-2 border-primary glow-gold">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
-            <div>
+            <div className="p-4 rounded-lg border border-primary/30 glow-gold hover:glow-blue transition-all duration-300">
               <div className="flex items-center space-x-2 mb-4">
-                <Scale className="h-6 w-6 text-primary" />
+                <Scale className="h-6 w-6 text-primary glow-gold" />
                 <span className="text-xl font-bold text-primary">TroothHurtz</span>
               </div>
               <p className="text-muted-foreground">
                 Professional ecclesiastic trust formation with automated legal documentation and verification services.
               </p>
             </div>
-            <div>
+            <div className="p-4 rounded-lg border border-electric-blue/30 glow-blue hover:glow-teal transition-all duration-300">
               <h3 className="font-semibold mb-4 text-primary">Services</h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li>Ecclesiastic Trust Formation</li>
@@ -204,7 +206,7 @@ const Index = () => {
                 <li>Custom Seal Creation</li>
               </ul>
             </div>
-            <div>
+            <div className="p-4 rounded-lg border border-accent-teal/30 glow-teal hover:glow-cyan transition-all duration-300">
               <h3 className="font-semibold mb-4 text-primary">Platform</h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li>Automated Documentation</li>
@@ -214,7 +216,7 @@ const Index = () => {
               </ul>
             </div>
           </div>
-          <div className="border-t border-primary/20 mt-8 pt-8 text-center text-muted-foreground">
+          <div className="border-t-2 border-primary/20 mt-8 pt-8 text-center text-muted-foreground glow-gold">
             <p>&copy; 2024 TroothHurtz. Professional ecclesiastic trust formation platform.</p>
           </div>
         </div>
