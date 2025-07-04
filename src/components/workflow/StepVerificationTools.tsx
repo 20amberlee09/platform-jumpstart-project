@@ -158,20 +158,46 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
         <CardHeader>
           <CardTitle className="flex items-center">
             <BarChart className="h-5 w-5 mr-2" />
-            Barcode Certificate
+            Barcode Certificate Purchase
           </CardTitle>
           <CardDescription>
-            Obtain barcode certificate in your trust name using Minister title
+            Purchase a barcode certificate in your trust name using your Minister title
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-            <h3 className="font-semibold mb-2">Important Instructions</h3>
-            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-              <li>Use your Minister title when filling out the barcode application</li>
-              <li>Apply in the name of your trust: {data?.fullTrustName}</li>
-              <li>You will receive both a barcode number and JPG image</li>
-              <li>The barcode will be placed in the center of document footers</li>
+            <h3 className="font-semibold mb-3 text-primary">Step-by-Step Barcode Purchase Process:</h3>
+            <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+              <li>Click "Purchase Barcode Certificate" button below</li>
+              <li>On the Barcodes Talk website, select your barcode package</li>
+              <li><strong className="text-red-600">IMPORTANT:</strong> When filling out the application form, use:
+                <ul className="ml-6 mt-1 space-y-1 list-disc list-inside">
+                  <li>Name: <span className="font-mono bg-muted px-1 rounded">Minister {data?.fullName || 'Your Full Name'}</span></li>
+                  <li>Organization: <span className="font-mono bg-muted px-1 rounded">{data?.fullTrustName || 'Your Trust Name'}</span></li>
+                  <li>Address: Use your trust address from Step 2</li>
+                </ul>
+              </li>
+              <li>Complete the payment process</li>
+              <li>You will receive:
+                <ul className="ml-6 mt-1 space-y-1 list-disc list-inside">
+                  <li>A barcode certificate (PDF)</li>
+                  <li>A barcode image file (JPG)</li>
+                  <li>Your unique barcode number</li>
+                </ul>
+              </li>
+              <li>Download and save both files to your computer</li>
+              <li>Return here and upload both documents below</li>
+              <li>Enter your barcode number in the field provided</li>
+            </ol>
+          </div>
+
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <h4 className="font-semibold text-amber-800 mb-2">⚠️ Critical Requirements:</h4>
+            <ul className="text-sm text-amber-700 space-y-1 list-disc list-inside">
+              <li><strong>Always use "Minister" before your name</strong> - this is required for trust purposes</li>
+              <li>Use your full trust name as the organization</li>
+              <li>The barcode will be embedded in all your trust documents</li>
+              <li>Keep your barcode certificate and number secure</li>
             </ul>
           </div>
 
@@ -181,7 +207,7 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
               id="barcodeNumber"
               value={barcodeNumber}
               onChange={(e) => setBarcodeNumber(e.target.value)}
-              placeholder="Enter your barcode certificate number"
+              placeholder="Enter your barcode certificate number after purchase"
               required
             />
           </div>
@@ -189,11 +215,11 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => window.open('https://www.gs1us.org/', '_blank')}
-              className="flex-1"
+              onClick={() => window.open('https://www.barcodestalk.com/bar-code-numbers?ps_partner_key=cWxuczJrb2U3Mzg0NDY&ps_xid=fU9ab8lMIoFTz3&gsxid=fU9ab8lMIoFTz3&gspk=cWxuczJrb2U3Mzg0NDY', '_blank')}
+              className="flex-1 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-primary/20 hover:border-primary/40"
             >
               <ExternalLink className="mr-2 h-4 w-4" />
-              Get Barcode Certificate
+              Purchase Barcode Certificate
             </Button>
             <Button
               onClick={handleBarcodeObtained}
@@ -203,10 +229,21 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
               {barcodeObtained ? (
                 <CheckCircle className="mr-2 h-4 w-4" />
               ) : (
-                'Confirm'
+                'Confirm Purchase'
               )}
             </Button>
           </div>
+
+          {barcodeObtained && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                <p className="text-sm font-medium text-green-800">
+                  Barcode Certificate Confirmed: {barcodeNumber}
+                </p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
