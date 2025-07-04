@@ -102,12 +102,23 @@ const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-            <h3 className="font-semibold mb-2">Suggested Email Address</h3>
-            <p className="text-sm font-mono bg-muted p-2 rounded">
+            <h3 className="font-semibold mb-2">Step-by-Step Gmail Creation</h3>
+            <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+              <li>Click "Create Gmail Account" button below</li>
+              <li>Choose "Personal" account type when prompted</li>
+              <li>Fill in your first name and last name</li>
+              <li>Create a username using our suggested format: <span className="font-mono bg-muted px-1 rounded">{generateSuggestedEmail().split('@')[0]}</span></li>
+              <li>Create a strong password (write it down safely!)</li>
+              <li>Add your phone number for verification</li>
+              <li>Complete the verification process</li>
+              <li>Enter the Gmail address you created below and click "Confirm"</li>
+            </ol>
+          </div>
+
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-medium text-blue-800 mb-1">Suggested Email Format:</h4>
+            <p className="text-sm font-mono bg-white p-2 rounded border">
               {generateSuggestedEmail()}
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Use this format or create your own variation
             </p>
           </div>
 
@@ -158,16 +169,28 @@ const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-            <h3 className="font-semibold mb-2">Folder Organization</h3>
-            <p className="text-sm text-muted-foreground mb-2">
-              Create a main folder for your trust with the following structure:
-            </p>
-            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-              <li>{data?.fullTrustName || 'Trust Name'}</li>
-              <li className="ml-4">Documents</li>
-              <li className="ml-4">Certificates</li>
-              <li className="ml-4">Verification</li>
-            </ul>
+            <h3 className="font-semibold mb-2">Step-by-Step Google Drive Setup</h3>
+            <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+              <li>Click "Open Google Drive" button below</li>
+              <li>Sign in with the Gmail account you just created</li>
+              <li>Once in Google Drive, click the "+ New" button (top left)</li>
+              <li>Select "Folder" from the dropdown menu</li>
+              <li>Name your folder: <span className="font-mono bg-muted px-1 rounded">{data?.fullTrustName || 'Your Trust Name'}</span></li>
+              <li>Press Enter to create the folder</li>
+              <li>Double-click to open your new folder</li>
+              <li>Create 3 sub-folders inside: "Documents", "Certificates", "Verification"</li>
+              <li>Enter your main folder name below and click "Confirm"</li>
+            </ol>
+          </div>
+
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <h4 className="font-medium text-green-800 mb-1">Your Main Folder Structure:</h4>
+            <div className="text-sm font-mono bg-white p-2 rounded border space-y-1">
+              <div>📁 {data?.fullTrustName || 'Your Trust Name'}</div>
+              <div className="ml-4">📁 Documents</div>
+              <div className="ml-4">📁 Certificates</div>
+              <div className="ml-4">📁 Verification</div>
+            </div>
           </div>
 
           <div className="space-y-2">

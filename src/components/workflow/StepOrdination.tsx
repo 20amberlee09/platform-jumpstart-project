@@ -21,7 +21,7 @@ const StepOrdination = ({ onNext, onPrev, data }: StepOrdinationProps) => {
       id: 'minister-certificate',
       name: 'Minister Certificate',
       description: 'Upload your ordination certificate from the ministry organization',
-      required: false,
+      required: true,
       acceptedTypes: ['.pdf', '.jpg', '.jpeg', '.png'],
       maxSize: 10
     }
@@ -41,6 +41,21 @@ const StepOrdination = ({ onNext, onPrev, data }: StepOrdinationProps) => {
       toast({
         title: "Ordination Required",
         description: "Please complete your ministerial ordination before continuing.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if required certificate is uploaded
+    const requiredUploads = documentRequirements.filter(req => req.required);
+    const uploadedRequiredFiles = requiredUploads.filter(req => 
+      uploadedFiles.some(file => file.requirementId === req.id)
+    );
+
+    if (uploadedRequiredFiles.length < requiredUploads.length) {
+      toast({
+        title: "Certificate Upload Required",
+        description: "Please upload your minister certificate before continuing.",
         variant: "destructive"
       });
       return;

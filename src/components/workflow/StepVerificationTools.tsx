@@ -38,14 +38,6 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
       required: true,
       acceptedTypes: ['.jpg', '.jpeg', '.png'],
       maxSize: 5
-    },
-    {
-      id: 'seal-image',
-      name: 'Ministry Seal Image',
-      description: 'Upload your ministry seal/stamp image (create externally if needed)',
-      required: true,
-      acceptedTypes: ['.jpg', '.jpeg', '.png'],
-      maxSize: 5
     }
   ];
 
@@ -226,47 +218,6 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
         className="mt-6"
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Stamp className="h-5 w-5 mr-2" />
-            Seal Creation Resources
-          </CardTitle>
-          <CardDescription>
-            External tools to create your ministry seal if you don't have one
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-            <h3 className="font-semibold mb-2">Seal Requirements</h3>
-            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-              <li>Should include your Minister name and trust name</li>
-              <li>Circular or official seal design recommended</li>
-              <li>High resolution JPG/PNG format required</li>
-              <li>Will be used on all official trust documents</li>
-            </ul>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => window.open('https://www.canva.com/create/seals/', '_blank')}
-              className="flex-1"
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Create with Canva
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.open('https://www.logomakr.com/', '_blank')}
-              className="flex-1"
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              LogoMakr
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {qrCodeGenerated && barcodeObtained && uploadedFiles.length >= documentRequirements.filter(r => r.required).length && (
         <Card>
