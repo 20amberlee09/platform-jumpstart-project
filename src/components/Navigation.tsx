@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Scale, Menu, X } from "lucide-react";
+import { Scale, Menu, X, User } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -48,8 +50,26 @@ const Navigation = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="sm">Sign In</Button>
-            <Button size="sm">Get Started</Button>
+            {user ? (
+              <>
+                <div className="flex items-center space-x-2 text-sm">
+                  <User className="h-4 w-4" />
+                  <span className="text-muted-foreground">Welcome back!</span>
+                </div>
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm">Sign In</Button>
+                </Link>
+                <Link to="/auth">
+                  <Button size="sm">Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -83,8 +103,26 @@ const Navigation = () => {
                 </Link>
               ))}
               <div className="flex flex-col space-y-2 pt-4 border-t">
-                <Button variant="ghost" size="sm">Sign In</Button>
-                <Button size="sm">Get Started</Button>
+                {user ? (
+                  <>
+                    <div className="flex items-center space-x-2 text-sm px-2 py-1">
+                      <User className="h-4 w-4" />
+                      <span className="text-muted-foreground">Welcome back!</span>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={signOut}>
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full">Sign In</Button>
+                    </Link>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                      <Button size="sm" className="w-full">Get Started</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
           </div>
