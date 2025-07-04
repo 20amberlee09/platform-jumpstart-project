@@ -5,23 +5,25 @@ export const courseConfigs: Record<string, CourseConfig> = {
     id: 'trust-bootcamp',
     title: 'Boot Camp',
     description: 'Complete ecclesiastic revocable living trust creation with ministerial ordination',
-    price: 497,
+    price: 150,
     overview: {
       title: 'Boot Camp',
-      subtitle: 'Complete Trust Creation Process',
-      description: 'Our comprehensive platform guides you through creating an ecclesiastic revocable living trust with ministerial ordination, verification services, and professional documentation.'
+      subtitle: 'Complete Trust Creation Package',
+      description: 'Our comprehensive $150 package guides you through creating an ecclesiastic revocable living trust with ministerial ordination, verification services, and professional documentation. All required documents must be uploaded before completion.'
     },
-    features: [
-      'Government ID scanning and verification',
+      features: [
+      'Complete $150 package - no recurring fees',
+      'Government ID verification with document upload',
       'Trust name availability verification (USPTO & State searches)',
-      'Ministerial ordination certificate',
+      'Ministerial ordination certificate upload',
       'Ecclesiastic revocable living trust creation',
       'Gmail account setup for trust',
       'Google Drive folder creation',
       'QR code generation for documentation',
-      'Barcode certificate in trust name',
-      'Custom document seal creation',
-      'Professional document generation with verification elements'
+      'Barcode certificate purchase and upload guidance',
+      'Custom document seal creation and upload',
+      'Professional document generation with all verification elements',
+      'All documents must be uploaded before completion'
     ],
     modules: [
       {
