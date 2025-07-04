@@ -100,6 +100,395 @@ startxref
     }
   };
 
+  const createLegalDocument = (documentType: string) => {
+    const templates = {
+      "Certificate of Trust (Summary)": `
+CERTIFICATE OF TRUST (SUMMARY)
+
+This Certificate is executed by ${ministerName}, as Trustee of the ${trustName}, established on ${new Date().toLocaleDateString()}.
+
+1. TRUST EXISTENCE: The Trust named above is validly existing under the ecclesiastical laws and pursuant to a trust agreement dated ${new Date().toLocaleDateString()}.
+
+2. TRUSTEE AUTHORITY: The undersigned Trustee has full power and authority to act on behalf of the Trust in all matters related to trust administration, including but not limited to:
+   - Acquiring, holding, and disposing of trust property
+   - Entering into contracts and agreements
+   - Managing trust assets and investments
+   - Distributing trust income and principal
+
+3. TRUST IDENTIFICATION: 
+   Trust Name: ${trustName}
+   Trustee: ${ministerName}
+   Gmail Account: ${gmailData?.gmailAccount || 'Not provided'}
+   Google Drive: ${gmailData?.googleDriveFolder || 'Not provided'}
+   Barcode ID: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'}
+
+4. LIMITATION OF LIABILITY: This Certificate is executed to facilitate transactions involving trust property and does not modify, revoke, or otherwise affect the terms of the Trust Agreement.
+
+IN WITNESS WHEREOF, the undersigned Trustee has executed this Certificate as of the date first written above.
+
+_________________________________
+${ministerName}, Trustee
+${trustName}
+
+Address: ${identityData?.address || 'Not provided'}, ${identityData?.city || ''}, ${identityData?.state || ''} ${identityData?.zipCode || ''}
+
+Ecclesiastical Verification Elements:
+- QR Code: [Barcode QR Code would appear here]
+- Barcode: [Barcode JPG would appear here]  
+- Drive QR: [Google Drive QR Code would appear here]
+      `,
+      
+      "Declaration of Trust": `
+DECLARATION OF TRUST
+
+KNOW ALL MEN BY THESE PRESENTS, that ${ministerName}, in the capacity of Grantor and initial Trustee, hereby declares and establishes this Ecclesiastic Revocable Living Trust under the following terms and conditions:
+
+ARTICLE I - TRUST CREATION
+This Trust Agreement is created on ${new Date().toLocaleDateString()}, for the purpose of managing and distributing assets according to ecclesiastical principles and the Grantor's wishes.
+
+ARTICLE II - TRUST NAME AND PARTIES
+1. Trust Name: ${trustName}
+2. Grantor: ${ministerName}  
+3. Initial Trustee: ${ministerName}
+4. Trust Email: ${gmailData?.gmailAccount || 'Not provided'}
+5. Document Repository: ${gmailData?.googleDriveFolder || 'Not provided'}
+
+ARTICLE III - TRUST PURPOSES
+This Trust is established for the following purposes:
+a) To provide for the management and preservation of trust assets
+b) To ensure proper distribution of trust property according to ecclesiastical law
+c) To maintain continuity of asset management during the Grantor's lifetime
+d) To provide for efficient transfer of assets upon the Grantor's transition
+
+ARTICLE IV - TRUST PROPERTY
+The Grantor hereby transfers and assigns to the Trustee the property described in Schedule A, attached hereto and incorporated by reference.
+
+ARTICLE V - TRUSTEE POWERS
+The Trustee shall have all powers necessary for the proper administration of this Trust, including but not limited to:
+- Power to buy, sell, and manage real and personal property
+- Power to invest and reinvest trust assets
+- Power to distribute income and principal
+- Power to enter into contracts and agreements
+- Power to maintain detailed records and accounts
+
+ARTICLE VI - REVOCATION AND AMENDMENT
+This Trust may be revoked or amended by the Grantor at any time during their lifetime through written instrument delivered to the Trustee.
+
+IN WITNESS WHEREOF, the Grantor has executed this Declaration of Trust on the date first written above.
+
+_________________________________
+${ministerName}
+Grantor and Initial Trustee
+
+Verification Elements:
+Barcode Certificate ID: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'}
+Repository Location: ${gmailData?.googleDriveFolder || 'Not provided'}
+      `,
+      
+      "Schedule A - Trust Asset Inventory": `
+SCHEDULE A
+TRUST ASSET INVENTORY TEMPLATE
+
+${trustName}
+Trustee: ${ministerName}
+Date: ${new Date().toLocaleDateString()}
+
+INSTRUCTIONS FOR ASSET INVENTORY:
+Complete this schedule by listing all assets you wish to transfer into the trust. Update this document as assets are added or removed from the trust.
+
+REAL ESTATE PROPERTIES:
+□ Primary Residence
+  Address: _________________________________
+  Legal Description: _______________________
+  Estimated Value: $________________________
+
+□ Investment Properties
+  Property 1: ______________________________
+  Property 2: ______________________________
+  Property 3: ______________________________
+
+FINANCIAL ACCOUNTS:
+□ Bank Accounts
+  Institution: _____________________________
+  Account Number: __________________________
+  Type: ___________________________________
+  Balance: $______________________________
+
+□ Investment Accounts
+  Institution: _____________________________
+  Account Number: __________________________
+  Type: ___________________________________
+  Value: $_______________________________
+
+PERSONAL PROPERTY:
+□ Vehicles
+  Vehicle 1: ______________________________
+  Vehicle 2: ______________________________
+
+□ Jewelry and Valuables
+  Item: __________________________________
+  Estimated Value: $______________________
+
+□ Business Interests
+  Business Name: ___________________________
+  Ownership Percentage: ____________________
+  Estimated Value: $______________________
+
+INTELLECTUAL PROPERTY:
+□ Patents, Copyrights, Trademarks
+  Description: ____________________________
+  Registration Number: ____________________
+
+DIGITAL ASSETS:
+□ Cryptocurrency Holdings
+  Type: __________________________________
+  Amount: ________________________________
+
+□ Online Accounts and Digital Assets
+  Platform: ______________________________
+  Value: $______________________________
+
+TOTAL ESTIMATED TRUST VALUE: $_______________
+
+Trustee Signature: _________________________
+Date: ____________________________________
+
+Note: This inventory should be updated annually or whenever significant changes occur to trust assets.
+      `,
+      
+      "Foundational Trust Indenture": `
+FOUNDATIONAL TRUST INDENTURE
+
+This Indenture, made this ${new Date().toLocaleDateString()}, between ${ministerName}, as Grantor, and ${ministerName}, as Trustee, of the ${trustName}.
+
+RECITALS:
+WHEREAS, Grantor desires to create a trust for the management and distribution of assets according to ecclesiastical principles; and
+WHEREAS, Grantor wishes to appoint a competent Trustee to administer said trust; and
+WHEREAS, the parties desire to set forth the fundamental terms and conditions governing this trust relationship;
+
+NOW, THEREFORE, in consideration of the mutual covenants contained herein, the parties agree as follows:
+
+SECTION 1 - ESTABLISHMENT OF TRUST
+The Grantor hereby establishes and creates a trust to be known as the "${trustName}", which shall be administered according to the terms of this Indenture and applicable law.
+
+SECTION 2 - TRUST ADMINISTRATION
+2.1 The Trustee shall administer the trust with the highest degree of care, skill, and diligence.
+2.2 All trust administration activities shall be documented and stored in the designated repository: ${gmailData?.googleDriveFolder || 'Not provided'}
+2.3 Regular communications regarding trust matters shall be conducted through: ${gmailData?.gmailAccount || 'Not provided'}
+
+SECTION 3 - BENEFICIARY RIGHTS
+Beneficiaries shall have the right to:
+- Receive accountings of trust assets and activities
+- Request information about trust administration
+- Receive distributions according to trust terms
+- Challenge actions that violate trust terms
+
+SECTION 4 - TRUSTEE COMPENSATION
+The Trustee shall be entitled to reasonable compensation for services rendered, as outlined in Annex C - Ecclesiastical Fee Schedule.
+
+SECTION 5 - RECORD KEEPING
+The Trustee shall maintain complete and accurate records of all trust transactions, including:
+- Asset inventories and valuations
+- Income and expense statements
+- Distribution records
+- Investment activities
+- Correspondence and legal documents
+
+SECTION 6 - VERIFICATION SYSTEMS
+This trust employs multiple verification systems for authenticity:
+- Barcode Certificate System (ID: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'})
+- Digital Repository Verification
+- QR Code Authentication
+- Ecclesiastical Seal Verification
+
+IN WITNESS WHEREOF, the parties have executed this Indenture on the date first written above.
+
+GRANTOR:                          TRUSTEE:
+_________________________        _________________________
+${ministerName}                   ${ministerName}
+
+Address: ${identityData?.address || 'Not provided'}, ${identityData?.city || ''}, ${identityData?.state || ''} ${identityData?.zipCode || ''}
+      `,
+      
+      "Annex A - Affidavit of Identity": `
+ANNEX A
+AFFIDAVIT OF IDENTITY AND TITLE RECLAMATION
+
+STATE OF ${identityData?.state || '[STATE]'}
+COUNTY OF ${identityData?.city || '[COUNTY]'}
+
+I, ${ministerName}, being duly sworn, do hereby depose and state:
+
+1. IDENTITY AFFIRMATION: I am the individual known as ${identityData?.fullName || 'Name Not Provided'}, and I am of sound mind and legal age to execute this affidavit.
+
+2. ECCLESIASTICAL STANDING: I hold the ecclesiastical title of Minister and am authorized to act in such capacity for matters relating to the ${trustName}.
+
+3. RESIDENTIAL ADDRESS: My primary residence is located at:
+   ${identityData?.address || 'Address Not Provided'}
+   ${identityData?.city || 'City Not Provided'}, ${identityData?.state || 'State Not Provided'} ${identityData?.zipCode || 'Zip Not Provided'}
+
+4. TITLE RECLAMATION: I hereby reclaim and assert my natural, inalienable rights and sovereign capacity as a living being, specifically including:
+   - The right to contract and enter into agreements
+   - The right to hold and transfer property
+   - The right to establish and administer trusts
+   - The right to act in ecclesiastical capacity
+
+5. TRUST AUTHORITY: I affirm that I have full authority to establish, fund, and administer the ${trustName} in accordance with ecclesiastical law and principles.
+
+6. VERIFICATION SYSTEMS: This trust employs the following verification and authentication systems:
+   - Gmail Account: ${gmailData?.gmailAccount || 'Not provided'}
+   - Document Repository: ${gmailData?.googleDriveFolder || 'Not provided'}
+   - Barcode Certificate: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'}
+
+7. OATH OF OFFICE: I solemnly swear to execute the duties of Trustee with integrity, diligence, and in accordance with the highest ethical standards.
+
+This affidavit is made under penalty of perjury under the ecclesiastical laws.
+
+_________________________________
+${ministerName}
+Minister and Trustee
+
+Subscribed and sworn to before me this ${new Date().toLocaleDateString()}.
+
+_________________________________
+Notary Public / Ecclesiastical Witness
+      `,
+      
+      "Annex B - Ecclesiastical Deed Poll": `
+ANNEX B
+ECCLESIASTICAL DEED POLL OF TRUSTEE AUTHORITY
+
+This Deed Poll is executed by ${ministerName} on this ${new Date().toLocaleDateString()}, to establish and record ecclesiastical trustee authority.
+
+DECLARATION OF AUTHORITY:
+
+I, ${ministerName}, hereby declare and establish my authority as Trustee of the ${trustName} under ecclesiastical law and natural common law principles.
+
+SECTION 1 - ECCLESIASTICAL FOUNDATION
+This authority is established upon the foundation of:
+1. Natural law and universal principles of justice
+2. Ecclesiastical traditions and customs
+3. Common law principles of trust administration
+4. Divine guidance and spiritual discernment
+
+SECTION 2 - SCOPE OF AUTHORITY
+As Trustee, I am empowered to:
+- Receive, hold, and manage trust property
+- Make investments and financial decisions for the trust
+- Distribute trust assets according to trust terms
+- Enter into contracts and agreements on behalf of the trust
+- Maintain records and provide accountings
+- Defend the trust against claims and challenges
+
+SECTION 3 - TRUST ADMINISTRATION STANDARDS
+I covenant to administer this trust according to:
+- The highest standards of fiduciary duty
+- Ecclesiastical principles of stewardship
+- Prudent investment and management practices
+- Transparency and accountability to beneficiaries
+- Regular prayer and spiritual guidance
+
+SECTION 4 - VERIFICATION AND AUTHENTICATION
+This trustee authority is verified through:
+- Barcode Certificate System: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'}
+- Digital Repository: ${gmailData?.googleDriveFolder || 'Not provided'}
+- Electronic Communication: ${gmailData?.gmailAccount || 'Not provided'}
+- QR Code Verification System
+
+SECTION 5 - SUCCESSION PROVISIONS
+Upon my inability to serve, successor trustees shall be appointed according to the provisions set forth in the main trust document.
+
+IN WITNESS WHEREOF, I have executed this Deed Poll under my hand and seal.
+
+_________________________________
+${ministerName}
+Ecclesiastical Trustee
+
+Date: ${new Date().toLocaleDateString()}
+Location: ${identityData?.city || 'Not provided'}, ${identityData?.state || 'Not provided'}
+      `,
+      
+      "Annex C - Ecclesiastical Fee Schedule": `
+ANNEX C
+ECCLESIASTICAL FEE SCHEDULE
+
+${trustName}
+Trustee: ${ministerName}
+Effective Date: ${new Date().toLocaleDateString()}
+
+This Fee Schedule establishes the compensation structure for trustee services rendered in the administration of the above-named trust.
+
+SECTION 1 - BASIC TRUSTEE FEES
+1.1 Annual Administrative Fee: 1.0% of trust assets (minimum $500)
+    - Includes routine administration, record keeping, and beneficiary communications
+    - Calculated annually based on average asset value
+
+1.2 Distribution Processing Fee: $50 per distribution
+    - Covers preparation, documentation, and processing of beneficiary distributions
+    - Waived for routine scheduled distributions
+
+1.3 Investment Management Fee: 0.5% of managed investment assets
+    - Applied to actively managed investment portfolios
+    - Excludes passive holdings and real estate
+
+SECTION 2 - SPECIAL SERVICES FEES
+2.1 Real Estate Management: $100 per month per property
+    - Includes oversight, maintenance coordination, and tenant relations
+    - Additional fees for major repairs or improvements
+
+2.2 Business Interest Management: 2.0% of business income
+    - For active management of business operations
+    - Quarterly assessment and billing
+
+2.3 Tax Preparation and Filing: $250 per return
+    - Includes federal and state trust tax returns
+    - Additional fees for complex tax situations
+
+SECTION 3 - EXTRAORDINARY SERVICES
+3.1 Legal Proceedings: $150 per hour
+    - Court appearances, depositions, and legal research
+    - Reasonable attorney fees reimbursed separately
+
+3.2 Asset Acquisition/Disposition: 1.0% of transaction value
+    - Applies to purchases and sales over $10,000
+    - Minimum fee of $250 per transaction
+
+3.3 Beneficiary Disputes: $150 per hour
+    - Mediation, documentation, and resolution services
+    - Capped at 10% of annual trust income
+
+SECTION 4 - EXPENSE REIMBURSEMENTS
+The trust shall reimburse the trustee for:
+- Professional fees (attorneys, accountants, appraisers)
+- Administrative expenses (postage, copying, filing fees)
+- Travel expenses for trust business
+- Insurance premiums for trustee liability coverage
+
+SECTION 5 - FEE PAYMENT TERMS
+- Fees are payable quarterly in arrears
+- Extraordinary service fees are due within 30 days
+- All fees are subject to beneficiary review and court approval if required
+- Fee disputes shall be resolved through ecclesiastical mediation
+
+SECTION 6 - FEE MODIFICATIONS
+This fee schedule may be modified by written agreement between the trustee and beneficiaries, or by court order if required.
+
+Trust Contact Information:
+Email: ${gmailData?.gmailAccount || 'Not provided'}
+Repository: ${gmailData?.googleDriveFolder || 'Not provided'}
+Verification ID: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'}
+
+_________________________________
+${ministerName}
+Trustee
+
+Date: ${new Date().toLocaleDateString()}
+      `
+    };
+    
+    return templates[documentType] || `${documentType}\n\nDocument content for ${documentType} would appear here.\n\nGenerated for: ${ministerName}\nTrust: ${trustName}\nDate: ${new Date().toLocaleDateString()}`;
+  };
+  
   const downloadDemoDocument = (documentName: string) => {
     if (!isDemoMode) {
       console.log('Not in demo mode, download blocked');
@@ -109,32 +498,16 @@ startxref
     console.log('Starting download for:', documentName);
     
     try {
-      // Create a simple text-based PDF instead of complex PDF structure
-      const pdfText = `
-${documentName}
-======================
-
-Generated for: ${ministerName}
-Trust Name: ${trustName}
-Generated Date: ${new Date().toLocaleString()}
-
-This is your ${documentName} document.
-
-Address: ${identityData?.address || 'Not provided'}, ${identityData?.city || ''}, ${identityData?.state || ''} ${identityData?.zipCode || ''}
-Gmail Account: ${gmailData?.gmailAccount || 'Not provided'}
-Google Drive: ${gmailData?.googleDriveFolder || 'Not provided'}
-
-This is a demo document generated for preview purposes.
-In the actual service, this would be a properly formatted legal document.
-      `;
+      const documentContent = createLegalDocument(documentName);
+      console.log('Document content created, length:', documentContent.length);
       
-      const blob = new Blob([pdfText], { type: 'text/plain' });
+      const blob = new Blob([documentContent], { type: 'text/plain' });
       console.log('Blob created:', blob.size, 'bytes');
       
       const url = URL.createObjectURL(blob);
       console.log('Object URL created:', url);
       
-      const fileName = `${documentName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '')}.txt`;
+      const fileName = `${documentName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_()-]/g, '')}.txt`;
       console.log('Download filename:', fileName);
       
       const link = document.createElement('a');
@@ -157,8 +530,8 @@ In the actual service, this would be a properly formatted legal document.
       }, 100);
       
       toast({
-        title: "Document Downloaded",
-        description: `${documentName} has been saved as ${fileName}`,
+        title: "Legal Document Downloaded",
+        description: `${documentName} with full legal content has been saved as ${fileName}`,
       });
       
     } catch (error) {

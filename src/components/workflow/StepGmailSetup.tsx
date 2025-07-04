@@ -25,9 +25,9 @@ const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
   const { toast } = useToast();
 
   const generateSuggestedEmail = () => {
-    const trustName = data?.trustBaseName || 'Trust';
+    const trustName = data?.['step-trust-name']?.trustBaseName || data?.trustBaseName || 'smithfamily';
     const cleanName = trustName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return `${cleanName}ecclesiastictrust@gmail.com`;
+    return `${cleanName}erltrust@gmail.com`;
   };
 
   const handleGmailCreated = () => {
