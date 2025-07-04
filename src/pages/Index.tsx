@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Shield, Scale, Users, Clock, Award } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const courses = [
@@ -84,18 +85,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Scale className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold text-legal-dark">TroothhHurtz</span>
-            </div>
-            <Button variant="outline">Get Started</Button>
-          </div>
-        </div>
-      </header>
 
       {/* Hero Section */}
       <section className="bg-gradient-hero text-white py-20">
@@ -108,12 +97,16 @@ const Index = () => {
             Automate trust formation, estate planning, and legal documentation with our comprehensive 5-step process. Professional legal documents delivered with custom seals and notarization.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-accent text-legal-dark hover:bg-accent/90 text-lg px-8">
-              Start Free Consultation
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-legal-primary">
-              View Courses
-            </Button>
+            <Link to="/automation">
+              <Button size="lg" className="bg-accent text-legal-dark hover:bg-accent/90 text-lg px-8">
+                Start Free Consultation
+              </Button>
+            </Link>
+            <Link to="/courses">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-legal-primary">
+                View Courses
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -185,9 +178,11 @@ const Index = () => {
                     ))}
                   </div>
                   
-                  <Button className="w-full" size="lg">
-                    Get Started
-                  </Button>
+                  <Link to={`/course/${course.id === 1 ? 'trust-bootcamp' : course.id === 2 ? 'estate-planning' : 'business-trust'}`}>
+                    <Button className="w-full" size="lg">
+                      Get Started
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
@@ -204,9 +199,11 @@ const Index = () => {
           <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
             Join thousands who have streamlined their legal processes with our AI-powered automation platform.
           </p>
-          <Button size="lg" className="bg-white text-legal-primary hover:bg-white/90 text-lg px-8">
-            Start Your Free Consultation
-          </Button>
+          <Link to="/automation">
+            <Button size="lg" className="bg-white text-legal-primary hover:bg-white/90 text-lg px-8">
+              Start Your Free Consultation
+            </Button>
+          </Link>
         </div>
       </section>
 
