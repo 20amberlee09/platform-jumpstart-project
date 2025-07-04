@@ -17,6 +17,21 @@ const Card = React.forwardRef<
 ))
 Card.displayName = "Card"
 
+const CardCosmic = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border-2 border-primary bg-cosmic-black text-white shadow-glow-green p-5",
+      className
+    )}
+    {...props}
+  />
+))
+CardCosmic.displayName = "CardCosmic"
+
 const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -76,4 +91,4 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export { Card, CardCosmic, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }

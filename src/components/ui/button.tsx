@@ -18,12 +18,19 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // TroothHurtz Cosmic Neon Variants
+        "neon-green": "bg-neon-green text-cosmic-black border-2 border-neon-green rounded-lg font-bold uppercase shadow-glow-green hover:brightness-110 hover:scale-105 transition-all duration-300",
+        "neon-blue": "bg-neon-blue text-white border-2 border-neon-blue rounded-lg font-bold uppercase shadow-glow-blue hover:brightness-110 hover:scale-105 transition-all duration-300",
+        "neon-purple": "bg-neon-purple text-white border-2 border-neon-purple rounded-lg font-bold uppercase shadow-glow-purple hover:brightness-110 hover:scale-105 transition-all duration-300",
+        "neon-gold": "bg-neon-gold text-cosmic-black border-2 border-neon-gold rounded-lg font-bold uppercase shadow-glow-gold hover:brightness-110 hover:scale-105 transition-all duration-300",
+        "neon-cyan": "bg-neon-cyan text-cosmic-black border-2 border-neon-cyan rounded-lg font-bold uppercase shadow-glow-cyan hover:brightness-110 hover:scale-105 transition-all duration-300",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
+        cosmic: "h-12 px-6 py-3", // Larger cosmic buttons
       },
     },
     defaultVariants: {

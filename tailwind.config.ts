@@ -52,11 +52,23 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				legal: {
-					primary: 'hsl(var(--legal-primary))',
-					secondary: 'hsl(var(--legal-secondary))',
-					dark: 'hsl(var(--legal-dark))',
-					light: 'hsl(var(--legal-light))'
+				cosmic: {
+					black: 'hsl(var(--cosmic-black))',
+					navy: 'hsl(var(--cosmic-navy))',
+					'blue-start': 'hsl(var(--cosmic-blue-start))',
+					'blue-end': 'hsl(var(--cosmic-blue-end))'
+				},
+				neon: {
+					green: 'hsl(var(--neon-green))',
+					blue: 'hsl(var(--electric-blue))',
+					purple: 'hsl(var(--vibrant-purple))',
+					cyan: 'hsl(var(--bright-cyan))',
+					gold: 'hsl(var(--golden-yellow))'
+				},
+				text: {
+					primary: 'hsl(var(--text-primary))',
+					secondary: 'hsl(var(--text-secondary))',
+					contrast: 'hsl(var(--text-contrast))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -75,12 +87,18 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			backgroundImage: {
-				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-cosmic': 'var(--gradient-cosmic)',
+				'gradient-neon': 'var(--gradient-neon)',
 				'gradient-hero': 'var(--gradient-hero)'
 			},
 			boxShadow: {
-				'legal-lg': 'var(--shadow-lg)',
-				'legal-card': 'var(--shadow-card)'
+				'glow-green': 'var(--glow-green)',
+				'glow-blue': 'var(--glow-blue)',
+				'glow-purple': 'var(--glow-purple)',
+				'glow-cyan': 'var(--glow-cyan)',
+				'glow-gold': 'var(--glow-gold)',
+				'cosmic': 'var(--shadow-cosmic)',
+				'card-cosmic': 'var(--shadow-card)'
 			},
 			keyframes: {
 				'accordion-down': {
