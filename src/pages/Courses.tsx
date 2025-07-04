@@ -8,58 +8,25 @@ const Courses = () => {
   const courses = [
     {
       id: "trust-bootcamp",
-      name: "Trust Formation Boot Camp",
-      price: "$150/week",
-      duration: "4 weeks",
-      category: "Foundation",
-      description: "Complete trust formation with automated legal documentation and custom seal creation.",
-      features: [
-        "Custom Trust Seal Creation",
-        "Automated Legal Document Assembly", 
-        "QR Code & Barcode Generation",
-        "Online Notarization Integration",
-        "Google Drive Document Delivery",
-        "24/7 AI Legal Assistant",
-        "Constitutional Law Guidance"
-      ],
-      total: "$600 total",
-      popular: true
-    },
-    {
-      id: "estate-planning",
-      name: "Estate Planning Essentials",
-      price: "$450",
+      name: "Boot Camp",
+      price: "$497",
       duration: "One-time",
-      category: "Comprehensive",
-      description: "Complete estate planning package including wills, power of attorney, and healthcare directives.",
+      category: "Complete Course",
+      description: "Complete ecclesiastic revocable living trust creation with ministerial ordination and professional documentation.",
       features: [
-        "Will & Testament Creation",
-        "Power of Attorney Documents",
-        "Healthcare Directives", 
-        "Trust Integration",
-        "Asset Protection Planning",
-        "Legal Compliance Verification"
+        "Government ID scanning and verification",
+        "Trust name availability verification (USPTO & State searches)",
+        "Ministerial ordination certificate",
+        "Ecclesiastic revocable living trust creation",
+        "Gmail account setup for trust",
+        "Google Drive folder creation",
+        "QR code generation for documentation",
+        "Barcode certificate in trust name",
+        "Custom document seal creation",
+        "Professional document generation with verification elements"
       ],
       total: "One payment",
-      popular: false
-    },
-    {
-      id: "business-trust",
-      name: "Business Trust Formation", 
-      price: "$200/week",
-      duration: "Ongoing",
-      category: "Professional",
-      description: "Advanced business trust formation with commercial documentation and tax optimization.",
-      features: [
-        "Business Trust Creation",
-        "Commercial Documentation",
-        "Tax Optimization Structures",
-        "Asset Protection Strategies", 
-        "Compliance Management",
-        "Multi-State Registration"
-      ],
-      total: "Weekly billing",
-      popular: false
+      popular: true
     }
   ];
 
