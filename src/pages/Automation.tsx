@@ -9,6 +9,7 @@ import StepNDA from "@/components/workflow/StepNDA";
 import StepPayment from "@/components/workflow/StepPayment";
 import Step1Identity from "@/components/workflow/Step1Identity";
 import Step2Trust from "@/components/workflow/Step2Trust";
+import Step3DocumentAssembly from "@/components/workflow/Step3DocumentAssembly";
 
 const Automation = () => {
   const { user } = useAuth();
@@ -145,11 +146,19 @@ const Automation = () => {
             />
           )}
           
-          {currentStep >= 4 && (
+          {currentStep === 4 && (
+            <Step3DocumentAssembly 
+              onNext={handleStepComplete}
+              onPrev={handleStepBack}
+              data={workflowData}
+            />
+          )}
+          
+          {currentStep >= 5 && (
             <div className="text-center py-16">
               <h2 className="text-2xl font-bold mb-4">More Steps Coming Soon!</h2>
               <p className="text-muted-foreground mb-6">
-                Steps 5-7 (Document Assembly, Digital Signatures, and Final Review) are currently in development.
+                Steps 6-7 (Digital Signatures and Final Review) are currently in development.
               </p>
               <Button onClick={() => setShowOverview(true)} variant="outline">
                 Back to Overview
