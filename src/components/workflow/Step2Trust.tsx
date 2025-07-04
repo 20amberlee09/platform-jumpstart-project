@@ -16,13 +16,16 @@ interface Step2TrustProps {
 const Step2Trust = ({ onNext, onPrev, data }: Step2TrustProps) => {
   const [formData, setFormData] = useState({
     trustName: data?.trustName || '',
-    trustType: data?.trustType || '',
-    trustPurpose: data?.trustPurpose || '',
+    trustType: 'irrevocable-living',
+    assetProtectionGoals: data?.assetProtectionGoals || '',
+    taxOptimizationGoals: data?.taxOptimizationGoals || '',
     initialFunding: data?.initialFunding || '',
     trusteeType: data?.trusteeType || '',
     coTrustee: data?.coTrustee || '',
     beneficiaries: data?.beneficiaries || '',
     distribution: data?.distribution || '',
+    riskTolerance: data?.riskTolerance || '',
+    assetTypes: data?.assetTypes || '',
     ...data
   });
 
@@ -34,7 +37,7 @@ const Step2Trust = ({ onNext, onPrev, data }: Step2TrustProps) => {
     onNext(formData);
   };
 
-  const isFormValid = formData.trustName && formData.trustType && formData.trustPurpose && formData.beneficiaries;
+  const isFormValid = formData.trustName && formData.assetProtectionGoals && formData.taxOptimizationGoals && formData.beneficiaries && formData.assetTypes && formData.distribution;
 
   return (
     <div className="space-y-6">
@@ -73,27 +76,33 @@ const Step2Trust = ({ onNext, onPrev, data }: Step2TrustProps) => {
             
             <div className="space-y-2">
               <Label htmlFor="trustType">Trust Type</Label>
-              <Select value={formData.trustType} onValueChange={(value) => handleInputChange('trustType', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select trust type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="revocable">Revocable Living Trust</SelectItem>
-                  <SelectItem value="irrevocable">Irrevocable Trust</SelectItem>
-                  <SelectItem value="testamentary">Testamentary Trust</SelectItem>
-                  <SelectItem value="special-needs">Special Needs Trust</SelectItem>
-                  <SelectItem value="charitable">Charitable Trust</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="p-3 bg-primary/10 rounded-md border border-primary/20">
+                <p className="text-sm font-medium text-primary">Irrevocable Living Trust</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Boot Camp Course - Asset Protection & Tax Optimization Trust
+                </p>
+              </div>
+              <input type="hidden" value="irrevocable-living" />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="trustPurpose">Trust Purpose</Label>
+              <Label htmlFor="assetProtectionGoals">Asset Protection Goals</Label>
               <Textarea
-                id="trustPurpose"
-                value={formData.trustPurpose}
-                onChange={(e) => handleInputChange('trustPurpose', e.target.value)}
-                placeholder="Describe the purpose and goals of this trust..."
+                id="assetProtectionGoals"
+                value={formData.assetProtectionGoals}
+                onChange={(e) => handleInputChange('assetProtectionGoals', e.target.value)}
+                placeholder="What assets do you want to protect? (business interests, real estate, investments, etc.)"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="taxOptimizationGoals">Tax Optimization Objectives</Label>
+              <Textarea
+                id="taxOptimizationGoals"
+                value={formData.taxOptimizationGoals}
+                onChange={(e) => handleInputChange('taxOptimizationGoals', e.target.value)}
+                placeholder="What are your primary tax planning objectives with this trust?"
                 required
               />
             </div>
@@ -162,12 +171,38 @@ const Step2Trust = ({ onNext, onPrev, data }: Step2TrustProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="distribution">Distribution Terms</Label>
+              <Label htmlFor="assetTypes">Primary Asset Types to Transfer</Label>
+              <Textarea
+                id="assetTypes"
+                value={formData.assetTypes}
+                onChange={(e) => handleInputChange('assetTypes', e.target.value)}
+                placeholder="List specific assets you plan to transfer (business LLC, rental properties, investment accounts, etc.)"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="riskTolerance">Risk Management Preference</Label>
+              <Select value={formData.riskTolerance} onValueChange={(value) => handleInputChange('riskTolerance', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select risk management approach" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="conservative">Conservative - Maximum Asset Protection</SelectItem>
+                  <SelectItem value="balanced">Balanced - Protection with Flexibility</SelectItem>
+                  <SelectItem value="aggressive">Aggressive - Tax Benefits Priority</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="distribution">Distribution & Control Preferences</Label>
               <Textarea
                 id="distribution"
                 value={formData.distribution}
                 onChange={(e) => handleInputChange('distribution', e.target.value)}
-                placeholder="Describe how and when distributions should be made..."
+                placeholder="How much control do you want to retain? When should beneficiaries receive distributions?"
+                required
               />
             </div>
           </CardContent>

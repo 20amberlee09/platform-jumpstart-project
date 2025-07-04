@@ -14,7 +14,6 @@ const Step1Identity = ({ onNext, data }: Step1IdentityProps) => {
   const [formData, setFormData] = useState({
     fullName: data?.fullName || '',
     dateOfBirth: data?.dateOfBirth || '',
-    socialSecurity: data?.socialSecurity || '',
     address: data?.address || '',
     city: data?.city || '',
     state: data?.state || '',
@@ -87,16 +86,6 @@ const Step1Identity = ({ onNext, data }: Step1IdentityProps) => {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="socialSecurity">Social Security Number</Label>
-              <Input
-                id="socialSecurity"
-                value={formData.socialSecurity}
-                onChange={(e) => handleInputChange('socialSecurity', e.target.value)}
-                placeholder="XXX-XX-XXXX"
-                maxLength={11}
-              />
-            </div>
           </CardContent>
         </Card>
 

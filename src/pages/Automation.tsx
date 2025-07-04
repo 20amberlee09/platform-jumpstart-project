@@ -5,6 +5,8 @@ import { CheckCircle, FileText, Shield, Scale, Award, Users } from "lucide-react
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import StepIndicator from "@/components/workflow/StepIndicator";
+import StepNDA from "@/components/workflow/StepNDA";
+import StepPayment from "@/components/workflow/StepPayment";
 import Step1Identity from "@/components/workflow/Step1Identity";
 import Step2Trust from "@/components/workflow/Step2Trust";
 
@@ -17,6 +19,8 @@ const Automation = () => {
   const [showOverview, setShowOverview] = useState(true);
 
   const steps = [
+    "NDA Agreement",
+    "Secure Payment",
     "Identity Verification",
     "Trust Configuration", 
     "Document Assembly",
@@ -24,8 +28,10 @@ const Automation = () => {
     "Final Review"
   ];
 
-  const handleStepComplete = (stepData: any) => {
-    setWorkflowData(prev => ({ ...prev, ...stepData }));
+  const handleStepComplete = (stepData?: any) => {
+    if (stepData) {
+      setWorkflowData(prev => ({ ...prev, ...stepData }));
+    }
     setCompletedSteps(prev => [...prev, currentStep]);
     setCurrentStep(prev => prev + 1);
   };
@@ -112,13 +118,26 @@ const Automation = () => {
           />
           
           {currentStep === 0 && (
+            <StepNDA 
+              onNext={handleStepComplete}
+            />
+          )}
+          
+          {currentStep === 1 && (
+            <StepPayment 
+              onNext={handleStepComplete}
+              onPrev={handleStepBack}
+            />
+          )}
+          
+          {currentStep === 2 && (
             <Step1Identity 
               onNext={handleStepComplete}
               data={workflowData}
             />
           )}
           
-          {currentStep === 1 && (
+          {currentStep === 3 && (
             <Step2Trust 
               onNext={handleStepComplete}
               onPrev={handleStepBack}
@@ -126,11 +145,11 @@ const Automation = () => {
             />
           )}
           
-          {currentStep >= 2 && (
+          {currentStep >= 4 && (
             <div className="text-center py-16">
               <h2 className="text-2xl font-bold mb-4">More Steps Coming Soon!</h2>
               <p className="text-muted-foreground mb-6">
-                Steps 3-5 (Document Assembly, Digital Signatures, and Notarization) are currently in development.
+                Steps 5-7 (Document Assembly, Digital Signatures, and Final Review) are currently in development.
               </p>
               <Button onClick={() => setShowOverview(true)} variant="outline">
                 Back to Overview
