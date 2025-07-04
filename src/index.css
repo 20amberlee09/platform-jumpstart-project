@@ -2,51 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TroothHurtz Cosmic Design System - All colors MUST be HSL */
+/* TroothHurtz Royal Design System - All colors MUST be HSL */
 
 @layer base {
   :root {
-    /* Cosmic Background Colors */
-    --background: 0 0% 0%; /* Deep Space Black */
-    --foreground: 0 0% 100%; /* White text */
+    /* Royal Background Colors */
+    --background: 0 0% 0%; /* Deep Black */
+    --foreground: 43 96% 56%; /* Royal Gold */
 
-    --card: 240 26% 11%; /* Dark Navy/Purple */
-    --card-foreground: 0 0% 100%;
+    --card: 220 39% 11%; /* Deep Navy */
+    --card-foreground: 43 96% 56%; /* Royal Gold */
 
-    --popover: 240 26% 11%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 220 39% 11%;
+    --popover-foreground: 43 96% 56%;
 
-    /* Primary Cosmic Colors */
-    --primary: 152 100% 50%; /* Neon Green */
+    /* Primary Royal Colors */
+    --primary: 43 96% 56%; /* Royal Gold */
     --primary-foreground: 0 0% 0%;
 
-    --secondary: 210 100% 40%; /* Electric Blue */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 195 100% 50%; /* Electric Blue */
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 240 26% 11%;
-    --muted-foreground: 0 0% 88%;
+    --muted: 220 39% 11%;
+    --muted-foreground: 43 96% 80%;
 
-    --accent: 271 76% 53%; /* Vibrant Purple */
-    --accent-foreground: 0 0% 100%;
+    --accent: 195 100% 50%; /* Electric Blue */
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Cosmic Theme Borders & Inputs */
-    --border: 152 100% 50%; /* Neon Green borders */
-    --input: 240 26% 11%;
-    --ring: 152 100% 50%;
+    /* Royal Theme Borders & Inputs */
+    --border: 43 96% 56%; /* Royal Gold borders */
+    --input: 220 39% 11%;
+    --ring: 43 96% 56%;
 
-    /* TroothHurtz Cosmic Colors */
-    --cosmic-black: 0 0% 0%; /* Deep Space Black */
-    --cosmic-navy: 240 26% 11%; /* Dark Navy/Purple */
-    --cosmic-blue-start: 210 100% 7%; /* Cosmic Blue Gradient Start */
-    --cosmic-blue-end: 210 100% 20%; /* Cosmic Blue Gradient End */
+    /* TroothHurtz Royal Colors */
+    --royal-black: 0 0% 0%; /* Deep Black */
+    --royal-navy: 220 39% 11%; /* Deep Navy */
+    --royal-blue-start: 210 100% 7%; /* Royal Blue Gradient Start */
+    --royal-blue-end: 210 100% 30%; /* Royal Blue Gradient End */
     
-    /* Neon Accent Colors */
-    --neon-green: 152 100% 50%; /* #00ff88 */
-    --electric-blue: 210 100% 40%; /* #0066cc */
-    --vibrant-purple: 271 76% 53%; /* #8a2be2 */
+    /* Royal Accent Colors */
+    --royal-gold: 43 96% 56%; /* #f4d03f */
+    --electric-blue: 195 100% 50%; /* #00bfff */
+    --deep-teal: 180 100% 25%; /* #008080 */
     --bright-cyan: 180 100% 50%; /* #00ffff */
     --golden-yellow: 51 100% 50%; /* #ffd700 */
     
@@ -55,33 +55,32 @@
     --text-secondary: 0 0% 88%; /* Light gray */
     --text-contrast: 0 0% 0%; /* Black on light backgrounds */
     
-    /* Cosmic Gradients */
-    --gradient-cosmic: linear-gradient(135deg, hsl(var(--cosmic-blue-start)), hsl(var(--cosmic-blue-end)));
-    --gradient-neon: linear-gradient(135deg, hsl(var(--neon-green)), hsl(var(--electric-blue)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--cosmic-black)) 0%, hsl(var(--cosmic-navy)) 50%, hsl(var(--cosmic-blue-end)) 100%);
+    /* Royal Gradients */
+    --gradient-royal: linear-gradient(135deg, hsl(var(--royal-blue-start)), hsl(var(--royal-blue-end)));
+    --gradient-gold: linear-gradient(135deg, hsl(var(--royal-gold)), hsl(var(--golden-yellow)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--royal-black)) 0%, hsl(var(--royal-navy)) 50%, hsl(var(--royal-blue-end)) 100%);
     
-    /* Neon Glow Shadows */
-    --glow-green: 0 0 10px hsl(var(--neon-green)), 0 0 20px hsl(var(--neon-green)), 0 0 30px hsl(var(--neon-green));
+    /* Royal Glow Shadows */
+    --glow-gold: 0 0 10px hsl(var(--royal-gold)), 0 0 20px hsl(var(--royal-gold)), 0 0 30px hsl(var(--royal-gold));
     --glow-blue: 0 0 10px hsl(var(--electric-blue)), 0 0 20px hsl(var(--electric-blue)), 0 0 30px hsl(var(--electric-blue));
-    --glow-purple: 0 0 10px hsl(var(--vibrant-purple)), 0 0 20px hsl(var(--vibrant-purple)), 0 0 30px hsl(var(--vibrant-purple));
+    --glow-teal: 0 0 10px hsl(var(--deep-teal)), 0 0 20px hsl(var(--deep-teal)), 0 0 30px hsl(var(--deep-teal));
     --glow-cyan: 0 0 10px hsl(var(--bright-cyan)), 0 0 20px hsl(var(--bright-cyan)), 0 0 30px hsl(var(--bright-cyan));
-    --glow-gold: 0 0 10px hsl(var(--golden-yellow)), 0 0 20px hsl(var(--golden-yellow)), 0 0 30px hsl(var(--golden-yellow));
     
     /* Card and Component Shadows */
-    --shadow-cosmic: 0 10px 25px -3px hsl(var(--neon-green) / 0.3);
-    --shadow-card: 0 4px 6px -1px hsl(var(--neon-green) / 0.2);
+    --shadow-royal: 0 10px 25px -3px hsl(var(--royal-gold) / 0.3);
+    --shadow-card: 0 4px 6px -1px hsl(var(--royal-gold) / 0.2);
 
     --radius: 0.5rem;
 
-    /* Cosmic Sidebar Colors */
-    --sidebar-background: 240 26% 11%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 152 100% 50%;
+    /* Royal Sidebar Colors */
+    --sidebar-background: 220 39% 11%;
+    --sidebar-foreground: 43 96% 56%;
+    --sidebar-primary: 43 96% 56%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 210 100% 40%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 152 100% 50%;
-    --sidebar-ring: 152 100% 50%;
+    --sidebar-accent: 195 100% 50%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 43 96% 56%;
+    --sidebar-ring: 43 96% 56%;
   }
 }
 
@@ -95,113 +94,98 @@
   }
 }
 
-/* TroothHurtz Cosmic Utilities and Effects */
+/* TroothHurtz Royal Utilities and Effects */
 @layer utilities {
-  /* Neon Glow Effects */
-  .glow-green {
-    box-shadow: var(--glow-green);
+  /* Royal Glow Effects */
+  .glow-gold {
+    box-shadow: var(--glow-gold);
   }
   
   .glow-blue {
     box-shadow: var(--glow-blue);
   }
   
-  .glow-purple {
-    box-shadow: var(--glow-purple);
+  .glow-teal {
+    box-shadow: var(--glow-teal);
   }
   
   .glow-cyan {
     box-shadow: var(--glow-cyan);
   }
-  
-  .glow-gold {
-    box-shadow: var(--glow-gold);
-  }
 
-  /* Cosmic Background Gradients */
-  .bg-cosmic {
-    background: var(--gradient-cosmic);
+  /* Royal Background Gradients */
+  .bg-royal {
+    background: var(--gradient-royal);
   }
   
-  .bg-neon {
-    background: var(--gradient-neon);
+  .bg-gold {
+    background: var(--gradient-gold);
   }
   
   .bg-hero {
     background: var(--gradient-hero);
   }
 
-  /* Neon Button Variants */
-  .btn-neon-green {
+  /* Royal Button Variants */
+  .btn-royal-gold {
     @apply bg-primary text-primary-foreground border-2 border-primary rounded-lg font-bold uppercase;
-    box-shadow: var(--glow-green);
+    box-shadow: var(--glow-gold);
     transition: all 0.3s ease-in-out;
   }
   
-  .btn-neon-green:hover {
+  .btn-royal-gold:hover {
     @apply brightness-110;
     transform: scale(1.05);
   }
   
-  .btn-neon-blue {
+  .btn-royal-blue {
     @apply bg-secondary text-secondary-foreground border-2 border-secondary rounded-lg font-bold uppercase;
     box-shadow: var(--glow-blue);
     transition: all 0.3s ease-in-out;
   }
   
-  .btn-neon-blue:hover {
-    @apply brightness-110;
-    transform: scale(1.05);
-  }
-  
-  .btn-neon-purple {
-    @apply bg-accent text-accent-foreground border-2 border-accent rounded-lg font-bold uppercase;
-    box-shadow: var(--glow-purple);
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .btn-neon-purple:hover {
+  .btn-royal-blue:hover {
     @apply brightness-110;
     transform: scale(1.05);
   }
 
-  /* Cosmic Text Effects */
-  .text-neon-green {
-    color: hsl(var(--neon-green));
-    text-shadow: 0 0 10px hsl(var(--neon-green));
+  /* Royal Text Effects */
+  .text-royal-gold {
+    color: hsl(var(--royal-gold));
+    text-shadow: 0 0 10px hsl(var(--royal-gold));
   }
   
-  .text-neon-blue {
+  .text-royal-blue {
     color: hsl(var(--electric-blue));
     text-shadow: 0 0 10px hsl(var(--electric-blue));
   }
   
-  .text-cosmic-glow {
+  .text-royal-glow {
     text-shadow: 0 0 10px currentColor;
   }
 
-  /* Cosmic Card Effects */
-  .card-cosmic {
+  /* Royal Card Effects */
+  .card-royal {
     @apply bg-card border-2 border-primary rounded-lg;
-    box-shadow: var(--shadow-cosmic);
+    box-shadow: var(--shadow-royal);
   }
 
   /* Animation Effects */
   .hover-glow:hover {
-    box-shadow: var(--glow-green);
+    box-shadow: var(--glow-gold);
     transition: box-shadow 0.3s ease-in-out;
   }
   
-  .pulse-neon {
-    animation: pulse-neon 2s infinite;
+  .pulse-royal {
+    animation: pulse-royal 2s infinite;
   }
   
-  @keyframes pulse-neon {
+  @keyframes pulse-royal {
     0%, 100% {
-      box-shadow: var(--glow-green);
+      box-shadow: var(--glow-gold);
     }
     50% {
-      box-shadow: 0 0 20px hsl(var(--neon-green)), 0 0 40px hsl(var(--neon-green)), 0 0 60px hsl(var(--neon-green));
+      box-shadow: 0 0 20px hsl(var(--royal-gold)), 0 0 40px hsl(var(--royal-gold)), 0 0 60px hsl(var(--royal-gold));
     }
   }
 }

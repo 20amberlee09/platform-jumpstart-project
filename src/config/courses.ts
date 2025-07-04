@@ -3,11 +3,11 @@ import { CourseConfig } from '@/types/course';
 export const courseConfigs: Record<string, CourseConfig> = {
   'trust-bootcamp': {
     id: 'trust-bootcamp',
-    title: 'Boot Camp',
+    title: 'Boot Camp documents',
     description: 'Complete ecclesiastic revocable living trust creation with ministerial ordination',
     price: 150,
     overview: {
-      title: 'Boot Camp',
+      title: 'Boot Camp documents',
       subtitle: 'Complete Trust Creation Package',
       description: 'Our comprehensive $150 package guides you through creating an ecclesiastic revocable living trust with ministerial ordination, verification services, and professional documentation. All required documents must be uploaded before completion.'
     },

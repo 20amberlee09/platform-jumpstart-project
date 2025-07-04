@@ -52,16 +52,16 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				cosmic: {
-					black: 'hsl(var(--cosmic-black))',
-					navy: 'hsl(var(--cosmic-navy))',
-					'blue-start': 'hsl(var(--cosmic-blue-start))',
-					'blue-end': 'hsl(var(--cosmic-blue-end))'
+				royal: {
+					black: 'hsl(var(--royal-black))',
+					navy: 'hsl(var(--royal-navy))',
+					'blue-start': 'hsl(var(--royal-blue-start))',
+					'blue-end': 'hsl(var(--royal-blue-end))',
+					gold: 'hsl(var(--royal-gold))'
 				},
-				neon: {
-					green: 'hsl(var(--neon-green))',
+				electric: {
 					blue: 'hsl(var(--electric-blue))',
-					purple: 'hsl(var(--vibrant-purple))',
+					teal: 'hsl(var(--deep-teal))',
 					cyan: 'hsl(var(--bright-cyan))',
 					gold: 'hsl(var(--golden-yellow))'
 				},
@@ -87,18 +87,17 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			backgroundImage: {
-				'gradient-cosmic': 'var(--gradient-cosmic)',
-				'gradient-neon': 'var(--gradient-neon)',
+				'gradient-royal': 'var(--gradient-royal)',
+				'gradient-gold': 'var(--gradient-gold)',
 				'gradient-hero': 'var(--gradient-hero)'
 			},
 			boxShadow: {
-				'glow-green': 'var(--glow-green)',
-				'glow-blue': 'var(--glow-blue)',
-				'glow-purple': 'var(--glow-purple)',
-				'glow-cyan': 'var(--glow-cyan)',
 				'glow-gold': 'var(--glow-gold)',
-				'cosmic': 'var(--shadow-cosmic)',
-				'card-cosmic': 'var(--shadow-card)'
+				'glow-blue': 'var(--glow-blue)',
+				'glow-teal': 'var(--glow-teal)',
+				'glow-cyan': 'var(--glow-cyan)',
+				'royal': 'var(--shadow-royal)',
+				'card-royal': 'var(--shadow-card)'
 			},
 			keyframes: {
 				'accordion-down': {
