@@ -1,184 +1,217 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, ArrowRight, Shield, FileText, Award, Send, Clock } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle, FileText, Shield, Scale, Award, Users } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import StepIndicator from "@/components/workflow/StepIndicator";
+import Step1Identity from "@/components/workflow/Step1Identity";
+import Step2Trust from "@/components/workflow/Step2Trust";
 
 const Automation = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [workflowData, setWorkflowData] = useState({});
+  const [showOverview, setShowOverview] = useState(true);
+
   const steps = [
+    "Identity Verification",
+    "Trust Configuration", 
+    "Document Assembly",
+    "Digital Signatures",
+    "Final Review"
+  ];
+
+  const handleStepComplete = (stepData: any) => {
+    setWorkflowData(prev => ({ ...prev, ...stepData }));
+    setCompletedSteps(prev => [...prev, currentStep]);
+    setCurrentStep(prev => prev + 1);
+  };
+
+  const handleStepBack = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const startWorkflow = () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    setShowOverview(false);
+    setCurrentStep(0);
+  };
+
+  const processSteps = [
     {
-      number: 1,
-      title: "Account Setup & ID Verification",
-      description: "Upload your driver's license for secure identity verification with OCR processing and automated NDA generation.",
       icon: Shield,
+      title: "Step 1: Identity Verification",
+      description: "Secure ID verification with OCR integration and automated NDA generation",
       features: [
-        "Secure file upload for driver's license",
-        "OCR data extraction and validation", 
-        "Automated NDA document generation",
-        "E-signature integration",
-        "Identity verification API integration"
-      ],
-      timeEstimate: "5-10 minutes"
+        "Government ID scanning and verification",
+        "OCR data extraction",
+        "Automated NDA creation",
+        "Secure document storage"
+      ]
     },
     {
-      number: 2,
-      title: "Trust Information Collection",
-      description: "Comprehensive form to gather all necessary trust details including beneficiaries, purpose, and state requirements.",
+      icon: Scale,
+      title: "Step 2: Trust Configuration", 
+      description: "State-specific trust creation with intelligent clause selection",
+      features: [
+        "Trust type selection and configuration",
+        "Beneficiary designation",
+        "Asset allocation planning",
+        "State law compliance verification"
+      ]
+    },
+    {
       icon: FileText,
+      title: "Step 3: Document Assembly",
+      description: "Automated legal document generation with custom formatting",
       features: [
-        "Trust name and trustor information",
-        "Primary and additional beneficiaries",
-        "Trust purpose selection (Asset Protection, Estate Planning, etc.)",
-        "State of formation dropdown (all 50 states)",
-        "Custom trust terms and provisions"
-      ],
-      timeEstimate: "15-20 minutes"
+        "Template-based document creation",
+        "Custom clause insertion",
+        "Multi-format output (PDF, Word)",
+        "Professional formatting"
+      ]
     },
     {
-      number: 3,
-      title: "Custom Trust Seal Creation", 
-      description: "Automated generation of unique trust seals with QR codes, barcodes, and digital signatures for document authenticity.",
       icon: Award,
+      title: "Step 4: Digital Signatures & Seals",
+      description: "Custom trust seals with QR codes and digital authentication",
       features: [
-        "Unique trust identifier creation",
-        "QR code generation with trust data",
-        "Barcode generation for document tracking",
-        "Custom seal design with trust information",
-        "Digital signature preparation"
-      ],
-      timeEstimate: "5 minutes (automated)"
+        "Custom trust seal generation",
+        "QR code and barcode creation",
+        "Digital signature collection",
+        "Document authentication"
+      ]
     },
     {
-      number: 4,
-      title: "Legal Document Assembly",
-      description: "Automated generation of all required legal documents including trust agreements, certificates, and assignment forms.",
-      icon: FileText,
+      icon: Users,
+      title: "Step 5: Notarization & Delivery",
+      description: "Online notarization with automated Google Drive delivery",
       features: [
-        "Trust Agreement (primary legal document)",
-        "Certificate of Trust (summary document)",
-        "Assignment of Assets forms",
-        "Beneficiary designation forms",
-        "State-specific legal requirement integration"
-      ],
-      timeEstimate: "10 minutes (automated)"
-    },
-    {
-      number: 5,
-      title: "Document Delivery & Notarization",
-      description: "Secure document delivery through multiple channels with integrated online notarization scheduling.",
-      icon: Send,
-      features: [
-        "Google Drive integration for document storage",
-        "Email delivery with secure links", 
-        "PDFfiller.com integration for form completion",
-        "Online notarization scheduling",
-        "Digital signature collection"
-      ],
-      timeEstimate: "10-15 minutes"
+        "Remote online notarization",
+        "Digital witness coordination",
+        "Automated Google Drive upload",
+        "Completion certificates"
+      ]
     }
   ];
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="bg-gradient-hero text-white py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Legal Document Automation Process
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
-            Complete your trust formation in 5 simple steps. Our automated system handles everything from identity verification to document notarization.
-          </p>
-          <Badge className="bg-accent text-accent-foreground text-lg px-6 py-2">
-            Complete in 45-60 minutes
-          </Badge>
-        </div>
-      </section>
-
-      {/* Process Steps */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Your 5-Step Journey</h2>
-            <p className="text-xl text-muted-foreground">
-              Follow our guided process to create professional legal documents
-            </p>
-          </div>
-
-          <div className="space-y-12">
-            {steps.map((step, index) => (
-              <Card key={index} className="shadow-legal-lg border-0 overflow-hidden">
-                <div className="grid lg:grid-cols-12 gap-0">
-                  <div className="lg:col-span-4 bg-gradient-primary p-8 text-white">
-                    <div className="flex items-center mb-6">
-                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold mr-4">
-                        {step.number}
-                      </div>
-                      <step.icon className="h-8 w-8" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-4">{step.title}</h3>
-                    <p className="text-white/90 mb-6">{step.description}</p>
-                    <div className="flex items-center text-white/80">
-                      <Clock className="h-4 w-4 mr-2" />
-                      <span className="text-sm">{step.timeEstimate}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="lg:col-span-8 p-8">
-                    <h4 className="text-xl font-semibold mb-6">What's Included:</h4>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {step.features.map((feature, featureIndex) => (
-                        <div key={featureIndex} className="flex items-start">
-                          <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                          <span className="text-muted-foreground">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <Card className="max-w-4xl mx-auto shadow-legal-lg border-0">
-            <CardHeader className="text-center pb-8">
-              <CardTitle className="text-3xl mb-4">Ready to Start Your Legal Automation?</CardTitle>
-              <p className="text-xl text-muted-foreground">
-                Begin the 5-step process and have your professional legal documents ready within the hour.
+  if (!showOverview) {
+    return (
+      <div className="min-h-screen bg-background py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <StepIndicator 
+            steps={steps} 
+            currentStep={currentStep} 
+            completedSteps={completedSteps} 
+          />
+          
+          {currentStep === 0 && (
+            <Step1Identity 
+              onNext={handleStepComplete}
+              data={workflowData}
+            />
+          )}
+          
+          {currentStep === 1 && (
+            <Step2Trust 
+              onNext={handleStepComplete}
+              onPrev={handleStepBack}
+              data={workflowData}
+            />
+          )}
+          
+          {currentStep >= 2 && (
+            <div className="text-center py-16">
+              <h2 className="text-2xl font-bold mb-4">More Steps Coming Soon!</h2>
+              <p className="text-muted-foreground mb-6">
+                Steps 3-5 (Document Assembly, Digital Signatures, and Notarization) are currently in development.
               </p>
-            </CardHeader>
-            <CardContent className="text-center">
-              <div className="grid md:grid-cols-3 gap-6 mb-8">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary mb-2">45-60 min</div>
-                  <div className="text-muted-foreground">Total Process Time</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary mb-2">100%</div>
-                  <div className="text-muted-foreground">Automated Process</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary mb-2">24/7</div>
-                  <div className="text-muted-foreground">AI Legal Assistant</div>
-                </div>
-              </div>
-              
-              <Button size="lg" className="text-lg px-8">
-                Begin Step 1: Identity Verification
-                <ArrowRight className="ml-2 h-5 w-5" />
+              <Button onClick={() => setShowOverview(true)} variant="outline">
+                Back to Overview
               </Button>
-              
-              <p className="text-sm text-muted-foreground mt-4">
-                Secure process • 30-day money-back guarantee • Professional legal documents
-              </p>
-            </CardContent>
-          </Card>
+            </div>
+          )}
         </div>
-      </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background py-12">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Legal Document Automation
+            <span className="block text-primary mt-2">5-Step Process</span>
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            Our AI-powered platform guides you through each step of creating professional legal documents 
+            with automated verification, custom seals, and online notarization.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="text-lg px-8" onClick={startWorkflow}>
+              Start Free Process
+            </Button>
+            <Link to="/courses">
+              <Button size="lg" variant="outline" className="text-lg px-8">
+                View Course Options
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Process Steps */}
+        <div className="space-y-8">
+          {processSteps.map((step, index) => (
+            <Card key={index} className="shadow-legal-lg border-0">
+              <CardHeader className="pb-4">
+                <div className="flex items-start space-x-4">
+                  <div className="bg-primary/10 p-3 rounded-lg">
+                    <step.icon className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-2xl mb-2">{step.title}</CardTitle>
+                    <CardDescription className="text-base">
+                      {step.description}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {step.features.map((feature, featureIndex) => (
+                    <div key={featureIndex} className="flex items-start space-x-3">
+                      <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* CTA Section */}
+        <div className="text-center mt-16 p-8 bg-gradient-primary rounded-lg text-white">
+          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+          <p className="text-xl mb-6 text-white/90">
+            Complete your legal documents in under 30 minutes with our guided process.
+          </p>
+          <Button 
+            size="lg" 
+            className="bg-white text-legal-primary hover:bg-white/90 text-lg px-8"
+            onClick={startWorkflow}
+          >
+            Begin Your Legal Documents
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
