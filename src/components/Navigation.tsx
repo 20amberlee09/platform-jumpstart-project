@@ -20,12 +20,12 @@ const Navigation = () => {
   };
 
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-2 border-primary/30 glow-gold">
+    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 p-2 rounded-lg border border-primary/20 glow-gold hover:glow-blue transition-all duration-300">
-            <Scale className="h-8 w-8 text-primary glow-gold" />
+          <Link to="/" className="flex items-center space-x-2">
+            <Scale className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">TroothhHurtz</span>
           </Link>
 
@@ -35,9 +35,9 @@ const Navigation = () => {
               <Link
                 key={item.href}
                 to={item.href}
-                className={`text-sm font-medium transition-colors hover:text-primary p-2 rounded-lg border border-transparent hover:border-primary/30 glow-gold hover:glow-blue transition-all duration-300 ${
+                className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive(item.href) 
-                    ? "text-primary border-primary pb-1 glow-gold" 
+                    ? "text-primary border-b-2 border-primary pb-1" 
                     : "text-muted-foreground"
                 }`}
               >
@@ -50,21 +50,21 @@ const Navigation = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <div className="flex items-center space-x-2 text-sm p-2 rounded-lg border border-primary/20 glow-gold">
+                <div className="flex items-center space-x-2 text-sm">
                   <User className="h-4 w-4" />
                   <span className="text-muted-foreground">Welcome back!</span>
                 </div>
-                <Button variant="ghost" size="sm" onClick={signOut} className="border border-primary/20 glow-gold hover:glow-blue transition-all duration-300">
+                <Button variant="ghost" size="sm" onClick={signOut}>
                   Sign Out
                 </Button>
               </>
             ) : (
               <>
                 <Link to="/auth">
-                  <Button variant="ghost" size="sm" className="border border-primary/20 glow-gold hover:glow-blue transition-all duration-300">Sign In</Button>
+                  <Button variant="ghost" size="sm">Sign In</Button>
                 </Link>
                 <Link to="/auth">
-                  <Button size="sm" className="glow-gold hover:glow-blue transition-all duration-300">Get Started</Button>
+                  <Button size="sm">Get Started</Button>
                 </Link>
               </>
             )}

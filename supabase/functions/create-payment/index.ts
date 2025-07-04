@@ -45,7 +45,7 @@ serve(async (req) => {
 
     // Define course pricing
     const coursePricing: Record<string, { name: string; amount: number }> = {
-      'trust-bootcamp': { name: 'Boot Camp documents', amount: 15000 }, // $150.00
+      'trust-bootcamp': { name: 'Trust Boot Camp', amount: 49700 }, // $497.00
       'basic-trust': { name: 'Basic Trust Setup', amount: 29700 }   // $297.00
     };
 

@@ -101,14 +101,14 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {hasPurchased ? (
-                <Button size="lg" className="btn-royal-gold text-lg px-8 glow-gold hover:glow-blue transition-all duration-300" onClick={onStartWorkflow}>
+                <Button size="lg" className="btn-royal-gold text-lg px-8" onClick={onStartWorkflow}>
                   Start Your Course
                 </Button>
               ) : (
                 <>
                   <Button 
                     size="lg" 
-                    className="btn-royal-gold text-lg px-8 glow-gold hover:glow-blue transition-all duration-300" 
+                    className="btn-royal-gold text-lg px-8" 
                     onClick={handlePayment}
                     disabled={isPaymentLoading}
                   >
@@ -117,7 +117,7 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
                   </Button>
                   <Button 
                     size="lg" 
-                    className="btn-royal-teal text-lg px-8 glow-teal hover:glow-cyan transition-all duration-300" 
+                    className="btn-royal-teal text-lg px-8" 
                     onClick={() => {
                       setDemoMode(true);
                       onStartWorkflow();
@@ -129,7 +129,7 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
                 </>
               )}
               <Link to="/">
-                <Button size="lg" variant="outline" className="text-lg px-8 border-2 border-primary text-primary hover:bg-primary hover:text-black glow-gold hover:glow-blue transition-all duration-300">
+                <Button size="lg" variant="outline" className="text-lg px-8 border-primary text-primary hover:bg-primary hover:text-black">
                   Back to Home
                 </Button>
               </Link>
@@ -140,10 +140,10 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
         {/* Course Features */}
         <div className="space-y-8">
           {courseConfig.modules.map((module, index) => (
-            <Card key={module.id} className="card-royal border-2 border-primary glow-gold hover:glow-blue transition-all duration-300">
-              <CardHeader className="pb-4 bg-gradient-gold/10 border-b border-primary/30 glow-gold">
+            <Card key={module.id} className="card-royal border-2 border-primary glow-gold">
+              <CardHeader className="pb-4 bg-gradient-gold/10">
                 <div className="flex items-start space-x-4">
-                  <div className="bg-primary p-3 rounded-lg glow-gold border-2 border-primary">
+                  <div className="bg-primary p-3 rounded-lg glow-gold">
                     <div className="h-8 w-8 text-black flex items-center justify-center font-bold">
                       {index + 1}
                     </div>
@@ -162,10 +162,10 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
 
         {/* Features List */}
         <div className="mt-16 bg-gradient-royal rounded-lg p-8 border-2 border-electric-blue glow-blue">
-          <h3 className="text-2xl font-bold mb-6 text-center text-primary glow-gold">What's Included</h3>
+          <h3 className="text-2xl font-bold mb-6 text-center text-primary">What's Included</h3>
           <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
             {courseConfig.features.map((feature, index) => (
-              <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-card/50 border-2 border-primary/50 glow-gold hover:glow-blue transition-all duration-300">
+              <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-card/50 border border-primary/30">
                 <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0 glow-gold" />
                 <span className="text-sm text-foreground">{feature}</span>
               </div>
@@ -174,7 +174,7 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
         </div>
 
         {/* CTA Section */}
-        <div className="text-center mt-16 p-8 bg-gradient-royal rounded-lg text-primary border-2 border-primary glow-gold hover:glow-blue transition-all duration-500">
+        <div className="text-center mt-16 p-8 bg-gradient-royal rounded-lg text-primary border-2 border-primary glow-gold">
           <h2 className="text-3xl font-bold mb-4 text-royal-glow">Ready to Get Started?</h2>
           <p className="text-xl mb-6 text-foreground/90">
             Complete your {courseConfig.title.toLowerCase()} in under 30 minutes with our guided process.
@@ -182,7 +182,7 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
           {hasPurchased ? (
             <Button 
               size="lg" 
-              className="btn-royal-gold text-lg px-8 glow-gold hover:glow-blue transition-all duration-300"
+              className="btn-royal-gold text-lg px-8"
               onClick={onStartWorkflow}
             >
               Begin Your {courseConfig.title}
@@ -190,7 +190,7 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
           ) : (
             <Button 
               size="lg" 
-              className="btn-royal-gold text-lg px-8 glow-gold hover:glow-blue transition-all duration-300"
+              className="btn-royal-gold text-lg px-8"
               onClick={handlePayment}
               disabled={isPaymentLoading}
             >
