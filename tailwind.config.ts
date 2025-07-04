@@ -68,7 +68,8 @@ export default {
 				text: {
 					primary: 'hsl(var(--text-primary))',
 					secondary: 'hsl(var(--text-secondary))',
-					contrast: 'hsl(var(--text-contrast))'
+					contrast: 'hsl(var(--text-contrast))',
+					white: 'hsl(var(--text-white))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',

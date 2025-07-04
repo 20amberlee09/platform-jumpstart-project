@@ -26,7 +26,7 @@ const Navigation = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <Scale className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-legal-dark">TroothhHurtz</span>
+            <span className="text-2xl font-bold text-primary">TroothhHurtz</span>
           </Link>
 
           {/* Desktop Navigation */}

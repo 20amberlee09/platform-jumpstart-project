@@ -98,7 +98,7 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
               <>
                 <Button 
                   size="lg" 
-                  className="text-lg px-8" 
+                  className="btn-royal-gold text-lg px-8" 
                   onClick={handlePayment}
                   disabled={isPaymentLoading}
                 >
@@ -107,8 +107,7 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
                 </Button>
                 <Button 
                   size="lg" 
-                  variant="outline"
-                  className="text-lg px-8 border-primary text-primary hover:bg-primary hover:text-white" 
+                  className="btn-royal-teal text-lg px-8" 
                   onClick={() => {
                     setDemoMode(true);
                     onStartWorkflow();
@@ -119,9 +118,9 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
                 </Button>
               </>
             )}
-            <Link to="/courses">
+            <Link to="/">
               <Button size="lg" variant="outline" className="text-lg px-8">
-                View All Courses
+                Back to Home
               </Button>
             </Link>
           </div>
@@ -130,7 +129,7 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
         {/* Course Features */}
         <div className="space-y-8">
           {courseConfig.modules.map((module, index) => (
-            <Card key={module.id} className="shadow-legal-lg border-0">
+            <Card key={module.id} className="card-royal border-primary/20">
               <CardHeader className="pb-4">
                 <div className="flex items-start space-x-4">
                   <div className="bg-primary/10 p-3 rounded-lg">
@@ -164,15 +163,15 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
         </div>
 
         {/* CTA Section */}
-        <div className="text-center mt-16 p-8 bg-gradient-primary rounded-lg text-white">
-          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
-          <p className="text-xl mb-6 text-white/90">
+        <div className="text-center mt-16 p-8 bg-gradient-royal rounded-lg text-primary">
+          <h2 className="text-3xl font-bold mb-4 text-royal-glow">Ready to Get Started?</h2>
+          <p className="text-xl mb-6 text-foreground/90">
             Complete your {courseConfig.title.toLowerCase()} in under 30 minutes with our guided process.
           </p>
           {hasPurchased ? (
             <Button 
               size="lg" 
-              className="bg-white text-legal-primary hover:bg-white/90 text-lg px-8"
+              className="btn-royal-gold text-lg px-8"
               onClick={onStartWorkflow}
             >
               Begin Your {courseConfig.title}
@@ -180,7 +179,7 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
           ) : (
             <Button 
               size="lg" 
-              className="bg-white text-legal-primary hover:bg-white/90 text-lg px-8"
+              className="btn-royal-gold text-lg px-8"
               onClick={handlePayment}
               disabled={isPaymentLoading}
             >

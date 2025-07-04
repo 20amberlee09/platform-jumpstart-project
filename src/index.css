@@ -48,12 +48,15 @@
     --electric-blue: 195 100% 50%; /* #00bfff */
     --deep-teal: 180 100% 25%; /* #008080 */
     --bright-cyan: 180 100% 50%; /* #00ffff */
-    --golden-yellow: 51 100% 50%; /* #ffd700 */
+    /* Royal accent color for variety */
+    --accent-teal: 180 100% 25%; /* Deep Teal */
+    --accent-cyan: 180 100% 50%; /* Bright Cyan */
     
     /* Text Colors */
-    --text-primary: 0 0% 100%; /* White */
-    --text-secondary: 0 0% 88%; /* Light gray */
+    --text-primary: 43 96% 56%; /* Royal Gold */
+    --text-secondary: 43 96% 80%; /* Light Gold */
     --text-contrast: 0 0% 0%; /* Black on light backgrounds */
+    --text-white: 0 0% 100%; /* White text */
     
     /* Royal Gradients */
     --gradient-royal: linear-gradient(135deg, hsl(var(--royal-blue-start)), hsl(var(--royal-blue-end)));
@@ -144,7 +147,17 @@
     transition: all 0.3s ease-in-out;
   }
   
-  .btn-royal-blue:hover {
+  /* Royal Teal Button Variant */
+  .btn-royal-teal {
+    @apply bg-accent text-accent-foreground border-2 border-accent rounded-lg font-bold uppercase;
+    background-color: hsl(var(--accent-teal));
+    color: hsl(var(--text-white));
+    border-color: hsl(var(--accent-teal));
+    box-shadow: var(--glow-teal);
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .btn-royal-teal:hover {
     @apply brightness-110;
     transform: scale(1.05);
   }
