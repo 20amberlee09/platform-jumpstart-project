@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Search, CheckCircle, ExternalLink, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { stateSearchUrls } from '@/utils/stateSearchUrls';
 
 interface StepTrustNameProps {
   onNext: (data: any) => void;
@@ -15,14 +16,14 @@ interface StepTrustNameProps {
 const StepTrustName = ({ onNext, onPrev, data }: StepTrustNameProps) => {
   const [trustBaseName, setTrustBaseName] = useState(data?.trustBaseName || '');
   const [fullTrustName, setFullTrustName] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<{
-    uspto: boolean | null;
-    state: boolean | null;
-    available: boolean;
-  }>({ uspto: null, state: null, available: false });
+  const [usptoSearchCompleted, setUsptoSearchCompleted] = useState(data?.usptoSearchCompleted || false);
+  const [stateSearchCompleted, setStateSearchCompleted] = useState(data?.stateSearchCompleted || false);
   
   const { toast } = useToast();
+  
+  // Get user's state from personal information
+  const userState = data?.state || 'CA'; // Default to CA if no state provided
+  const stateInfo = stateSearchUrls[userState.toUpperCase()];
 
   const generateFullTrustName = (baseName: string) => {
     return `${baseName} Ecclesiastic Revocable Living Trust`;
@@ -32,67 +33,67 @@ const StepTrustName = ({ onNext, onPrev, data }: StepTrustNameProps) => {
     setTrustBaseName(value);
     const fullName = generateFullTrustName(value);
     setFullTrustName(fullName);
-    // Reset search results when name changes
-    setSearchResults({ uspto: null, state: null, available: false });
+    // Reset search completion when name changes
+    setUsptoSearchCompleted(false);
+    setStateSearchCompleted(false);
   };
 
-  const searchTrustName = async () => {
+  const handleUsptoSearch = () => {
     if (!trustBaseName.trim()) {
       toast({
         title: "Error",
-        description: "Please enter a trust name to search.",
+        description: "Please enter a trust name before searching.",
         variant: "destructive"
       });
       return;
     }
-
-    setIsSearching(true);
     
-    try {
-      // Simulate USPTO search (in real implementation, would call actual APIs)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const usptoAvailable = Math.random() > 0.3; // Simulate 70% availability
-      
-      // Simulate State Department search
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const stateAvailable = Math.random() > 0.2; // Simulate 80% availability
-      
-      const available = usptoAvailable && stateAvailable;
-      
-      setSearchResults({
-        uspto: usptoAvailable,
-        state: stateAvailable,
-        available
-      });
+    // Open USPTO search in new tab
+    window.open('https://www.uspto.gov/trademarks/search', '_blank');
+  };
 
-      if (available) {
-        toast({
-          title: "Great news!",
-          description: "Your trust name is available for use.",
-        });
-      } else {
-        toast({
-          title: "Name Not Available",
-          description: "Please try a different trust name.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
+  const handleStateSearch = () => {
+    if (!trustBaseName.trim()) {
       toast({
-        title: "Search Error",
-        description: "Failed to search for trust name availability.",
+        title: "Error",
+        description: "Please enter a trust name before searching.",
         variant: "destructive"
       });
-    } finally {
-      setIsSearching(false);
+      return;
+    }
+    
+    if (stateInfo) {
+      window.open(stateInfo.url, '_blank');
+    } else {
+      toast({
+        title: "State Search Unavailable",
+        description: "Please search your state's Secretary of State website manually.",
+        variant: "destructive"
+      });
     }
   };
 
+  const confirmUsptoSearch = () => {
+    setUsptoSearchCompleted(true);
+    toast({
+      title: "USPTO Search Confirmed",
+      description: "USPTO trademark search marked as completed.",
+    });
+  };
+
+  const confirmStateSearch = () => {
+    setStateSearchCompleted(true);
+    toast({
+      title: "State Search Confirmed",
+      description: `${stateInfo?.name || 'State'} business entity search marked as completed.`,
+    });
+  };
+
   const handleNext = () => {
-    if (!searchResults.available) {
+    if (!usptoSearchCompleted || !stateSearchCompleted) {
       toast({
-        title: "Verification Required",
-        description: "Please verify your trust name is available before continuing.",
+        title: "Searches Required",
+        description: "Please complete both USPTO and state searches before continuing.",
         variant: "destructive"
       });
       return;
@@ -102,7 +103,9 @@ const StepTrustName = ({ onNext, onPrev, data }: StepTrustNameProps) => {
       trustBaseName, 
       fullTrustName,
       nameVerified: true,
-      searchResults
+      usptoSearchCompleted,
+      stateSearchCompleted,
+      state: userState
     });
   };
 
@@ -146,91 +149,138 @@ const StepTrustName = ({ onNext, onPrev, data }: StepTrustNameProps) => {
             </div>
           )}
 
-          <div className="pt-4">
-            <Button
-              onClick={searchTrustName}
-              disabled={!trustBaseName.trim() || isSearching}
-              className="w-full"
-              variant="neon-blue"
-            >
-              {isSearching ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Searching...
-                </>
-              ) : (
-                <>
-                  <Search className="mr-2 h-4 w-4" />
-                  Search Name Availability
-                </>
-              )}
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
-      {(searchResults.uspto !== null || searchResults.state !== null) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Search Results</CardTitle>
-            <CardDescription>
-              Verification results from USPTO and State Department searches
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div>
-                <p className="font-medium">USPTO Search</p>
-                <p className="text-sm text-muted-foreground">Federal trademark database</p>
+      {trustBaseName && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Search className="h-5 w-5 mr-2" />
+                USPTO Trademark Search
+              </CardTitle>
+              <CardDescription>
+                Search the federal trademark database to ensure no conflicts
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                <h3 className="font-semibold mb-2">Search Instructions:</h3>
+                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                  <li>Click "Search USPTO Database" to open the trademark search</li>
+                  <li>Enter your trust name: <span className="font-mono bg-muted px-1 rounded">{trustBaseName}</span></li>
+                  <li>Search for any similar or identical trademarks</li>
+                  <li>Verify no conflicts exist with your proposed name</li>
+                  <li>Return here and confirm your search is complete</li>
+                </ol>
               </div>
-              {searchResults.uspto === null ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : searchResults.uspto ? (
-                <CheckCircle className="h-5 w-5 text-green-500" />
-              ) : (
-                <AlertCircle className="h-5 w-5 text-red-500" />
-              )}
-            </div>
 
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div>
-                <p className="font-medium">State Department Search</p>
-                <p className="text-sm text-muted-foreground">State entity registration</p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleUsptoSearch}
+                  disabled={!trustBaseName.trim()}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Search USPTO Database
+                </Button>
+                <Button
+                  onClick={confirmUsptoSearch}
+                  disabled={!trustBaseName.trim() || usptoSearchCompleted}
+                  variant={usptoSearchCompleted ? "default" : "neon-blue"}
+                >
+                  {usptoSearchCompleted ? (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Completed
+                    </>
+                  ) : (
+                    'Confirm Search'
+                  )}
+                </Button>
               </div>
-              {searchResults.state === null ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : searchResults.state ? (
-                <CheckCircle className="h-5 w-5 text-green-500" />
-              ) : (
-                <AlertCircle className="h-5 w-5 text-red-500" />
-              )}
-            </div>
+            </CardContent>
+          </Card>
 
-            {searchResults.available && (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <p className="font-medium text-green-800">Name Available!</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <MapPin className="h-5 w-5 mr-2" />
+                {stateInfo?.name || userState} State Entity Search
+              </CardTitle>
+              <CardDescription>
+                Search your state's business entity database for name conflicts
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                <h3 className="font-semibold mb-2">Search Instructions:</h3>
+                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                  <li>Click "Search {stateInfo?.name || userState} Database" to open your state's search</li>
+                  <li>Enter your trust name: <span className="font-mono bg-muted px-1 rounded">{trustBaseName}</span></li>
+                  <li>Search for existing business entities with similar names</li>
+                  <li>Check for any corporations, LLCs, or trusts with your name</li>
+                  <li>Return here and confirm your search is complete</li>
+                </ol>
+                {stateInfo?.instructions && (
+                  <p className="text-xs text-muted-foreground mt-2 italic">
+                    {stateInfo.instructions}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleStateSearch}
+                  disabled={!trustBaseName.trim() || !stateInfo}
+                  variant="outline" 
+                  className="flex-1"
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Search {stateInfo?.name || userState} Database
+                </Button>
+                <Button
+                  onClick={confirmStateSearch}
+                  disabled={!trustBaseName.trim() || stateSearchCompleted}
+                  variant={stateSearchCompleted ? "default" : "neon-purple"}
+                >
+                  {stateSearchCompleted ? (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Completed
+                    </>
+                  ) : (
+                    'Confirm Search'
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {usptoSearchCompleted && stateSearchCompleted && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-800">
+                  <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+                  Name Verification Complete
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="font-medium text-green-800 mb-2">
+                    Trust Name: {fullTrustName}
+                  </p>
+                  <p className="text-sm text-green-700">
+                    Both USPTO and {stateInfo?.name || userState} state searches have been completed. 
+                    You can now proceed to the next step.
+                  </p>
                 </div>
-                <p className="text-sm text-green-700 mt-1">
-                  Your trust name is available for use and registration.
-                </p>
-              </div>
-            )}
-
-            {!searchResults.available && searchResults.uspto !== null && searchResults.state !== null && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-center">
-                  <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
-                  <p className="font-medium text-red-800">Name Not Available</p>
-                </div>
-                <p className="text-sm text-red-700 mt-1">
-                  Please choose a different trust name and search again.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
 
       <div className="flex justify-between pt-6">
@@ -239,7 +289,7 @@ const StepTrustName = ({ onNext, onPrev, data }: StepTrustNameProps) => {
         </Button>
         <Button 
           onClick={handleNext} 
-          disabled={!searchResults.available} 
+          disabled={!usptoSearchCompleted || !stateSearchCompleted} 
           size="lg"
           variant="neon-green"
         >
