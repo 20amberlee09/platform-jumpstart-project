@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { QrCode, BarChart, Stamp, ExternalLink, CheckCircle, Download } from 'lucide-react';
+import { QrCode, BarChart, Stamp, ExternalLink, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import DocumentUpload from './DocumentUpload';
 
 interface StepVerificationToolsProps {
   onNext: (data: any) => void;
@@ -15,12 +16,38 @@ interface StepVerificationToolsProps {
 const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsProps) => {
   const [qrCodeGenerated, setQrCodeGenerated] = useState(data?.qrCodeGenerated || false);
   const [barcodeObtained, setBarcodeObtained] = useState(data?.barcodeObtained || false);
-  const [sealCreated, setSealCreated] = useState(data?.sealCreated || false);
   const [driveQrCode, setDriveQrCode] = useState(data?.driveQrCode || '');
   const [barcodeNumber, setBarcodeNumber] = useState(data?.barcodeNumber || '');
-  const [sealImage, setSealImage] = useState<File | null>(data?.sealImage || null);
+  const [uploadedFiles, setUploadedFiles] = useState(data?.uploadedFiles || []);
   
   const { toast } = useToast();
+
+  const documentRequirements = [
+    {
+      id: 'barcode-certificate',
+      name: 'Barcode Certificate',
+      description: 'Upload your purchased barcode certificate from a barcode service provider',
+      required: true,
+      acceptedTypes: ['.pdf', '.jpg', '.jpeg', '.png'],
+      maxSize: 10
+    },
+    {
+      id: 'barcode-image',
+      name: 'Barcode Image (JPG)',
+      description: 'Upload the actual barcode image file provided with your certificate',
+      required: true,
+      acceptedTypes: ['.jpg', '.jpeg', '.png'],
+      maxSize: 5
+    },
+    {
+      id: 'seal-image',
+      name: 'Ministry Seal Image',
+      description: 'Upload your ministry seal/stamp image (create externally if needed)',
+      required: true,
+      acceptedTypes: ['.jpg', '.jpeg', '.png'],
+      maxSize: 5
+    }
+  ];
 
   const generateQrCode = () => {
     // In real implementation, would generate actual QR code for Google Drive folder
@@ -51,23 +78,16 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
     });
   };
 
-  const handleSealUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSealImage(file);
-      setSealCreated(true);
-      toast({
-        title: "Seal Uploaded",
-        description: "Your document seal has been uploaded successfully.",
-      });
-    }
-  };
-
   const handleNext = () => {
-    if (!qrCodeGenerated || !barcodeObtained || !sealCreated) {
+    const requiredUploads = documentRequirements.filter(req => req.required);
+    const uploadedRequiredFiles = requiredUploads.filter(req => 
+      uploadedFiles.some(file => file.requirementId === req.id)
+    );
+
+    if (!qrCodeGenerated || !barcodeObtained || uploadedRequiredFiles.length < requiredUploads.length) {
       toast({
         title: "Verification Tools Required",
-        description: "Please complete all verification tools before continuing.",
+        description: "Please complete all verification tools and upload required documents before continuing.",
         variant: "destructive"
       });
       return;
@@ -76,10 +96,9 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
     onNext({ 
       qrCodeGenerated: true,
       barcodeObtained: true,
-      sealCreated: true,
       driveQrCode,
       barcodeNumber,
-      sealImage
+      uploadedFiles
     });
   };
 
@@ -199,14 +218,22 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
         </CardContent>
       </Card>
 
+      <DocumentUpload
+        title="Required Documents"
+        requirements={documentRequirements}
+        uploadedFiles={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        className="mt-6"
+      />
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <Stamp className="h-5 w-5 mr-2" />
-            Document Seal
+            Seal Creation Resources
           </CardTitle>
           <CardDescription>
-            Create and upload your custom document seal (JPG format)
+            External tools to create your ministry seal if you don't have one
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -215,42 +242,33 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
               <li>Should include your Minister name and trust name</li>
               <li>Circular or official seal design recommended</li>
-              <li>High resolution JPG format required</li>
+              <li>High resolution JPG/PNG format required</li>
               <li>Will be used on all official trust documents</li>
             </ul>
           </div>
 
-          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-            <input
-              type="file"
-              id="seal-upload"
-              className="hidden"
-              accept=".jpg,.jpeg"
-              onChange={handleSealUpload}
-            />
-            <label
-              htmlFor="seal-upload"
-              className="cursor-pointer flex flex-col items-center space-y-2"
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => window.open('https://www.canva.com/create/seals/', '_blank')}
+              className="flex-1"
             >
-              <Stamp className="h-8 w-8 text-muted-foreground" />
-              <div className="text-sm">
-                <span className="font-medium text-primary">Click to upload</span>
-                <span className="text-muted-foreground"> your seal</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                JPG format only, high resolution recommended
-              </p>
-            </label>
-            {sealImage && (
-              <p className="text-sm text-primary mt-2">
-                ✓ {sealImage.name} uploaded
-              </p>
-            )}
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Create with Canva
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.open('https://www.logomakr.com/', '_blank')}
+              className="flex-1"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              LogoMakr
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {qrCodeGenerated && barcodeObtained && sealCreated && (
+      {qrCodeGenerated && barcodeObtained && uploadedFiles.length >= documentRequirements.filter(r => r.required).length && (
         <Card>
           <CardHeader>
             <CardTitle>Document Footer Preview</CardTitle>
@@ -285,7 +303,7 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
         </Button>
         <Button 
           onClick={handleNext} 
-          disabled={!qrCodeGenerated || !barcodeObtained || !sealCreated} 
+          disabled={!qrCodeGenerated || !barcodeObtained || uploadedFiles.filter(f => documentRequirements.find(r => r.required && r.id === f.requirementId)).length < documentRequirements.filter(r => r.required).length} 
           size="lg"
           variant="neon-gold"
         >

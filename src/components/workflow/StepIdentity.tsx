@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, FileText, Shield } from 'lucide-react';
+import { FileText, Shield } from 'lucide-react';
+import DocumentUpload from './DocumentUpload';
 
 interface StepIdentityProps {
   onNext: (data: any) => void;
@@ -22,21 +23,26 @@ const StepIdentity = ({ onNext, onPrev, data }: StepIdentityProps) => {
     ...data
   });
 
-  const [uploadedDoc, setUploadedDoc] = useState<File | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState(data?.uploadedFiles || []);
+
+  const documentRequirements = [
+    {
+      id: 'government-id',
+      name: 'Government-Issued ID',
+      description: 'Upload a driver\'s license, passport, or other government-issued identification',
+      required: false,
+      acceptedTypes: ['.pdf', '.jpg', '.jpeg', '.png'],
+      maxSize: 10
+    }
+  ];
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setUploadedDoc(file);
-    }
-  };
 
   const handleNext = () => {
-    onNext({ ...formData, identityDocument: uploadedDoc });
+    onNext({ ...formData, uploadedFiles });
   };
 
   const isFormValid = formData.fullName && formData.dateOfBirth && formData.address && formData.city && formData.state && formData.zipCode;
@@ -148,46 +154,12 @@ const StepIdentity = ({ onNext, onPrev, data }: StepIdentityProps) => {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Upload className="h-5 w-5 mr-2" />
-            Identity Document Upload
-          </CardTitle>
-          <CardDescription>
-            Upload a government-issued ID for verification
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-            <input
-              type="file"
-              id="identity-upload"
-              className="hidden"
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={handleFileUpload}
-            />
-            <label
-              htmlFor="identity-upload"
-              className="cursor-pointer flex flex-col items-center space-y-2"
-            >
-              <Upload className="h-8 w-8 text-muted-foreground" />
-              <div className="text-sm">
-                <span className="font-medium text-primary">Click to upload</span>
-                <span className="text-muted-foreground"> or drag and drop</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                PDF, PNG, JPG up to 10MB
-              </p>
-            </label>
-            {uploadedDoc && (
-              <p className="text-sm text-primary mt-2">
-                ✓ {uploadedDoc.name} uploaded
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <DocumentUpload
+        title="Identity Verification Documents"
+        requirements={documentRequirements}
+        uploadedFiles={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+      />
 
       <div className="flex justify-between pt-6">
         <Button onClick={onPrev} variant="outline" size="lg">

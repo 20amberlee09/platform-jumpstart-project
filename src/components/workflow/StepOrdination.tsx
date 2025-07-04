@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, ExternalLink, CheckCircle, Download } from 'lucide-react';
+import { Award, ExternalLink, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import DocumentUpload from './DocumentUpload';
 
 interface StepOrdinationProps {
   onNext: (data: any) => void;
@@ -12,8 +13,19 @@ interface StepOrdinationProps {
 
 const StepOrdination = ({ onNext, onPrev, data }: StepOrdinationProps) => {
   const [isOrdained, setIsOrdained] = useState(data?.isOrdained || false);
-  const [ordinationCertificate, setOrdinationCertificate] = useState<File | null>(data?.ordinationCertificate || null);
+  const [uploadedFiles, setUploadedFiles] = useState(data?.uploadedFiles || []);
   const { toast } = useToast();
+
+  const documentRequirements = [
+    {
+      id: 'minister-certificate',
+      name: 'Minister Certificate',
+      description: 'Upload your ordination certificate from the ministry organization',
+      required: false,
+      acceptedTypes: ['.pdf', '.jpg', '.jpeg', '.png'],
+      maxSize: 10
+    }
+  ];
 
   const handleOrdinationComplete = () => {
     setIsOrdained(true);
@@ -23,16 +35,6 @@ const StepOrdination = ({ onNext, onPrev, data }: StepOrdinationProps) => {
     });
   };
 
-  const handleCertificateUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setOrdinationCertificate(file);
-      toast({
-        title: "Certificate Uploaded",
-        description: "Your ordination certificate has been saved.",
-      });
-    }
-  };
 
   const handleNext = () => {
     if (!isOrdained) {
@@ -48,7 +50,7 @@ const StepOrdination = ({ onNext, onPrev, data }: StepOrdinationProps) => {
     
     onNext({ 
       isOrdained: true,
-      ordinationCertificate,
+      uploadedFiles,
       ministerName,
       ministerTitle: 'Minister'
     });
@@ -154,46 +156,12 @@ const StepOrdination = ({ onNext, onPrev, data }: StepOrdinationProps) => {
       </Card>
 
       {isOrdained && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Download className="h-5 w-5 mr-2" />
-              Upload Certificate (Optional)
-            </CardTitle>
-            <CardDescription>
-              Upload your ordination certificate for your records
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-              <input
-                type="file"
-                id="certificate-upload"
-                className="hidden"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleCertificateUpload}
-              />
-              <label
-                htmlFor="certificate-upload"
-                className="cursor-pointer flex flex-col items-center space-y-2"
-              >
-                <Download className="h-8 w-8 text-muted-foreground" />
-                <div className="text-sm">
-                  <span className="font-medium text-primary">Click to upload</span>
-                  <span className="text-muted-foreground"> certificate</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  PDF, PNG, JPG up to 10MB
-                </p>
-              </label>
-              {ordinationCertificate && (
-                <p className="text-sm text-primary mt-2">
-                  ✓ {ordinationCertificate.name} uploaded
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <DocumentUpload
+          title="Document Upload"
+          requirements={documentRequirements}
+          uploadedFiles={uploadedFiles}
+          onFilesChange={setUploadedFiles}
+        />
       )}
 
       {isOrdained && (
