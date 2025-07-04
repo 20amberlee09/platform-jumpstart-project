@@ -61,23 +61,23 @@ const Index = () => {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <Card className="card-royal shadow-royal border-primary/20">
-              <CardHeader className="pb-6">
+            <Card className="card-royal shadow-royal border-2 border-primary glow-gold">
+              <CardHeader className="pb-6 bg-gradient-gold/10">
                 <div className="flex justify-between items-start mb-4">
-                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                  <Badge variant="secondary" className="bg-primary text-black border-primary glow-gold">
                     Complete Package
                   </Badge>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-primary">$150</div>
-                    <div className="text-sm text-muted-foreground">One-time payment</div>
+                    <div className="text-3xl font-bold text-primary glow-gold">$150</div>
+                    <div className="text-sm text-electric-blue">One-time payment</div>
                   </div>
                 </div>
-                <CardTitle className="text-3xl mb-4 text-primary">Boot Camp documents</CardTitle>
-                <div className="flex items-center text-muted-foreground mb-4">
-                  <Clock className="h-5 w-5 mr-2 text-primary" />
+                <CardTitle className="text-3xl mb-4 text-primary text-royal-glow">Boot Camp documents</CardTitle>
+                <div className="flex items-center text-electric-blue mb-4">
+                  <Clock className="h-5 w-5 mr-2 text-electric-blue glow-blue" />
                   <span>Complete in 8 steps</span>
                 </div>
-                <p className="text-muted-foreground text-lg">
+                <p className="text-foreground text-lg">
                   Complete ecclesiastic revocable living trust creation with ministerial ordination, 
                   verification services, and professional documentation. All required documents must be uploaded before completion.
                 </p>
@@ -86,9 +86,9 @@ const Index = () => {
               <CardContent className="pt-0">
                 <div className="grid md:grid-cols-2 gap-4 mb-8">
                   {bootCampFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
+                    <div key={index} className="flex items-start p-2 rounded-lg bg-gradient-royal/20 border border-electric-blue/30">
+                      <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0 glow-gold" />
+                      <span className="text-sm text-foreground">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -105,53 +105,53 @@ const Index = () => {
       </section>
 
       {/* Process Steps */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-gradient-royal/30 border-y-2 border-primary/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary">8-Step Process</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary text-royal-glow">8-Step Process</h2>
+            <p className="text-xl text-foreground max-w-2xl mx-auto">
               Our comprehensive process ensures professional, legally compliant documentation every time
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="text-center card-royal border-primary/20">
-              <CardHeader>
-                <Shield className="h-12 w-12 text-primary mx-auto mb-4" />
+            <Card className="text-center card-royal border-2 border-primary glow-gold">
+              <CardHeader className="bg-gradient-gold/10">
+                <Shield className="h-12 w-12 text-primary mx-auto mb-4 glow-gold" />
                 <CardTitle className="text-xl text-primary">Payment & NDA</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Secure payment processing and non-disclosure agreement</p>
+                <p className="text-foreground">Secure payment processing and non-disclosure agreement</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center card-royal border-primary/20">
-              <CardHeader>
-                <Scale className="h-12 w-12 text-primary mx-auto mb-4" />
-                <CardTitle className="text-xl text-primary">Identity & Trust Name</CardTitle>
+            <Card className="text-center card-royal border-2 border-electric-blue glow-blue">
+              <CardHeader className="bg-gradient-royal/10">
+                <Scale className="h-12 w-12 text-electric-blue mx-auto mb-4 glow-blue" />
+                <CardTitle className="text-xl text-electric-blue">Identity & Trust Name</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">ID verification and trust name availability checking</p>
+                <p className="text-foreground">ID verification and trust name availability checking</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center card-royal border-primary/20">
-              <CardHeader>
-                <Award className="h-12 w-12 text-primary mx-auto mb-4" />
-                <CardTitle className="text-xl text-primary">Ordination & Setup</CardTitle>
+            <Card className="text-center card-royal border-2 border-accent-teal glow-teal">
+              <CardHeader className="bg-gradient-royal/10">
+                <Award className="h-12 w-12 text-electric-cyan mx-auto mb-4 glow-teal" />
+                <CardTitle className="text-xl text-electric-cyan">Ordination & Setup</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Ministerial ordination and Gmail/Drive setup</p>
+                <p className="text-foreground">Ministerial ordination and Gmail/Drive setup</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center card-royal border-primary/20">
-              <CardHeader>
-                <CheckCircle className="h-12 w-12 text-primary mx-auto mb-4" />
+            <Card className="text-center card-royal border-2 border-primary glow-gold">
+              <CardHeader className="bg-gradient-gold/10">
+                <CheckCircle className="h-12 w-12 text-primary mx-auto mb-4 glow-gold" />
                 <CardTitle className="text-xl text-primary">Documents & Seals</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Verification tools and final document generation</p>
+                <p className="text-foreground">Verification tools and final document generation</p>
               </CardContent>
             </Card>
           </div>
@@ -159,7 +159,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-royal text-primary">
+      <section className="py-20 bg-gradient-royal text-primary border-2 border-primary/50 glow-gold">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-royal-glow">
             Ready to Create Your Trust?
@@ -168,7 +168,7 @@ const Index = () => {
             Join thousands who have secured their assets with our professional ecclesiastic trust formation process.
           </p>
           <Link to="/automation">
-            <Button size="lg" className="btn-royal-gold text-lg px-8">
+            <Button size="lg" className="btn-royal-gold text-lg px-8 glow-gold">
               Start Your Boot Camp Process
             </Button>
           </Link>

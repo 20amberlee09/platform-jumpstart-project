@@ -51,6 +51,7 @@
     /* Royal accent color for variety */
     --accent-teal: 180 100% 25%; /* Deep Teal */
     --accent-cyan: 180 100% 50%; /* Bright Cyan */
+    --electric-cyan: 180 100% 50%; /* Bright Cyan - alias for consistency */
     
     /* Text Colors */
     --text-primary: 43 96% 56%; /* Royal Gold */
