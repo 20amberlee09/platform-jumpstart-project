@@ -101,22 +101,74 @@ startxref
   };
 
   const downloadDemoDocument = (documentName: string) => {
-    if (!isDemoMode) return;
+    if (!isDemoMode) {
+      console.log('Not in demo mode, download blocked');
+      return;
+    }
     
-    const blob = createDemoPDF(documentName, `This is your ${documentName} document.`);
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${documentName.replace(/\s+/g, '_')}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    console.log('Starting download for:', documentName);
     
-    toast({
-      title: "Document Downloaded",
-      description: `${documentName} has been downloaded to your computer.`,
-    });
+    try {
+      // Create a simple text-based PDF instead of complex PDF structure
+      const pdfText = `
+${documentName}
+======================
+
+Generated for: ${ministerName}
+Trust Name: ${trustName}
+Generated Date: ${new Date().toLocaleString()}
+
+This is your ${documentName} document.
+
+Address: ${identityData?.address || 'Not provided'}, ${identityData?.city || ''}, ${identityData?.state || ''} ${identityData?.zipCode || ''}
+Gmail Account: ${gmailData?.gmailAccount || 'Not provided'}
+Google Drive: ${gmailData?.googleDriveFolder || 'Not provided'}
+
+This is a demo document generated for preview purposes.
+In the actual service, this would be a properly formatted legal document.
+      `;
+      
+      const blob = new Blob([pdfText], { type: 'text/plain' });
+      console.log('Blob created:', blob.size, 'bytes');
+      
+      const url = URL.createObjectURL(blob);
+      console.log('Object URL created:', url);
+      
+      const fileName = `${documentName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '')}.txt`;
+      console.log('Download filename:', fileName);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.style.display = 'none';
+      
+      document.body.appendChild(link);
+      console.log('Link added to DOM');
+      
+      // Force the download
+      link.click();
+      console.log('Link clicked');
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        console.log('Cleanup completed');
+      }, 100);
+      
+      toast({
+        title: "Document Downloaded",
+        description: `${documentName} has been saved as ${fileName}`,
+      });
+      
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Failed",
+        description: "There was an error downloading the document. Check console for details.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleNext = () => {
