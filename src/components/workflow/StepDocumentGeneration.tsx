@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Download, CheckCircle, QrCode, BarChart, Stamp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useDemoMode } from '@/contexts/DemoModeContext';
 
 interface StepDocumentGenerationProps {
   onNext: (data: any) => void;
@@ -11,21 +12,82 @@ interface StepDocumentGenerationProps {
 }
 
 const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGenerationProps) => {
-  const [documentsGenerated, setDocumentsGenerated] = useState(data?.documentsGenerated || false);
+  const { isDemoMode, getDummyData } = useDemoMode();
+  const demoData = isDemoMode ? getDummyData('step-document-generation') : {};
+  
+  const [documentsGenerated, setDocumentsGenerated] = useState(data?.documentsGenerated || demoData?.generatedDocuments?.length > 0 || false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+
+  // Create sample PDF content for demo documents
+  const createDemoPDF = (title: string, content: string) => {
+    const pdfContent = `
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 200 >>
+stream
+BT
+/F1 12 Tf
+50 750 Td
+(${title}) Tj
+0 -20 Td
+(${content}) Tj
+0 -20 Td
+(This is a demo document generated for preview purposes.) Tj
+0 -20 Td
+(Generated for: ${data?.ministerName || 'Demo User'}) Tj
+0 -20 Td
+(Trust Name: ${data?.fullTrustName || 'Demo Trust'}) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000254 00000 n 
+0000000505 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+565
+%%EOF
+    `;
+    return new Blob([pdfContent], { type: 'application/pdf' });
+  };
 
   const generateDocuments = async () => {
     setIsGenerating(true);
     
     try {
-      // Simulate comprehensive trust document generation process
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      if (isDemoMode) {
+        // In demo mode, create actual downloadable PDF files
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } else {
+        // Simulate comprehensive trust document generation process
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
       
       setDocumentsGenerated(true);
       toast({
         title: "Complete Trust Package Generated",
-        description: "Your ecclesiastic revocable living trust with all annexes and certificates has been created.",
+        description: isDemoMode 
+          ? "Demo trust documents are ready for download and preview."
+          : "Your ecclesiastic revocable living trust with all annexes and certificates has been created.",
       });
     } catch (error) {
       toast({
@@ -36,6 +98,25 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const downloadDemoDocument = (documentName: string) => {
+    if (!isDemoMode) return;
+    
+    const blob = createDemoPDF(documentName, `This is your ${documentName} document.`);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${documentName.replace(/\s+/g, '_')}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Document Downloaded",
+      description: `${documentName} has been downloaded to your computer.`,
+    });
   };
 
   const handleNext = () => {
@@ -195,39 +276,92 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-3">
-              <Button variant="outline" className="justify-between">
+              <Button 
+                variant="outline" 
+                className="justify-between hover:bg-primary/10"
+                onClick={() => downloadDemoDocument("Certificate of Trust (Summary)")}
+                disabled={!isDemoMode}
+              >
                 <span>Certificate of Trust (Summary)</span>
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="justify-between">
+              <Button 
+                variant="outline" 
+                className="justify-between hover:bg-primary/10"
+                onClick={() => downloadDemoDocument("Certificate of Trust (Detailed)")}
+                disabled={!isDemoMode}
+              >
                 <span>Certificate of Trust (Detailed)</span>
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="justify-between">
+              <Button 
+                variant="outline" 
+                className="justify-between hover:bg-primary/10"
+                onClick={() => downloadDemoDocument("Declaration of Trust")}
+                disabled={!isDemoMode}
+              >
                 <span>Declaration of Trust</span>
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="justify-between">
+              <Button 
+                variant="outline" 
+                className="justify-between hover:bg-primary/10"
+                onClick={() => downloadDemoDocument("Schedule A - Trust Asset Inventory")}
+                disabled={!isDemoMode}
+              >
                 <span>Schedule A - Trust Asset Inventory</span>
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="justify-between">
+              <Button 
+                variant="outline" 
+                className="justify-between hover:bg-primary/10"
+                onClick={() => downloadDemoDocument("Foundational Trust Indenture")}
+                disabled={!isDemoMode}
+              >
                 <span>Foundational Trust Indenture</span>
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="justify-between">
+              <Button 
+                variant="outline" 
+                className="justify-between hover:bg-primary/10"
+                onClick={() => downloadDemoDocument("Annex A - Affidavit of Identity")}
+                disabled={!isDemoMode}
+              >
                 <span>Annex A - Affidavit of Identity</span>
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="justify-between">
+              <Button 
+                variant="outline" 
+                className="justify-between hover:bg-primary/10"
+                onClick={() => downloadDemoDocument("Annex B - Ecclesiastical Deed Poll")}
+                disabled={!isDemoMode}
+              >
                 <span>Annex B - Ecclesiastical Deed Poll</span>
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="justify-between">
+              <Button 
+                variant="outline" 
+                className="justify-between hover:bg-primary/10"
+                onClick={() => downloadDemoDocument("Annex C - Ecclesiastical Fee Schedule")}
+                disabled={!isDemoMode}
+              >
                 <span>Annex C - Ecclesiastical Fee Schedule</span>
                 <Download className="h-4 w-4" />
               </Button>
             </div>
+
+            {isDemoMode && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-blue-500 mr-2" />
+                  <p className="font-medium text-blue-800">Demo Mode: Live Document Downloads</p>
+                </div>
+                <p className="text-sm text-blue-700 mt-1">
+                  Click any document above to download a sample PDF with your trust information. 
+                  These are functional demo documents that show the structure and content of your actual trust package.
+                </p>
+              </div>
+            )}
 
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center">
