@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Download, FileText, Award } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface StepReviewProps {
   onNext: () => void;
@@ -9,7 +10,26 @@ interface StepReviewProps {
 }
 
 const StepReview = ({ onNext, onPrev, data }: StepReviewProps) => {
-  const handleCompleteWorkflow = () => {
+  const handleCompleteWorkflow = async () => {
+    // Send completion notification email
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.functions.invoke('send-completion-notification', {
+          body: {
+            userEmail: user.email,
+            userName: data.fullName || 'User',
+            trustName: data.fullTrustName || 'Trust',
+            completionDate: new Date().toISOString(),
+            ministerName: `Minister ${data.fullName || 'User'}`
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send completion notification:', error);
+      // Don't block completion if email fails
+    }
+    
     onNext();
   };
 
