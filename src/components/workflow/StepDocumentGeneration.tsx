@@ -19,18 +19,18 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
     setIsGenerating(true);
     
     try {
-      // Simulate document generation process
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Simulate comprehensive trust document generation process
+      await new Promise(resolve => setTimeout(resolve, 5000));
       
       setDocumentsGenerated(true);
       toast({
-        title: "Documents Generated Successfully",
-        description: "Your trust documents have been created with all verification elements.",
+        title: "Complete Trust Package Generated",
+        description: "Your ecclesiastic revocable living trust with all annexes and certificates has been created.",
       });
     } catch (error) {
       toast({
         title: "Generation Failed",
-        description: "Failed to generate documents. Please try again.",
+        description: "Failed to generate trust documents. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -63,9 +63,9 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
         <div className="flex justify-center mb-4">
           <FileText className="h-12 w-12 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">Document Generation</h2>
+        <h2 className="text-2xl font-bold mb-2">Complete Trust Package Generation</h2>
         <p className="text-muted-foreground">
-          Generate your final trust documents with all verification elements
+          Generate your complete ecclesiastic revocable living trust package with all certificates, annexes, and verification elements
         </p>
       </div>
 
@@ -121,12 +121,16 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-            <h3 className="font-semibold mb-2">Documents to be Generated</h3>
+            <h3 className="font-semibold mb-2">Complete Trust Package Documents</h3>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-              <li>Ecclesiastic Revocable Living Trust Agreement</li>
-              <li>Certificate of Trust</li>
-              <li>All documents will include Minister designation</li>
-              <li>Personal information automatically inserted</li>
+              <li>Certificate of Trust (Summary & Detailed)</li>
+              <li>Declaration of Trust</li>
+              <li>Schedule A - Trust Asset Inventory Template</li>
+              <li>Foundational Trust Indenture</li>
+              <li>Annex A - Affidavit of Identity and Title Reclamation</li>
+              <li>Annex B - Ecclesiastical Deed Poll of Trustee Authority</li>
+              <li>Annex C - Ecclesiastical Fee Schedule</li>
+              <li>All documents include Minister designation and personal information</li>
             </ul>
           </div>
 
@@ -171,7 +175,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
             ) : (
               <>
                 <FileText className="mr-2 h-4 w-4" />
-                Generate Trust Documents
+                Generate Complete Trust Package
               </>
             )}
           </Button>
@@ -192,11 +196,35 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
           <CardContent className="space-y-4">
             <div className="grid gap-3">
               <Button variant="outline" className="justify-between">
-                <span>Ecclesiastic Revocable Living Trust Agreement</span>
+                <span>Certificate of Trust (Summary)</span>
                 <Download className="h-4 w-4" />
               </Button>
               <Button variant="outline" className="justify-between">
-                <span>Certificate of Trust</span>
+                <span>Certificate of Trust (Detailed)</span>
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" className="justify-between">
+                <span>Declaration of Trust</span>
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" className="justify-between">
+                <span>Schedule A - Trust Asset Inventory</span>
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" className="justify-between">
+                <span>Foundational Trust Indenture</span>
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" className="justify-between">
+                <span>Annex A - Affidavit of Identity</span>
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" className="justify-between">
+                <span>Annex B - Ecclesiastical Deed Poll</span>
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" className="justify-between">
+                <span>Annex C - Ecclesiastical Fee Schedule</span>
                 <Download className="h-4 w-4" />
               </Button>
             </div>
