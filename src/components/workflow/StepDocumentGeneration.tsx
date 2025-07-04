@@ -44,9 +44,9 @@ BT
 0 -20 Td
 (This is a demo document generated for preview purposes.) Tj
 0 -20 Td
-(Generated for: ${data?.ministerName || 'Demo User'}) Tj
-0 -20 Td
-(Trust Name: ${data?.fullTrustName || 'Demo Trust'}) Tj
+         (Generated for: ${ministerName}) Tj
+         0 -20 Td
+         (Trust Name: ${trustName}) Tj
 ET
 endstream
 endobj
@@ -135,8 +135,14 @@ startxref
     });
   };
 
-  const ministerName = data?.ministerName || `Minister ${data?.fullName || ''}`;
-  const trustName = data?.fullTrustName || 'Your Trust Name';
+  // Extract data from previous steps
+  const identityData = data?.['step-identity'] || data?.['step-1-identity'] || {};
+  const trustNameData = data?.['step-trust-name'] || {};
+  const gmailData = data?.['step-gmail-setup'] || {};
+  const ordinationData = data?.['step-ordination'] || {};
+  
+  const ministerName = `Minister ${identityData?.fullName || data?.fullName || 'Name Not Provided'}`;
+  const trustName = trustNameData?.fullTrustName || data?.fullTrustName || 'Trust Name Not Provided';
 
   return (
     <div className="space-y-6">
@@ -168,26 +174,31 @@ startxref
                 <Label className="text-sm font-medium">Trust Name</Label>
                 <p className="text-sm text-muted-foreground">{trustName}</p>
               </div>
-              <div>
-                <Label className="text-sm font-medium">Gmail Account</Label>
-                <p className="text-sm text-muted-foreground">{data?.gmailAccount}</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <Label className="text-sm font-medium">Google Drive Folder</Label>
-                <p className="text-sm text-muted-foreground">{data?.googleDriveFolder}</p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Barcode Certificate</Label>
-                <p className="text-sm text-muted-foreground">{data?.barcodeNumber}</p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Address</Label>
-                <p className="text-sm text-muted-foreground">
-                  {data?.address}, {data?.city}, {data?.state} {data?.zipCode}
-                </p>
-              </div>
+               <div>
+                 <Label className="text-sm font-medium">Gmail Account</Label>
+                 <p className="text-sm text-muted-foreground">{gmailData?.gmailAccount || data?.gmailAccount || 'Not Provided'}</p>
+               </div>
+             </div>
+             <div className="space-y-3">
+               <div>
+                 <Label className="text-sm font-medium">Google Drive Folder</Label>
+                 <p className="text-sm text-muted-foreground">{gmailData?.googleDriveFolder || data?.googleDriveFolder || 'Not Provided'}</p>
+               </div>
+               <div>
+                 <Label className="text-sm font-medium">Barcode Certificate</Label>
+                 <p className="text-sm text-muted-foreground">{data?.['step-verification-tools']?.barcodeNumber || data?.barcodeNumber || 'Not Provided'}</p>
+               </div>
+               <div>
+                 <Label className="text-sm font-medium">Address</Label>
+                 <p className="text-sm text-muted-foreground">
+                   {identityData?.address && identityData?.city && identityData?.state && identityData?.zipCode 
+                     ? `${identityData.address}, ${identityData.city}, ${identityData.state} ${identityData.zipCode}`
+                     : data?.address && data?.city && data?.state && data?.zipCode
+                     ? `${data.address}, ${data.city}, ${data.state} ${data.zipCode}`
+                     : 'Address Not Provided'
+                   }
+                 </p>
+               </div>
             </div>
           </div>
         </CardContent>
