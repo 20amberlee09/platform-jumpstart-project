@@ -7,16 +7,18 @@ import { Link } from "react-router-dom";
 const Index = () => {
   const bootCampFeatures = [
     "Complete $150 package - no recurring fees",
-    "Government ID verification with document upload",
-    "Trust name availability verification (USPTO & State searches)",
-    "Ministerial ordination certificate upload",
-    "Ecclesiastic revocable living trust creation",
-    "Gmail account setup for trust",
-    "Google Drive folder creation",
-    "QR code generation for documentation",
-    "Barcode certificate purchase and upload guidance",
-    "Custom document seal creation and upload",
-    "Professional document generation with all verification elements"
+    "GUIDED: Government ID upload - you provide, we verify automatically",
+    "AUTOMATED: Trust name availability verification (USPTO & State searches)",
+    "GUIDED: Ministerial ordination certificate upload - you provide the certificate",
+    "AUTOMATED: Ecclesiastic revocable living trust document creation",
+    "AUTOMATED: Gmail account setup with proper trust naming convention",
+    "AUTOMATED: Google Drive folder creation and organization",
+    "AUTOMATED: QR code generation for all documentation",
+    "GUIDED: Barcode certificate purchase guidance and upload",
+    "GUIDED: Custom document seal creation and upload",
+    "AUTOMATED: Professional document generation with all verification elements",
+    "GUIDED: Document review - you approve before finalization",
+    "AUTOMATED: Final document delivery to your Google Drive"
   ];
 
   return (
@@ -36,9 +38,10 @@ const Index = () => {
             TroothHurtz
             <span className="block text-primary mt-2">Legal Document Automation</span>
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-foreground/90 max-w-3xl mx-auto">
+          <p className="text-xl text-foreground max-w-3xl mx-auto mb-8">
             Professional ecclesiastic revocable living trust creation with automated legal documentation, 
-            custom seal creation, and complete verification services.
+            custom seal creation, and complete verification services. <strong>Mix of guided steps (where you take action) 
+            and automated processes (done for you).</strong>
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/automation">
@@ -121,7 +124,8 @@ const Index = () => {
                 <CardTitle className="text-xl text-primary">Payment & NDA</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground">Secure payment processing and non-disclosure agreement</p>
+                <p className="text-foreground"><strong>AUTOMATED:</strong> Payment processing</p>
+                <p className="text-foreground"><strong>GUIDED:</strong> NDA review and signing</p>
               </CardContent>
             </Card>
 
@@ -131,7 +135,8 @@ const Index = () => {
                 <CardTitle className="text-xl text-electric-blue">Identity & Trust Name</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground">ID verification and trust name availability checking</p>
+                <p className="text-foreground"><strong>GUIDED:</strong> ID upload</p>
+                <p className="text-foreground"><strong>AUTOMATED:</strong> Name verification</p>
               </CardContent>
             </Card>
 
@@ -141,7 +146,8 @@ const Index = () => {
                 <CardTitle className="text-xl text-electric-cyan">Ordination & Setup</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground">Ministerial ordination and Gmail/Drive setup</p>
+                <p className="text-foreground"><strong>GUIDED:</strong> Certificate upload</p>
+                <p className="text-foreground"><strong>AUTOMATED:</strong> Gmail/Drive setup</p>
               </CardContent>
             </Card>
 
@@ -151,7 +157,8 @@ const Index = () => {
                 <CardTitle className="text-xl text-primary">Documents & Seals</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground">Verification tools and final document generation</p>
+                <p className="text-foreground"><strong>GUIDED:</strong> Seal upload & review</p>
+                <p className="text-foreground"><strong>AUTOMATED:</strong> Document generation</p>
               </CardContent>
             </Card>
           </div>
