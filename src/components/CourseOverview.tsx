@@ -1,8 +1,12 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CourseConfig } from "@/types/course";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface CourseOverviewProps {
   courseConfig: CourseConfig;
@@ -10,6 +14,68 @@ interface CourseOverviewProps {
 }
 
 const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [hasPurchased, setHasPurchased] = useState(false);
+
+  // Check if user has already purchased this course
+  const checkPurchaseStatus = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('course_id', courseConfig.id)
+        .eq('status', 'paid')
+        .single();
+        
+      setHasPurchased(!!data);
+    } catch (error) {
+      // No purchase found, which is fine
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to purchase this course.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsPaymentLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { courseId: courseConfig.id }
+      });
+
+      if (error) throw error;
+
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Payment Error",
+        description: "Failed to initiate payment. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsPaymentLoading(false);
+    }
+  };
+
+  // Check purchase status when component mounts
+  useEffect(() => {
+    checkPurchaseStatus();
+  }, [user]);
+
   return (
     <div className="min-h-screen bg-background py-12">
       <div className="container mx-auto px-4">
@@ -22,9 +88,21 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
             {courseConfig.overview.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-lg px-8" onClick={onStartWorkflow}>
-              Start Process - ${courseConfig.price}
-            </Button>
+            {hasPurchased ? (
+              <Button size="lg" className="text-lg px-8" onClick={onStartWorkflow}>
+                Start Your Course
+              </Button>
+            ) : (
+              <Button 
+                size="lg" 
+                className="text-lg px-8" 
+                onClick={handlePayment}
+                disabled={isPaymentLoading}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                {isPaymentLoading ? "Processing..." : `Purchase Course - $${courseConfig.price}`}
+              </Button>
+            )}
             <Link to="/courses">
               <Button size="lg" variant="outline" className="text-lg px-8">
                 View All Courses
@@ -75,13 +153,25 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
           <p className="text-xl mb-6 text-white/90">
             Complete your {courseConfig.title.toLowerCase()} in under 30 minutes with our guided process.
           </p>
-          <Button 
-            size="lg" 
-            className="bg-white text-legal-primary hover:bg-white/90 text-lg px-8"
-            onClick={onStartWorkflow}
-          >
-            Begin Your {courseConfig.title}
-          </Button>
+          {hasPurchased ? (
+            <Button 
+              size="lg" 
+              className="bg-white text-legal-primary hover:bg-white/90 text-lg px-8"
+              onClick={onStartWorkflow}
+            >
+              Begin Your {courseConfig.title}
+            </Button>
+          ) : (
+            <Button 
+              size="lg" 
+              className="bg-white text-legal-primary hover:bg-white/90 text-lg px-8"
+              onClick={handlePayment}
+              disabled={isPaymentLoading}
+            >
+              <CreditCard className="mr-2 h-4 w-4" />
+              {isPaymentLoading ? "Processing..." : `Purchase & Start - $${courseConfig.price}`}
+            </Button>
+          )}
         </div>
       </div>
     </div>
