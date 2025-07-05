@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Download, CheckCircle, QrCode, BarChart, Stamp } from 'lucide-react';
+import { FileText, Download, CheckCircle, QrCode, BarChart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import jsPDF, { jsPDFOptions } from 'jspdf';
+import { useDocumentDownload } from '@/hooks/useDocumentDownload';
 
 interface StepDocumentGenerationProps {
   onNext: (data: any) => void;
@@ -15,6 +15,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
   const [documentsGenerated, setDocumentsGenerated] = useState(data?.documentsGenerated || false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const { downloadDocument } = useDocumentDownload();
 
   const generateDocuments = async () => {
     setIsGenerating(true);
@@ -39,238 +40,26 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
     }
   };
 
-  const createProfessionalPDF = (documentType: string) => {
-    const doc = new jsPDF();
-    
-    // Set professional fonts and styling
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    
-    // Add letterhead-style header
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text("ECCLESIASTICAL TRUST SERVICES", 105, 20, { align: "center" });
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("Professional Trust Administration • Legal Document Services", 105, 28, { align: "center" });
-    doc.text("_______________________________________________________________________", 105, 35, { align: "center" });
-    
-    // Get data from previous steps
-    const identityData = data?.['step_0'] || data?.identity || {};
-    const trustData = data?.['step_1'] || data?.trust || {};
+  const handleDownload = (documentType: string) => {
+    // Extract data from previous steps
+    const identityData = data?.['step-identity'] || data?.['step-1-identity'] || {};
+    const trustNameData = data?.['step-trust-name'] || {};
     const gmailData = data?.['step-gmail-setup'] || {};
     const verificationData = data?.['step-verification-tools'] || {};
     
-    const ministerName = identityData?.fullName || '[Minister Name]';
-    const trustName = trustData?.trustName || '[Trust Name]';
-    const todayDate = new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+    const ministerName = `Minister ${identityData?.fullName || data?.fullName || 'Name Not Provided'}`;
+    const trustName = trustNameData?.fullTrustName || data?.fullTrustName || 'Trust Name Not Provided';
     
-    let yPosition = 50;
+    const documentData = {
+      identityData,
+      trustData: trustNameData,
+      gmailData,
+      verificationData,
+      ministerName,
+      trustName
+    };
     
-    // Document title
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text(documentType.toUpperCase(), 105, yPosition, { align: "center" });
-    yPosition += 15;
-    
-    // Create professional document content based on type
-    if (documentType === "Certificate of Trust (Summary)") {
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "normal");
-      
-      const content = [
-        "",
-        `This Certificate is executed by ${ministerName}, as Trustee of the`,
-        `${trustName}, established on ${todayDate}.`,
-        "",
-        "1. TRUST EXISTENCE:",
-        `   The Trust named above is validly existing under ecclesiastical law and`,
-        `   pursuant to a trust agreement dated ${todayDate}.`,
-        "",
-        "2. TRUSTEE AUTHORITY:",
-        "   The undersigned Trustee has full power and authority to act on behalf",
-        "   of the Trust in all matters related to trust administration, including:",
-        "   • Acquiring, holding, and disposing of trust property",
-        "   • Entering into contracts and agreements",
-        "   • Managing trust assets and investments",
-        "   • Distributing trust income and principal",
-        "",
-        "3. TRUST IDENTIFICATION:",
-        `   Trust Name: ${trustName}`,
-        `   Trustee: ${ministerName}`,
-        `   Trust Email: ${gmailData?.gmailAccount || '[Trust Email]'}`,
-        `   Document Repository: ${gmailData?.googleDriveFolder || '[Repository]'}`,
-        `   Verification ID: ${verificationData?.barcodeNumber || '[Verification ID]'}`,
-        "",
-        "4. LIMITATION OF LIABILITY:",
-        "   This Certificate is executed to facilitate transactions involving trust",
-        "   property and does not modify, revoke, or otherwise affect the terms",
-        "   of the Trust Agreement.",
-        "",
-        "IN WITNESS WHEREOF, the undersigned Trustee has executed this",
-        `Certificate on ${todayDate}.`,
-        "",
-        "",
-        "_________________________________",
-        `${ministerName}, Trustee`,
-        trustName,
-        "",
-        `Address: ${identityData?.address || '[Address]'}`,
-        `${identityData?.city || '[City]'}, ${identityData?.state || '[State]'} ${identityData?.zipCode || '[Zip]'}`,
-        "",
-        "VERIFICATION ELEMENTS:",
-        "□ Barcode Certificate Verification",
-        "□ Digital Repository Access",
-        "□ QR Code Authentication",
-        "□ Ecclesiastical Seal Verification"
-      ];
-      
-      content.forEach((line, index) => {
-        if (line.startsWith('   ') || line.startsWith('   •')) {
-          doc.setFont("helvetica", "normal");
-          doc.text(line, 25, yPosition);
-        } else if (line.match(/^\d+\./)) {
-          doc.setFont("helvetica", "bold");
-          doc.text(line, 20, yPosition);
-        } else if (line.startsWith('□')) {
-          doc.setFont("helvetica", "normal");
-          doc.text(line, 25, yPosition);
-        } else {
-          doc.setFont("helvetica", "normal");
-          doc.text(line, 20, yPosition);
-        }
-        yPosition += 6;
-        
-        // Add new page if needed
-        if (yPosition > 270) {
-          doc.addPage();
-          yPosition = 20;
-        }
-      });
-    }
-    
-    // Add footer with verification elements (3 QR codes/barcodes)
-    const pageCount = doc.getNumberOfPages();
-    
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "italic");
-      doc.text("This document contains verification elements and should be authenticated before use.", 105, 285, { align: "center" });
-      doc.text(`Page ${i} of ${pageCount} • Generated ${todayDate}`, 105, 290, { align: "center" });
-      
-      // Add verification element placeholders (in real implementation, would embed actual QR codes and barcode)
-      doc.setFontSize(6);
-      doc.text("QR1: Certificate", 25, 275);
-      doc.text("Barcode: " + (verificationData?.barcodeNumber || 'N/A'), 105, 275, { align: "center" });
-      doc.text("QR2: Drive", 185, 275);
-    }
-    
-    return doc;
-  };
-  const downloadDocument = (documentType: string) => {
-    console.log('=== DOWNLOAD DEBUG START ===');
-    console.log('Document type:', documentType);
-    
-    try {
-      // Create PDF
-      console.log('Creating PDF...');
-      const pdf = createProfessionalPDF(documentType);
-      console.log('PDF object created:', !!pdf);
-      
-      const fileName = `${documentType.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
-      console.log('Filename:', fileName);
-      
-      // Method 1: Direct jsPDF save (most reliable)
-      console.log('Attempting Method 1: Direct jsPDF save');
-      pdf.save(fileName);
-      console.log('jsPDF save() called');
-      
-      // Method 2: Blob download with more aggressive approach
-      console.log('Attempting Method 2: Blob download');
-      try {
-        const pdfArrayBuffer = pdf.output('arraybuffer');
-        console.log('ArrayBuffer created, size:', pdfArrayBuffer.byteLength);
-        
-        const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' });
-        console.log('Blob created, size:', blob.size);
-        
-        const url = URL.createObjectURL(blob);
-        console.log('Object URL created:', url);
-        
-        // Create and configure download link
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.style.display = 'none';
-        link.style.visibility = 'hidden';
-        
-        // Add to DOM
-        document.body.appendChild(link);
-        console.log('Link added to DOM');
-        
-        // Force click with multiple methods
-        console.log('Triggering download click...');
-        link.click();
-        
-        // Alternative click method
-        const clickEvent = new MouseEvent('click', {
-          view: window,
-          bubbles: true,
-          cancelable: true
-        });
-        link.dispatchEvent(clickEvent);
-        
-        console.log('Click events dispatched');
-        
-        // Clean up
-        setTimeout(() => {
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          console.log('Cleanup completed');
-        }, 2000);
-        
-      } catch (blobError) {
-        console.error('Blob method failed:', blobError);
-      }
-      
-      // Method 3: Data URL approach
-      console.log('Attempting Method 3: Data URL');
-      try {
-        const dataUri = pdf.output('dataurlstring');
-        console.log('Data URI created, length:', dataUri.length);
-        
-        const link2 = document.createElement('a');
-        link2.href = dataUri;
-        link2.download = fileName;
-        link2.style.display = 'none';
-        document.body.appendChild(link2);
-        link2.click();
-        setTimeout(() => document.body.removeChild(link2), 1000);
-        console.log('Data URI download attempted');
-      } catch (dataError) {
-        console.error('Data URI method failed:', dataError);
-      }
-      
-      toast({
-        title: "Download Attempted",
-        description: `Multiple download methods tried for ${documentType}. Check your browser's download folder.`,
-      });
-      
-    } catch (error) {
-      console.error('CRITICAL DOWNLOAD ERROR:', error);
-      toast({
-        title: "Download Failed",
-        description: `Error: ${error.message}. Please check browser console for details.`,
-        variant: "destructive"
-      });
-    }
-    
-    console.log('=== DOWNLOAD DEBUG END ===');
+    downloadDocument(documentType, documentData);
   };
 
   const handleNext = () => {
@@ -444,7 +233,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadDocument("Certificate of Trust (Summary)")}
+                onClick={() => handleDownload("Certificate of Trust (Summary)")}
               >
                 <span>Certificate of Trust (Summary)</span>
                 <Download className="h-4 w-4" />
@@ -452,7 +241,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadDocument("Certificate of Trust (Detailed)")}
+                onClick={() => handleDownload("Certificate of Trust (Detailed)")}
               >
                 <span>Certificate of Trust (Detailed)</span>
                 <Download className="h-4 w-4" />
@@ -460,7 +249,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadDocument("Declaration of Trust")}
+                onClick={() => handleDownload("Declaration of Trust")}
               >
                 <span>Declaration of Trust</span>
                 <Download className="h-4 w-4" />
@@ -468,7 +257,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadDocument("Schedule A - Trust Asset Inventory")}
+                onClick={() => handleDownload("Schedule A - Trust Asset Inventory")}
               >
                 <span>Schedule A - Trust Asset Inventory</span>
                 <Download className="h-4 w-4" />
@@ -476,7 +265,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadDocument("Foundational Trust Indenture")}
+                onClick={() => handleDownload("Foundational Trust Indenture")}
               >
                 <span>Foundational Trust Indenture</span>
                 <Download className="h-4 w-4" />
@@ -484,7 +273,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadDocument("Annex A - Affidavit of Identity")}
+                onClick={() => handleDownload("Annex A - Affidavit of Identity")}
               >
                 <span>Annex A - Affidavit of Identity</span>
                 <Download className="h-4 w-4" />
@@ -492,7 +281,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadDocument("Annex B - Ecclesiastical Deed Poll")}
+                onClick={() => handleDownload("Annex B - Ecclesiastical Deed Poll")}
               >
                 <span>Annex B - Ecclesiastical Deed Poll</span>
                 <Download className="h-4 w-4" />
@@ -500,7 +289,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadDocument("Annex C - Ecclesiastical Fee Schedule")}
+                onClick={() => handleDownload("Annex C - Ecclesiastical Fee Schedule")}
               >
                 <span>Annex C - Ecclesiastical Fee Schedule</span>
                 <Download className="h-4 w-4" />
