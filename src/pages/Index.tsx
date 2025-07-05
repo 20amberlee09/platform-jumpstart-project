@@ -35,8 +35,8 @@ const Index = () => {
       >
         <div className="container mx-auto px-4 text-center relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-royal-glow">
-            TROOTHHURTZ
-            <span className="block text-primary mt-2">Trust</span>
+            Truth hurts trust
+            <span className="block text-primary mt-2">document automation</span>
           </h1>
           <p className="text-xl text-foreground max-w-3xl mx-auto mb-8">
             Professional ecclesiastic revocable living trust creation with automated legal documentation, 
