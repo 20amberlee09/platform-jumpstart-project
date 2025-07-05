@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Scale, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,9 +16,53 @@ const Auth = () => {
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
+  const courseId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'; // The course UUID
+
+  // Check if user has course access and redirect accordingly
+  const checkAndRedirect = async (user: any) => {
+    if (!user) return;
+    
+    try {
+      // Check for paid orders
+      const { data: orderData } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .eq('status', 'paid')
+        .maybeSingle();
+      
+      if (orderData) {
+        // User has paid - go directly to course
+        navigate('/automation?start=true');
+        return;
+      }
+      
+      // Check for redeemed gift codes
+      const { data: giftData } = await supabase
+        .from('gift_codes')
+        .select('*')
+        .eq('used_by', user.id)
+        .eq('course_id', courseId)
+        .maybeSingle();
+        
+      if (giftData) {
+        // User has redeemed gift code - go directly to course
+        navigate('/automation?start=true');
+        return;
+      }
+      
+      // User has no course access - go to home page
+      navigate('/');
+    } catch (error) {
+      console.error('Error checking course access:', error);
+      navigate('/');
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      navigate('/');
+      checkAndRedirect(user);
     }
   }, [user, navigate]);
 
@@ -28,7 +73,7 @@ const Auth = () => {
     const { error } = await signIn(signInData.email, signInData.password);
     
     if (!error) {
-      navigate('/');
+      // The useEffect will handle redirect once user is set
     }
     
     setIsLoading(false);

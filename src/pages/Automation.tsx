@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, FileText, Shield, Scale, Award, Users } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import WorkflowEngine from "@/components/workflow/WorkflowEngine";
 import CourseOverview from "@/components/CourseOverview";
@@ -12,11 +12,15 @@ import { supabase } from "@/integrations/supabase/client";
 const Automation = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { courseConfigs, loading } = useCourseData();
   const [showOverview, setShowOverview] = useState(true);
   const [hasCourseAccess, setHasCourseAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const courseId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'; // Using the UUID from our migration
+
+  // Check if user should auto-start the course
+  const shouldAutoStart = searchParams.get('start') === 'true';
 
   // Check if user has access to this course (via purchase or gift code)
   const checkCourseAccess = async () => {
@@ -61,6 +65,13 @@ const Automation = () => {
   useEffect(() => {
     checkCourseAccess();
   }, [user]);
+
+  // Auto-start course if user has access and is being redirected from login
+  useEffect(() => {
+    if (shouldAutoStart && hasCourseAccess && !checkingAccess && !loading) {
+      setShowOverview(false);
+    }
+  }, [shouldAutoStart, hasCourseAccess, checkingAccess, loading]);
 
   if (loading || checkingAccess) {
     return (
