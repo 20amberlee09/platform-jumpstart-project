@@ -3,17 +3,23 @@ import { Scale, Menu, X, User } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminData } from "@/hooks/useAdminData";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdminData();
 
-  const navItems = [
+  const baseNavItems = [
     { href: "/", label: "Home" },
-    { href: "/automation", label: "Boot Camp documents" },
-    { href: "/admin", label: "Admin" }
+    { href: "/automation", label: "Boot Camp documents" }
   ];
+  
+  // Only show admin link if user is actually an admin
+  const navItems = isAdmin 
+    ? [...baseNavItems, { href: "/admin", label: "Admin" }]
+    : baseNavItems;
 
   const isActive = (href: string) => {
     if (href === "/") return location.pathname === "/";
