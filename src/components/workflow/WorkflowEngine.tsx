@@ -8,6 +8,7 @@ import StepIndicator from './StepIndicator';
 import { moduleRegistry } from './moduleRegistry';
 import { Button } from '@/components/ui/button';
 import { Loader2, Save } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface WorkflowEngineProps {
   courseId: string;
@@ -18,6 +19,7 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const courseConfig = courseConfigs[courseId];
+  const [hasCourseAccess, setHasCourseAccess] = useState(true); // Assume access initially
   const { 
     workflowState, 
     loading, 
@@ -27,6 +29,44 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
     markComplete,
     updateStepData
   } = useUserProgress(courseId);
+
+  // Check course access on mount
+  useEffect(() => {
+    const checkCourseAccess = async () => {
+      if (!user) return;
+      
+      try {
+        // Check for paid orders
+        const { data: orderData } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('course_id', courseId)
+          .eq('status', 'paid')
+          .maybeSingle();
+        
+        if (orderData) {
+          setHasCourseAccess(true);
+          return;
+        }
+        
+        // Check for redeemed gift codes
+        const { data: giftData } = await supabase
+          .from('gift_codes')
+          .select('*')
+          .eq('used_by', user.id)
+          .eq('course_id', courseId)
+          .maybeSingle();
+          
+        setHasCourseAccess(!!giftData);
+      } catch (error) {
+        console.error('Error checking course access:', error);
+        setHasCourseAccess(false);
+      }
+    };
+    
+    checkCourseAccess();
+  }, [user, courseId]);
 
   // Show loading state while progress loads
   if (loading) {
@@ -57,15 +97,25 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
   }
 
   const sortedModules = [...courseConfig.modules].sort((a, b) => a.order - b.order);
-  const currentModule = sortedModules[workflowState.currentStep];
-  const stepNames = sortedModules.map(module => module.name);
+  
+  // Skip payment step if user has already paid or redeemed gift code
+  const availableModules = sortedModules.filter(module => {
+    // Skip payment step if user has course access
+    if (module.component === 'StepPayment' && hasCourseAccess) {
+      return false;
+    }
+    return true;
+  });
+  
+  const currentModule = availableModules[workflowState.currentStep];
+  const stepNames = availableModules.map(module => module.name);
 
   const handleStepComplete = (stepData?: any) => {
     completeStep(stepData);
     
-    // Check if this was the last step
+    // Check if this was the last step (use availableModules length)
     const nextStep = workflowState.currentStep + 1;
-    if (nextStep >= sortedModules.length) {
+    if (nextStep >= availableModules.length) {
       markComplete();
       if (onComplete) {
         onComplete();
