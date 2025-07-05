@@ -39,530 +39,141 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
     }
   };
 
-  const createLegalDocument = (documentType: string) => {
-    const templates = {
-      "Certificate of Trust (Summary)": `
-CERTIFICATE OF TRUST (SUMMARY)
-
-This Certificate is executed by ${ministerName}, as Trustee of the ${trustName}, established on ${new Date().toLocaleDateString()}.
-
-1. TRUST EXISTENCE: The Trust named above is validly existing under the ecclesiastical laws and pursuant to a trust agreement dated ${new Date().toLocaleDateString()}.
-
-2. TRUSTEE AUTHORITY: The undersigned Trustee has full power and authority to act on behalf of the Trust in all matters related to trust administration, including but not limited to:
-   - Acquiring, holding, and disposing of trust property
-   - Entering into contracts and agreements
-   - Managing trust assets and investments
-   - Distributing trust income and principal
-
-3. TRUST IDENTIFICATION: 
-   Trust Name: ${trustName}
-   Trustee: ${ministerName}
-   Gmail Account: ${gmailData?.gmailAccount || 'Not provided'}
-   Google Drive: ${gmailData?.googleDriveFolder || 'Not provided'}
-   Barcode ID: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'}
-
-4. LIMITATION OF LIABILITY: This Certificate is executed to facilitate transactions involving trust property and does not modify, revoke, or otherwise affect the terms of the Trust Agreement.
-
-IN WITNESS WHEREOF, the undersigned Trustee has executed this Certificate as of the date first written above.
-
-_________________________________
-${ministerName}, Trustee
-${trustName}
-
-Address: ${identityData?.address || 'Not provided'}, ${identityData?.city || ''}, ${identityData?.state || ''} ${identityData?.zipCode || ''}
-
-Ecclesiastical Verification Elements:
-- QR Code: [Barcode QR Code would appear here]
-- Barcode: [Barcode JPG would appear here]  
-- Drive QR: [Google Drive QR Code would appear here]
-      `,
-      
-      "Declaration of Trust": `
-DECLARATION OF TRUST
-
-KNOW ALL MEN BY THESE PRESENTS, that ${ministerName}, in the capacity of Grantor and initial Trustee, hereby declares and establishes this Ecclesiastic Revocable Living Trust under the following terms and conditions:
-
-ARTICLE I - TRUST CREATION
-This Trust Agreement is created on ${new Date().toLocaleDateString()}, for the purpose of managing and distributing assets according to ecclesiastical principles and the Grantor's wishes.
-
-ARTICLE II - TRUST NAME AND PARTIES
-1. Trust Name: ${trustName}
-2. Grantor: ${ministerName}  
-3. Initial Trustee: ${ministerName}
-4. Trust Email: ${gmailData?.gmailAccount || 'Not provided'}
-5. Document Repository: ${gmailData?.googleDriveFolder || 'Not provided'}
-
-ARTICLE III - TRUST PURPOSES
-This Trust is established for the following purposes:
-a) To provide for the management and preservation of trust assets
-b) To ensure proper distribution of trust property according to ecclesiastical law
-c) To maintain continuity of asset management during the Grantor's lifetime
-d) To provide for efficient transfer of assets upon the Grantor's transition
-
-ARTICLE IV - TRUST PROPERTY
-The Grantor hereby transfers and assigns to the Trustee the property described in Schedule A, attached hereto and incorporated by reference.
-
-ARTICLE V - TRUSTEE POWERS
-The Trustee shall have all powers necessary for the proper administration of this Trust, including but not limited to:
-- Power to buy, sell, and manage real and personal property
-- Power to invest and reinvest trust assets
-- Power to distribute income and principal
-- Power to enter into contracts and agreements
-- Power to maintain detailed records and accounts
-
-ARTICLE VI - REVOCATION AND AMENDMENT
-This Trust may be revoked or amended by the Grantor at any time during their lifetime through written instrument delivered to the Trustee.
-
-IN WITNESS WHEREOF, the Grantor has executed this Declaration of Trust on the date first written above.
-
-_________________________________
-${ministerName}
-Grantor and Initial Trustee
-
-Verification Elements:
-Barcode Certificate ID: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'}
-Repository Location: ${gmailData?.googleDriveFolder || 'Not provided'}
-      `,
-      
-      "Schedule A - Trust Asset Inventory": `
-SCHEDULE A
-TRUST ASSET INVENTORY TEMPLATE
-
-${trustName}
-Trustee: ${ministerName}
-Date: ${new Date().toLocaleDateString()}
-
-INSTRUCTIONS FOR ASSET INVENTORY:
-Complete this schedule by listing all assets you wish to transfer into the trust. Update this document as assets are added or removed from the trust.
-
-REAL ESTATE PROPERTIES:
-□ Primary Residence
-  Address: _________________________________
-  Legal Description: _______________________
-  Estimated Value: $________________________
-
-□ Investment Properties
-  Property 1: ______________________________
-  Property 2: ______________________________
-  Property 3: ______________________________
-
-FINANCIAL ACCOUNTS:
-□ Bank Accounts
-  Institution: _____________________________
-  Account Number: __________________________
-  Type: ___________________________________
-  Balance: $______________________________
-
-□ Investment Accounts
-  Institution: _____________________________
-  Account Number: __________________________
-  Type: ___________________________________
-  Value: $_______________________________
-
-PERSONAL PROPERTY:
-□ Vehicles
-  Vehicle 1: ______________________________
-  Vehicle 2: ______________________________
-
-□ Jewelry and Valuables
-  Item: __________________________________
-  Estimated Value: $______________________
-
-□ Business Interests
-  Business Name: ___________________________
-  Ownership Percentage: ____________________
-  Estimated Value: $______________________
-
-INTELLECTUAL PROPERTY:
-□ Patents, Copyrights, Trademarks
-  Description: ____________________________
-  Registration Number: ____________________
-
-DIGITAL ASSETS:
-□ Cryptocurrency Holdings
-  Type: __________________________________
-  Amount: ________________________________
-
-□ Online Accounts and Digital Assets
-  Platform: ______________________________
-  Value: $______________________________
-
-TOTAL ESTIMATED TRUST VALUE: $_______________
-
-Trustee Signature: _________________________
-Date: ____________________________________
-
-Note: This inventory should be updated annually or whenever significant changes occur to trust assets.
-      `,
-      
-      "Foundational Trust Indenture": `
-FOUNDATIONAL TRUST INDENTURE
-
-This Indenture, made this ${new Date().toLocaleDateString()}, between ${ministerName}, as Grantor, and ${ministerName}, as Trustee, of the ${trustName}.
-
-RECITALS:
-WHEREAS, Grantor desires to create a trust for the management and distribution of assets according to ecclesiastical principles; and
-WHEREAS, Grantor wishes to appoint a competent Trustee to administer said trust; and
-WHEREAS, the parties desire to set forth the fundamental terms and conditions governing this trust relationship;
-
-NOW, THEREFORE, in consideration of the mutual covenants contained herein, the parties agree as follows:
-
-SECTION 1 - ESTABLISHMENT OF TRUST
-The Grantor hereby establishes and creates a trust to be known as the "${trustName}", which shall be administered according to the terms of this Indenture and applicable law.
-
-SECTION 2 - TRUST ADMINISTRATION
-2.1 The Trustee shall administer the trust with the highest degree of care, skill, and diligence.
-2.2 All trust administration activities shall be documented and stored in the designated repository: ${gmailData?.googleDriveFolder || 'Not provided'}
-2.3 Regular communications regarding trust matters shall be conducted through: ${gmailData?.gmailAccount || 'Not provided'}
-
-SECTION 3 - BENEFICIARY RIGHTS
-Beneficiaries shall have the right to:
-- Receive accountings of trust assets and activities
-- Request information about trust administration
-- Receive distributions according to trust terms
-- Challenge actions that violate trust terms
-
-SECTION 4 - TRUSTEE COMPENSATION
-The Trustee shall be entitled to reasonable compensation for services rendered, as outlined in Annex C - Ecclesiastical Fee Schedule.
-
-SECTION 5 - RECORD KEEPING
-The Trustee shall maintain complete and accurate records of all trust transactions, including:
-- Asset inventories and valuations
-- Income and expense statements
-- Distribution records
-- Investment activities
-- Correspondence and legal documents
-
-SECTION 6 - VERIFICATION SYSTEMS
-This trust employs multiple verification systems for authenticity:
-- Barcode Certificate System (ID: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'})
-- Digital Repository Verification
-- QR Code Authentication
-- Ecclesiastical Seal Verification
-
-IN WITNESS WHEREOF, the parties have executed this Indenture on the date first written above.
-
-GRANTOR:                          TRUSTEE:
-_________________________        _________________________
-${ministerName}                   ${ministerName}
-
-Address: ${identityData?.address || 'Not provided'}, ${identityData?.city || ''}, ${identityData?.state || ''} ${identityData?.zipCode || ''}
-      `,
-      
-      "Annex A - Affidavit of Identity": `
-ANNEX A
-AFFIDAVIT OF IDENTITY AND TITLE RECLAMATION
-
-STATE OF ${identityData?.state || '[STATE]'}
-COUNTY OF ${identityData?.city || '[COUNTY]'}
-
-I, ${ministerName}, being duly sworn, do hereby depose and state:
-
-1. IDENTITY AFFIRMATION: I am the individual known as ${identityData?.fullName || 'Name Not Provided'}, and I am of sound mind and legal age to execute this affidavit.
-
-2. ECCLESIASTICAL STANDING: I hold the ecclesiastical title of Minister and am authorized to act in such capacity for matters relating to the ${trustName}.
-
-3. RESIDENTIAL ADDRESS: My primary residence is located at:
-   ${identityData?.address || 'Address Not Provided'}
-   ${identityData?.city || 'City Not Provided'}, ${identityData?.state || 'State Not Provided'} ${identityData?.zipCode || 'Zip Not Provided'}
-
-4. TITLE RECLAMATION: I hereby reclaim and assert my natural, inalienable rights and sovereign capacity as a living being, specifically including:
-   - The right to contract and enter into agreements
-   - The right to hold and transfer property
-   - The right to establish and administer trusts
-   - The right to act in ecclesiastical capacity
-
-5. TRUST AUTHORITY: I affirm that I have full authority to establish, fund, and administer the ${trustName} in accordance with ecclesiastical law and principles.
-
-6. VERIFICATION SYSTEMS: This trust employs the following verification and authentication systems:
-   - Gmail Account: ${gmailData?.gmailAccount || 'Not provided'}
-   - Document Repository: ${gmailData?.googleDriveFolder || 'Not provided'}
-   - Barcode Certificate: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'}
-
-7. OATH OF OFFICE: I solemnly swear to execute the duties of Trustee with integrity, diligence, and in accordance with the highest ethical standards.
-
-This affidavit is made under penalty of perjury under the ecclesiastical laws.
-
-_________________________________
-${ministerName}
-Minister and Trustee
-
-Subscribed and sworn to before me this ${new Date().toLocaleDateString()}.
-
-_________________________________
-Notary Public / Ecclesiastical Witness
-      `,
-      
-      "Annex B - Ecclesiastical Deed Poll": `
-ANNEX B
-ECCLESIASTICAL DEED POLL OF TRUSTEE AUTHORITY
-
-This Deed Poll is executed by ${ministerName} on this ${new Date().toLocaleDateString()}, to establish and record ecclesiastical trustee authority.
-
-DECLARATION OF AUTHORITY:
-
-I, ${ministerName}, hereby declare and establish my authority as Trustee of the ${trustName} under ecclesiastical law and natural common law principles.
-
-SECTION 1 - ECCLESIASTICAL FOUNDATION
-This authority is established upon the foundation of:
-1. Natural law and universal principles of justice
-2. Ecclesiastical traditions and customs
-3. Common law principles of trust administration
-4. Divine guidance and spiritual discernment
-
-SECTION 2 - SCOPE OF AUTHORITY
-As Trustee, I am empowered to:
-- Receive, hold, and manage trust property
-- Make investments and financial decisions for the trust
-- Distribute trust assets according to trust terms
-- Enter into contracts and agreements on behalf of the trust
-- Maintain records and provide accountings
-- Defend the trust against claims and challenges
-
-SECTION 3 - TRUST ADMINISTRATION STANDARDS
-I covenant to administer this trust according to:
-- The highest standards of fiduciary duty
-- Ecclesiastical principles of stewardship
-- Prudent investment and management practices
-- Transparency and accountability to beneficiaries
-- Regular prayer and spiritual guidance
-
-SECTION 4 - VERIFICATION AND AUTHENTICATION
-This trustee authority is verified through:
-- Barcode Certificate System: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'}
-- Digital Repository: ${gmailData?.googleDriveFolder || 'Not provided'}
-- Electronic Communication: ${gmailData?.gmailAccount || 'Not provided'}
-- QR Code Verification System
-
-SECTION 5 - SUCCESSION PROVISIONS
-Upon my inability to serve, successor trustees shall be appointed according to the provisions set forth in the main trust document.
-
-IN WITNESS WHEREOF, I have executed this Deed Poll under my hand and seal.
-
-_________________________________
-${ministerName}
-Ecclesiastical Trustee
-
-Date: ${new Date().toLocaleDateString()}
-Location: ${identityData?.city || 'Not provided'}, ${identityData?.state || 'Not provided'}
-      `,
-      
-      "Annex C - Ecclesiastical Fee Schedule": `
-ANNEX C
-ECCLESIASTICAL FEE SCHEDULE
-
-${trustName}
-Trustee: ${ministerName}
-Effective Date: ${new Date().toLocaleDateString()}
-
-This Fee Schedule establishes the compensation structure for trustee services rendered in the administration of the above-named trust.
-
-SECTION 1 - BASIC TRUSTEE FEES
-1.1 Annual Administrative Fee: 1.0% of trust assets (minimum $500)
-    - Includes routine administration, record keeping, and beneficiary communications
-    - Calculated annually based on average asset value
-
-1.2 Distribution Processing Fee: $50 per distribution
-    - Covers preparation, documentation, and processing of beneficiary distributions
-    - Waived for routine scheduled distributions
-
-1.3 Investment Management Fee: 0.5% of managed investment assets
-    - Applied to actively managed investment portfolios
-    - Excludes passive holdings and real estate
-
-SECTION 2 - SPECIAL SERVICES FEES
-2.1 Real Estate Management: $100 per month per property
-    - Includes oversight, maintenance coordination, and tenant relations
-    - Additional fees for major repairs or improvements
-
-2.2 Business Interest Management: 2.0% of business income
-    - For active management of business operations
-    - Quarterly assessment and billing
-
-2.3 Tax Preparation and Filing: $250 per return
-    - Includes federal and state trust tax returns
-    - Additional fees for complex tax situations
-
-SECTION 3 - EXTRAORDINARY SERVICES
-3.1 Legal Proceedings: $150 per hour
-    - Court appearances, depositions, and legal research
-    - Reasonable attorney fees reimbursed separately
-
-3.2 Asset Acquisition/Disposition: 1.0% of transaction value
-    - Applies to purchases and sales over $10,000
-    - Minimum fee of $250 per transaction
-
-3.3 Beneficiary Disputes: $150 per hour
-    - Mediation, documentation, and resolution services
-    - Capped at 10% of annual trust income
-
-SECTION 4 - EXPENSE REIMBURSEMENTS
-The trust shall reimburse the trustee for:
-- Professional fees (attorneys, accountants, appraisers)
-- Administrative expenses (postage, copying, filing fees)
-- Travel expenses for trust business
-- Insurance premiums for trustee liability coverage
-
-SECTION 5 - FEE PAYMENT TERMS
-- Fees are payable quarterly in arrears
-- Extraordinary service fees are due within 30 days
-- All fees are subject to beneficiary review and court approval if required
-- Fee disputes shall be resolved through ecclesiastical mediation
-
-SECTION 6 - FEE MODIFICATIONS
-This fee schedule may be modified by written agreement between the trustee and beneficiaries, or by court order if required.
-
-Trust Contact Information:
-Email: ${gmailData?.gmailAccount || 'Not provided'}
-Repository: ${gmailData?.googleDriveFolder || 'Not provided'}
-Verification ID: ${data?.['step-verification-tools']?.barcodeNumber || 'Not provided'}
-
-_________________________________
-${ministerName}
-Trustee
-
-Date: ${new Date().toLocaleDateString()}
-      `
-    };
+  const createProfessionalPDF = (documentType: string) => {
+    const doc = new jsPDF();
     
-    return templates[documentType] || `${documentType}\n\nDocument content for ${documentType} would appear here.\n\nGenerated for: ${ministerName}\nTrust: ${trustName}\nDate: ${new Date().toLocaleDateString()}`;
-  };
-  
-  const generateProfessionalPDF = (documentName: string, content: string): void => {
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4',
-      putOnlyUsedFonts: true
-    } as jsPDFOptions);
-
-    // Professional legal document styling
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 25;
-    const usableWidth = pageWidth - (margin * 2);
-    const lineHeight = 6;
-    let currentY = margin;
-
-    // Header with law firm appearance
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('ECCLESIASTICAL TRUST SERVICES', pageWidth / 2, currentY, { align: 'center' });
-    
-    currentY += 8;
+    // Set professional fonts and styling
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Legal Document Services Division', pageWidth / 2, currentY, { align: 'center' });
     
-    currentY += 15;
+    // Add letterhead-style header
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("ECCLESIASTICAL TRUST SERVICES", 105, 20, { align: "center" });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Professional Trust Administration • Legal Document Services", 105, 28, { align: "center" });
+    doc.text("_______________________________________________________________________", 105, 35, { align: "center" });
     
-    // Professional separator line
-    doc.setLineWidth(0.5);
-    doc.line(margin, currentY, pageWidth - margin, currentY);
-    currentY += 10;
-
+    // Get data from previous steps
+    const identityData = data?.['step_0'] || data?.identity || {};
+    const trustData = data?.['step_1'] || data?.trust || {};
+    const gmailData = data?.['step-gmail-setup'] || {};
+    const verificationData = data?.['step-verification-tools'] || {};
+    
+    const ministerName = identityData?.fullName || '[Minister Name]';
+    const trustName = trustData?.trustName || '[Trust Name]';
+    const todayDate = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    let yPosition = 50;
+    
     // Document title
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text(documentName.toUpperCase(), pageWidth / 2, currentY, { align: 'center' });
-    currentY += 15;
-
-    // Document body with proper legal formatting
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "bold");
+    doc.text(documentType.toUpperCase(), 105, yPosition, { align: "center" });
+    yPosition += 15;
     
-    const lines = content.split('\n');
-    for (const line of lines) {
-      if (currentY > pageHeight - 40) {
-        // Add new page with header
-        doc.addPage();
-        currentY = margin + 20;
-      }
+    // Create professional document content based on type
+    if (documentType === "Certificate of Trust (Summary)") {
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
       
-      if (line.trim() === '') {
-        currentY += lineHeight / 2;
-        continue;
-      }
+      const content = [
+        "",
+        `This Certificate is executed by ${ministerName}, as Trustee of the`,
+        `${trustName}, established on ${todayDate}.`,
+        "",
+        "1. TRUST EXISTENCE:",
+        `   The Trust named above is validly existing under ecclesiastical law and`,
+        `   pursuant to a trust agreement dated ${todayDate}.`,
+        "",
+        "2. TRUSTEE AUTHORITY:",
+        "   The undersigned Trustee has full power and authority to act on behalf",
+        "   of the Trust in all matters related to trust administration, including:",
+        "   • Acquiring, holding, and disposing of trust property",
+        "   • Entering into contracts and agreements",
+        "   • Managing trust assets and investments",
+        "   • Distributing trust income and principal",
+        "",
+        "3. TRUST IDENTIFICATION:",
+        `   Trust Name: ${trustName}`,
+        `   Trustee: ${ministerName}`,
+        `   Trust Email: ${gmailData?.gmailAccount || '[Trust Email]'}`,
+        `   Document Repository: ${gmailData?.googleDriveFolder || '[Repository]'}`,
+        `   Verification ID: ${verificationData?.barcodeNumber || '[Verification ID]'}`,
+        "",
+        "4. LIMITATION OF LIABILITY:",
+        "   This Certificate is executed to facilitate transactions involving trust",
+        "   property and does not modify, revoke, or otherwise affect the terms",
+        "   of the Trust Agreement.",
+        "",
+        "IN WITNESS WHEREOF, the undersigned Trustee has executed this",
+        `Certificate on ${todayDate}.`,
+        "",
+        "",
+        "_________________________________",
+        `${ministerName}, Trustee`,
+        trustName,
+        "",
+        `Address: ${identityData?.address || '[Address]'}`,
+        `${identityData?.city || '[City]'}, ${identityData?.state || '[State]'} ${identityData?.zipCode || '[Zip]'}`,
+        "",
+        "VERIFICATION ELEMENTS:",
+        "□ Barcode Certificate Verification",
+        "□ Digital Repository Access",
+        "□ QR Code Authentication",
+        "□ Ecclesiastical Seal Verification"
+      ];
       
-      // Handle different text styles
-      if (line.includes('ARTICLE') || line.includes('SECTION') || line.toUpperCase() === line && line.length < 80) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(12);
-      } else if (line.trim().startsWith('_____')) {
-        // Signature line
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.line(margin, currentY, margin + 80, currentY);
-        currentY += 3;
-        doc.text(line.replace(/_/g, '').trim(), margin, currentY);
-        currentY += lineHeight;
-        continue;
-      } else {
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(11);
-      }
-      
-      // Word wrap for long lines
-      const wrappedLines = doc.splitTextToSize(line, usableWidth);
-      for (const wrappedLine of wrappedLines) {
-        if (currentY > pageHeight - 40) {
-          doc.addPage();
-          currentY = margin + 20;
+      content.forEach((line, index) => {
+        if (line.startsWith('   ') || line.startsWith('   •')) {
+          doc.setFont("helvetica", "normal");
+          doc.text(line, 25, yPosition);
+        } else if (line.match(/^\d+\./)) {
+          doc.setFont("helvetica", "bold");
+          doc.text(line, 20, yPosition);
+        } else if (line.startsWith('□')) {
+          doc.setFont("helvetica", "normal");
+          doc.text(line, 25, yPosition);
+        } else {
+          doc.setFont("helvetica", "normal");
+          doc.text(line, 20, yPosition);
         }
-        doc.text(wrappedLine, margin, currentY);
-        currentY += lineHeight;
-      }
+        yPosition += 6;
+        
+        // Add new page if needed
+        if (yPosition > 270) {
+          doc.addPage();
+          yPosition = 20;
+        }
+      });
     }
-
-    // Professional footer on every page
+    
+    // Add footer with verification
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      
-      // Footer line
-      doc.setLineWidth(0.3);
-      doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
-      
-      // Footer text
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text('This document was generated through Ecclesiastical Trust Services', margin, pageHeight - 15);
-      doc.text(`Verification ID: ${data?.['step-verification-tools']?.barcodeNumber || 'N/A'}`, margin, pageHeight - 10);
-      doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin - 20, pageHeight - 10);
-      
-      // Add verification elements on first page
-      if (i === 1) {
-        // QR Code placeholder (would need QR library for actual QR codes)
-        doc.setFontSize(8);
-        doc.text('[QR: Barcode]', margin, pageHeight - 35);
-        doc.text('[Barcode JPG]', pageWidth / 2 - 15, pageHeight - 35);
-        doc.text('[QR: Drive]', pageWidth - margin - 25, pageHeight - 35);
-      }
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "italic");
+      doc.text("This document contains verification elements and should be authenticated before use.", 105, 285, { align: "center" });
+      doc.text(`Page ${i} of ${pageCount} • Generated ${todayDate}`, 105, 290, { align: "center" });
     }
-
-    // Generate and download the PDF
-    const fileName = `${documentName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_()-]/g, '')}.pdf`;
-    doc.save(fileName);
+    
+    return doc;
   };
-
-  const downloadProfessionalDocument = (documentName: string) => {
-    try {
-      const documentContent = createLegalDocument(documentName);
-      generateProfessionalPDF(documentName, documentContent);
-      
-      toast({
-        title: "Professional Legal Document Downloaded",
-        description: `${documentName} has been generated as a professionally formatted PDF`,
-      });
-      
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      toast({
-        title: "Document Generation Failed",
-        description: "Failed to generate professional PDF document. Please try again.",
-        variant: "destructive"
-      });
-    }
+  const downloadDocument = (documentType: string) => {
+    const pdf = createProfessionalPDF(documentType);
+    const fileName = `${documentType.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+    pdf.save(fileName);
+    
+    toast({
+      title: "Document Downloaded",
+      description: `${documentType} has been downloaded successfully.`,
+    });
   };
 
   const handleNext = () => {
@@ -736,7 +347,7 @@ Date: ${new Date().toLocaleDateString()}
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadProfessionalDocument("Certificate of Trust (Summary)")}
+                onClick={() => downloadDocument("Certificate of Trust (Summary)")}
               >
                 <span>Certificate of Trust (Summary)</span>
                 <Download className="h-4 w-4" />
@@ -744,7 +355,7 @@ Date: ${new Date().toLocaleDateString()}
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadProfessionalDocument("Certificate of Trust (Detailed)")}
+                onClick={() => downloadDocument("Certificate of Trust (Detailed)")}
               >
                 <span>Certificate of Trust (Detailed)</span>
                 <Download className="h-4 w-4" />
@@ -752,7 +363,7 @@ Date: ${new Date().toLocaleDateString()}
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadProfessionalDocument("Declaration of Trust")}
+                onClick={() => downloadDocument("Declaration of Trust")}
               >
                 <span>Declaration of Trust</span>
                 <Download className="h-4 w-4" />
@@ -760,7 +371,7 @@ Date: ${new Date().toLocaleDateString()}
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadProfessionalDocument("Schedule A - Trust Asset Inventory")}
+                onClick={() => downloadDocument("Schedule A - Trust Asset Inventory")}
               >
                 <span>Schedule A - Trust Asset Inventory</span>
                 <Download className="h-4 w-4" />
@@ -768,7 +379,7 @@ Date: ${new Date().toLocaleDateString()}
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadProfessionalDocument("Foundational Trust Indenture")}
+                onClick={() => downloadDocument("Foundational Trust Indenture")}
               >
                 <span>Foundational Trust Indenture</span>
                 <Download className="h-4 w-4" />
@@ -776,7 +387,7 @@ Date: ${new Date().toLocaleDateString()}
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadProfessionalDocument("Annex A - Affidavit of Identity")}
+                onClick={() => downloadDocument("Annex A - Affidavit of Identity")}
               >
                 <span>Annex A - Affidavit of Identity</span>
                 <Download className="h-4 w-4" />
@@ -784,7 +395,7 @@ Date: ${new Date().toLocaleDateString()}
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadProfessionalDocument("Annex B - Ecclesiastical Deed Poll")}
+                onClick={() => downloadDocument("Annex B - Ecclesiastical Deed Poll")}
               >
                 <span>Annex B - Ecclesiastical Deed Poll</span>
                 <Download className="h-4 w-4" />
@@ -792,7 +403,7 @@ Date: ${new Date().toLocaleDateString()}
               <Button 
                 variant="outline" 
                 className="justify-between hover:bg-primary/10"
-                onClick={() => downloadProfessionalDocument("Annex C - Ecclesiastical Fee Schedule")}
+                onClick={() => downloadDocument("Annex C - Ecclesiastical Fee Schedule")}
               >
                 <span>Annex C - Ecclesiastical Fee Schedule</span>
                 <Download className="h-4 w-4" />

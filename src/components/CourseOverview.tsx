@@ -71,8 +71,40 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
       return;
     }
 
-    // Redirect to PayPal payment link
-    window.open('https://www.paypal.com/ncp/payment/4QSTXR5Z9UVEW', '_blank');
+    try {
+      // Create a pending order in the database first
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          course_id: courseConfig.id,
+          amount: courseConfig.price * 100, // Convert to cents
+          currency: 'usd',
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Store order ID for reference
+      localStorage.setItem('pendingOrderId', order.id);
+      
+      // Redirect to PayPal payment link
+      window.open('https://www.paypal.com/ncp/payment/4QSTXR5Z9UVEW', '_blank');
+      
+      toast({
+        title: "Redirecting to PayPal",
+        description: "Complete your payment to access the course.",
+      });
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast({
+        title: "Payment Error",
+        description: "Unable to process payment. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const validateGiftCode = async () => {

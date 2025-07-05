@@ -4,24 +4,65 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, CreditCard, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [countdown, setCountdown] = useState(3);
+  const { user } = useAuth();
+  const [processingPayment, setProcessingPayment] = useState(true);
 
   useEffect(() => {
-    // Show success toast
-    toast({
-      title: "Payment successful!",
-      description: "Starting your course now...",
-    });
+    const processPaymentSuccess = async () => {
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
 
-    // Immediately redirect to course workflow (not just automation page)
-    setTimeout(() => {
-      navigate('/automation?start=true');
-    }, 1500); // Brief delay to show the success message
-  }, [navigate, toast]);
+      try {
+        // Get the pending order ID from localStorage
+        const pendingOrderId = localStorage.getItem('pendingOrderId');
+        
+        if (pendingOrderId) {
+          // Mark the order as paid
+          const { error } = await supabase
+            .from('orders')
+            .update({ status: 'paid' })
+            .eq('id', pendingOrderId)
+            .eq('user_id', user.id);
+
+          if (error) throw error;
+
+          // Clear the pending order ID
+          localStorage.removeItem('pendingOrderId');
+        }
+
+        // Show success toast
+        toast({
+          title: "Payment successful!",
+          description: "Starting your course now...",
+        });
+
+        setProcessingPayment(false);
+
+        // Immediately redirect to course workflow
+        setTimeout(() => {
+          navigate('/automation?start=true');
+        }, 1500);
+      } catch (error) {
+        console.error('Error processing payment:', error);
+        toast({
+          title: "Payment processed, but there was an issue",
+          description: "Please contact support if you continue to have problems accessing your course.",
+          variant: "destructive"
+        });
+        setProcessingPayment(false);
+      }
+    };
+
+    processPaymentSuccess();
+  }, [navigate, toast, user]);
 
   const handleStartCourse = () => {
     navigate('/automation');
