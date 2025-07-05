@@ -35,7 +35,7 @@ const Index = () => {
       >
         <div className="container mx-auto px-4 text-center relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-royal-glow">
-            TroothHurtz
+            TROOTHHURTZ
             <span className="block text-primary mt-2">Legal Document Automation</span>
           </h1>
           <p className="text-xl text-foreground max-w-3xl mx-auto mb-8">
@@ -189,7 +189,7 @@ const Index = () => {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Scale className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold text-primary">TroothHurtz</span>
+                <span className="text-xl font-bold text-primary">TROOTHHURTZ</span>
               </div>
               <p className="text-muted-foreground">
                 Professional ecclesiastic trust formation with automated legal documentation and verification services.
@@ -215,7 +215,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-primary/20 mt-8 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2024 TroothHurtz. Professional ecclesiastic trust formation platform.</p>
+            <p>&copy; 2024 TROOTHHURTZ. Professional ecclesiastic trust formation platform.</p>
           </div>
         </div>
       </footer>
