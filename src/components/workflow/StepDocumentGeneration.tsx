@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Download, CheckCircle, QrCode, BarChart, Stamp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useDemoMode } from '@/contexts/DemoModeContext';
 import jsPDF, { jsPDFOptions } from 'jspdf';
 
 interface StepDocumentGenerationProps {
@@ -13,82 +12,21 @@ interface StepDocumentGenerationProps {
 }
 
 const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGenerationProps) => {
-  const { isDemoMode, getDummyData } = useDemoMode();
-  const demoData = isDemoMode ? getDummyData('step-document-generation') : {};
-  
-  const [documentsGenerated, setDocumentsGenerated] = useState(data?.documentsGenerated || demoData?.generatedDocuments?.length > 0 || false);
+  const [documentsGenerated, setDocumentsGenerated] = useState(data?.documentsGenerated || false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
-
-  // Create sample PDF content for demo documents
-  const createDemoPDF = (title: string, content: string) => {
-    const pdfContent = `
-%PDF-1.4
-1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-3 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
-endobj
-4 0 obj
-<< /Length 200 >>
-stream
-BT
-/F1 12 Tf
-50 750 Td
-(${title}) Tj
-0 -20 Td
-(${content}) Tj
-0 -20 Td
-(This is a demo document generated for preview purposes.) Tj
-0 -20 Td
-         (Generated for: ${ministerName}) Tj
-         0 -20 Td
-         (Trust Name: ${trustName}) Tj
-ET
-endstream
-endobj
-5 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
-endobj
-xref
-0 6
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000254 00000 n 
-0000000505 00000 n 
-trailer
-<< /Size 6 /Root 1 0 R >>
-startxref
-565
-%%EOF
-    `;
-    return new Blob([pdfContent], { type: 'application/pdf' });
-  };
 
   const generateDocuments = async () => {
     setIsGenerating(true);
     
     try {
-      if (isDemoMode) {
-        // In demo mode, create actual downloadable PDF files
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      } else {
-        // Simulate comprehensive trust document generation process
-        await new Promise(resolve => setTimeout(resolve, 5000));
-      }
+      // Simulate comprehensive trust document generation process
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
       setDocumentsGenerated(true);
       toast({
         title: "Complete Trust Package Generated",
-        description: isDemoMode 
-          ? "Demo trust documents are ready for download and preview."
-          : "Your ecclesiastic revocable living trust with all annexes and certificates has been created.",
+        description: "Your ecclesiastic revocable living trust with all annexes and certificates has been created.",
       });
     } catch (error) {
       toast({
@@ -864,22 +802,12 @@ Date: ${new Date().toLocaleDateString()}
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                <p className="font-medium text-green-800">Professional Legal Documents Ready!</p>
-              </div>
-              <p className="text-sm text-green-700 mt-1">
-                All documents are generated as professionally formatted PDFs with proper legal formatting, 
-                headers, footers, and verification elements that would be recognized by legal teams and authorities.
-              </p>
-            </div>
-
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
                 <p className="font-medium text-green-800">Boot Camp Complete!</p>
               </div>
               <p className="text-sm text-green-700 mt-1">
                 Congratulations {ministerName}! Your ecclesiastic revocable living trust 
-                has been successfully created with all verification elements.
+                has been successfully created with all verification elements. All documents are 
+                professionally formatted PDFs that would be recognized by legal teams and authorities.
               </p>
             </div>
           </CardContent>
