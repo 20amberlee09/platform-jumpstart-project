@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminData } from "@/hooks/useAdminData";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
+import GiftCodeDropdown from "@/components/GiftCodeDropdown";
 
 interface NavItem {
   href: string;
@@ -85,6 +86,7 @@ const Navigation = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
+            <GiftCodeDropdown />
             {user ? (
               <>
                 <div className="flex items-center space-x-2 text-sm">
@@ -141,6 +143,9 @@ const Navigation = () => {
                 </Link>
               ))}
               <div className="flex flex-col space-y-2 pt-4 border-t">
+                <div className="px-2 pb-2">
+                  <GiftCodeDropdown />
+                </div>
                 {user ? (
                   <>
                     <div className="flex items-center space-x-2 text-sm px-2 py-1">
