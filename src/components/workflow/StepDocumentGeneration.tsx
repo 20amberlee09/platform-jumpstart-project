@@ -173,44 +173,54 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
     return doc;
   };
   const downloadDocument = (documentType: string) => {
-    console.log('Download button clicked for:', documentType);
-    
     try {
-      console.log('Creating PDF...');
       const pdf = createProfessionalPDF(documentType);
-      console.log('PDF created successfully');
-      
       const fileName = `${documentType.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
-      console.log('Generated filename:', fileName);
       
-      // Use the most reliable download method - direct jsPDF save
-      console.log('Attempting to save PDF...');
-      pdf.save(fileName);
-      console.log('PDF save method called');
+      // Create blob for download
+      const pdfBlob = pdf.output('blob');
       
-      // Also try the blob method as fallback
-      try {
-        const pdfData = pdf.output('dataurlstring');
-        const link = document.createElement('a');
-        link.href = pdfData;
-        link.download = fileName;
-        link.click();
-        console.log('Fallback blob method executed');
-      } catch (blobError) {
-        console.error('Blob method failed:', blobError);
-      }
+      // Create download link
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      
+      // Set link properties
+      link.href = url;
+      link.download = fileName;
+      link.style.display = 'none';
+      
+      // Force download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       
       toast({
-        title: "Document Downloaded",
-        description: `${documentType} has been downloaded successfully.`,
+        title: "Professional Document Downloaded",
+        description: `${documentType} is ready for legal review and use.`,
       });
     } catch (error) {
-      console.error('Download error:', error);
-      toast({
-        title: "Download Failed",
-        description: "There was an error downloading the document. Please try again.",
-        variant: "destructive"
-      });
+      console.error('Download failed:', error);
+      
+      // Ultimate fallback - try jsPDF direct save
+      try {
+        const pdf = createProfessionalPDF(documentType);
+        const fileName = `${documentType.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(fileName);
+        
+        toast({
+          title: "Document Downloaded",
+          description: `${documentType} saved using alternative method.`,
+        });
+      } catch (fallbackError) {
+        toast({
+          title: "Download Failed",
+          description: "Please check your browser's download settings and try again.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
