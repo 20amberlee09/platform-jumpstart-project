@@ -27,22 +27,37 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
   const [validatingGift, setValidatingGift] = useState(false);
   const [showGiftInput, setShowGiftInput] = useState(false);
 
-  // Check if user has already purchased this course
+  // Check if user has already purchased this course or redeemed a gift code
   const checkPurchaseStatus = async () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      // Check for paid orders
+      const { data: orderData } = await supabase
         .from('orders')
         .select('*')
         .eq('user_id', user.id)
         .eq('course_id', courseConfig.id)
         .eq('status', 'paid')
-        .single();
+        .maybeSingle();
+      
+      if (orderData) {
+        setHasPurchased(true);
+        return;
+      }
+      
+      // Check for redeemed gift codes
+      const { data: giftData } = await supabase
+        .from('gift_codes')
+        .select('*')
+        .eq('used_by', user.id)
+        .eq('course_id', courseConfig.id)
+        .maybeSingle();
         
-      setHasPurchased(!!data);
+      setHasPurchased(!!giftData);
     } catch (error) {
-      // No purchase found, which is fine
+      // No purchase or gift code found, which is fine
+      setHasPurchased(false);
     }
   };
 
