@@ -177,8 +177,21 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
       const pdf = createProfessionalPDF(documentType);
       const fileName = `${documentType.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
       
-      // Force download using jsPDF save method
-      pdf.save(fileName);
+      // Get PDF as blob and create download link
+      const pdfBlob = pdf.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      
+      // Create temporary download link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL
+      setTimeout(() => URL.revokeObjectURL(url), 100);
       
       toast({
         title: "Document Downloaded",
