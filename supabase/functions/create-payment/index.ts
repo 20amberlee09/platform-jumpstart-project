@@ -43,15 +43,16 @@ serve(async (req) => {
       throw new Error("Course ID is required");
     }
 
-    // Define course pricing
-    const coursePricing: Record<string, { name: string; amount: number }> = {
-      'trust-bootcamp': { name: 'Boot Camp documents', amount: 15000 }, // $150.00
-      'basic-trust': { name: 'Basic Trust Setup', amount: 29700 }   // $297.00
-    };
+    // Get course information from database
+    const { data: course, error: courseError } = await supabaseService
+      .from('courses')
+      .select('*')
+      .eq('id', courseId)
+      .eq('is_active', true)
+      .single();
 
-    const courseInfo = coursePricing[courseId];
-    if (!courseInfo) {
-      throw new Error("Invalid course ID");
+    if (courseError || !course) {
+      throw new Error("Course not found or not active");
     }
 
     // Initialize Stripe
@@ -74,8 +75,8 @@ serve(async (req) => {
         {
           price_data: {
             currency: "usd",
-            product_data: { name: courseInfo.name },
-            unit_amount: courseInfo.amount,
+            product_data: { name: course.title },
+            unit_amount: course.price,
           },
           quantity: 1,
         },
@@ -94,7 +95,7 @@ serve(async (req) => {
       user_id: user.id,
       course_id: courseId,
       stripe_session_id: session.id,
-      amount: courseInfo.amount,
+      amount: course.price,
       status: "pending"
     });
 
