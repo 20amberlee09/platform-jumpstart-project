@@ -198,6 +198,11 @@ export const useAdminData = () => {
 
     if (user) {
       loadData();
+    } else {
+      // Clear admin status when user signs out
+      setIsAdmin(false);
+      setUserRoles([]);
+      setLoading(false);
     }
   }, [user]);
 
