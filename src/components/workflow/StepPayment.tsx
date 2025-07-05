@@ -82,6 +82,9 @@ const StepPayment = ({ onNext, data, courseConfig }: StepPaymentProps) => {
   };
 
   const handlePayment = () => {
+    // Redirect to PayPal payment link
+    window.open('https://www.paypal.com/ncp/payment/4QSTXR5Z9UVEW', '_blank');
+    
     setPaymentComplete(true);
     setTimeout(() => {
       onNext({ 

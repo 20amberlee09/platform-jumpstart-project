@@ -56,27 +56,8 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
       return;
     }
 
-    setIsPaymentLoading(true);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { courseId: courseConfig.id }
-      });
-
-      if (error) throw error;
-
-      // Open Stripe checkout in a new tab
-      window.open(data.url, '_blank');
-    } catch (error) {
-      console.error('Payment error:', error);
-      toast({
-        title: "Payment Error",
-        description: "Failed to initiate payment. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsPaymentLoading(false);
-    }
+    // Redirect to PayPal payment link
+    window.open('https://www.paypal.com/ncp/payment/4QSTXR5Z9UVEW', '_blank');
   };
 
   const validateGiftCode = async () => {

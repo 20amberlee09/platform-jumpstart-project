@@ -1,64 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, CreditCard, ArrowRight } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 const PaymentSuccess = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isVerifying, setIsVerifying] = useState(true);
-  const [paymentVerified, setPaymentVerified] = useState(false);
-  const [courseId, setCourseId] = useState<string | null>(null);
-  
-  const sessionId = searchParams.get('session_id');
-
-  useEffect(() => {
-    const verifyPayment = async () => {
-      if (!sessionId) {
-        toast({
-          title: "Error",
-          description: "No payment session found.",
-          variant: "destructive"
-        });
-        navigate('/');
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase.functions.invoke('verify-payment', {
-          body: { sessionId }
-        });
-
-        if (error) throw error;
-
-        if (data.status === 'paid') {
-          setPaymentVerified(true);
-          setCourseId(data.courseId);
-          toast({
-            title: "Payment Successful!",
-            description: "Your course purchase has been confirmed.",
-          });
-        } else {
-          throw new Error('Payment not confirmed');
-        }
-      } catch (error) {
-        console.error('Payment verification error:', error);
-        toast({
-          title: "Payment Verification Failed",
-          description: "Please contact support if you were charged.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsVerifying(false);
-      }
-    };
-
-    verifyPayment();
-  }, [sessionId, navigate, toast]);
 
   const handleStartCourse = () => {
     navigate('/automation');
@@ -67,42 +14,6 @@ const PaymentSuccess = () => {
   const handleViewAllCourses = () => {
     navigate('/courses');
   };
-
-  if (isVerifying) {
-    return (
-      <div className="min-h-screen bg-background py-12">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <h2 className="text-2xl font-bold mb-2">Verifying Payment...</h2>
-            <p className="text-muted-foreground">Please wait while we confirm your purchase.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!paymentVerified) {
-    return (
-      <div className="min-h-screen bg-background py-12">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <Card className="text-center">
-            <CardHeader>
-              <CardTitle className="text-2xl text-destructive">Payment Issue</CardTitle>
-              <CardDescription>
-                We couldn't verify your payment. If you were charged, please contact support.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => navigate('/')} variant="outline">
-                Return Home
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background py-12">
