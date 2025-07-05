@@ -85,6 +85,10 @@ const Automation = () => {
   }
 
   const courseConfig = courseConfigs[courseId];
+  console.log('Course ID:', courseId);
+  console.log('Available course configs:', Object.keys(courseConfigs));
+  console.log('Found course config:', courseConfig);
+  
   if (!courseConfig) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
