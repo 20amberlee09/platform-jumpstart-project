@@ -95,6 +95,9 @@
 
   body {
     @apply bg-background text-foreground;
+    /* Mobile touch optimizations */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 }
 
@@ -200,6 +203,26 @@
     }
     50% {
       box-shadow: 0 0 20px hsl(var(--royal-gold)), 0 0 40px hsl(var(--royal-gold)), 0 0 60px hsl(var(--royal-gold));
+    }
+  }
+
+  /* Mobile Touch Optimizations */
+  .mobile-touch-optimized {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  /* Ensure minimum touch target size for mobile */
+  @media (max-width: 768px) {
+    button, .btn-royal-gold, .btn-royal-blue, .btn-royal-teal {
+      min-height: 48px;
+      min-width: 48px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
   }
 }
