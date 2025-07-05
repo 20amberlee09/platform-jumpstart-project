@@ -102,11 +102,16 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
 
         toast({
           title: "Gift code applied!",
-          description: "You now have free access to this course.",
+          description: "Starting your course now...",
         });
 
-        // Set as purchased and allow access
+        // Set as purchased and immediately start the workflow
         setHasPurchased(true);
+        
+        // Auto-start the course workflow after a brief delay for the toast
+        setTimeout(() => {
+          onStartWorkflow();
+        }, 1000);
       } else {
         toast({
           title: "Invalid gift code",
