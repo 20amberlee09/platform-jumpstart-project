@@ -84,49 +84,12 @@ const Index = () => {
     }
   };
 
-  const handlePayment = async () => {
+  const handlePayment = () => {
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to purchase this course.",
-        variant: "destructive"
-      });
+      navigate('/auth');
       return;
     }
-
-    try {
-      setIsPaymentLoading(true);
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          course_id: courseId,
-          amount: courseConfig?.price * 100 || 15000,
-          currency: 'usd',
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      localStorage.setItem('pendingOrderId', order.id);
-      window.open('https://www.paypal.com/ncp/payment/4QSTXR5Z9UVEW', '_blank');
-      
-      toast({
-        title: "Redirecting to PayPal",
-        description: "Complete your payment to access the course.",
-      });
-    } catch (error) {
-      console.error('Error creating order:', error);
-      toast({
-        title: "Payment Error",
-        description: "Unable to process payment. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsPaymentLoading(false);
-    }
+    navigate('/purchase');
   };
 
   const validateGiftCode = async () => {
@@ -256,10 +219,10 @@ const Index = () => {
                 size="lg" 
                 className="btn-royal-gold text-lg px-8" 
                 onClick={handlePayment}
-                disabled={isPaymentLoading}
+                disabled={false}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {isPaymentLoading ? "Processing..." : `Purchase Course - $${courseConfig?.price || 150}`}
+                Purchase Course - ${courseConfig?.price || 150}
               </Button>
             )}
           </div>
@@ -318,10 +281,10 @@ const Index = () => {
                     className="w-full btn-royal-gold" 
                     size="lg"
                     onClick={handlePayment}
-                    disabled={isPaymentLoading}
+                    disabled={false}
                   >
                     <CreditCard className="mr-2 h-4 w-4" />
-                    {isPaymentLoading ? "Processing..." : `Purchase Course - $${courseConfig?.price || 150}`}
+                    Purchase Course - ${courseConfig?.price || 150}
                   </Button>
                 )}
               </CardContent>
@@ -550,10 +513,10 @@ const Index = () => {
                 size="lg" 
                 className="btn-royal-gold text-lg px-8 w-full"
                 onClick={handlePayment}
-                disabled={isPaymentLoading}
+                disabled={false}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {isPaymentLoading ? "Processing..." : `Purchase & Start - $${courseConfig?.price || 150}`}
+                Purchase & Start - ${courseConfig?.price || 150}
               </Button>
             </div>
           )}

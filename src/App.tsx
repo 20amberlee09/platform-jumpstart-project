@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
 import Automation from "./pages/Automation";
+import Purchase from "./pages/Purchase";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/courses" element={<Courses />} />
           <Route path="/course/:courseId" element={<CourseDetail />} />
           <Route path="/automation" element={<Automation />} />
+          <Route path="/purchase" element={<Purchase />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />

@@ -37,7 +37,8 @@ const Navigation = () => {
   };
 
   const baseNavItems: NavItem[] = [
-    { href: "/", label: "Home" }
+    { href: "/", label: "Home" },
+    { href: "/purchase", label: "Purchase" }
   ];
   
   // Add admin items based on user permissions
