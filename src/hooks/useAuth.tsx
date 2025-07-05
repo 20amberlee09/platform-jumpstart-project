@@ -43,7 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/automation`;
+      // Use the current app URL, not localhost
+      const currentUrl = window.location.href.includes('localhost') 
+        ? 'https://d2754b1a-a880-48ec-9477-1d67b19e3aa5.lovableproject.com'
+        : window.location.origin;
+      const redirectUrl = `${currentUrl}/automation`;
       
       const { error } = await supabase.auth.signUp({
         email,
