@@ -27,22 +27,25 @@ const Navigation = () => {
   };
 
   const startCourse = () => {
-    navigate('/automation?start=true');
+    // Scroll to the course section on the home page
+    const element = document.getElementById('course-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/');
+    }
   };
 
   const baseNavItems: NavItem[] = [
     { href: "/", label: "Home" }
   ];
   
-  // Add course access and admin items based on user permissions
+  // Add admin items based on user permissions
   let navItems: NavItem[] = [...baseNavItems];
   
   if (hasCourseAccess) {
-    navItems.push({ href: "/automation", label: "Boot Camp documents" });
     // Make the start course button more prominent by putting it first
-    navItems.unshift({ href: "/automation?start=true", label: "▶ Start Course", isSpecial: true });
-  } else {
-    navItems.push({ href: "/automation", label: "Boot Camp documents" });
+    navItems.unshift({ href: "/#start", label: "▶ Start Course", isSpecial: true });
   }
   
   if (isAdmin) {
@@ -67,20 +70,34 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(item.href) 
-                    ? "text-primary border-b-2 border-primary pb-1" 
-                    : "text-muted-foreground"
-                } ${
-                  item.isSpecial ? "btn-royal-gold px-3 py-1 rounded-md flex items-center gap-1" : ""
-                }`}
-              >
-                {item.isSpecial && <Play className="h-4 w-4" />}
-                {item.label}
-              </Link>
+              item.isSpecial ? (
+                <button
+                  key={item.href}
+                  onClick={startCourse}
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive(item.href) 
+                      ? "text-primary border-b-2 border-primary pb-1" 
+                      : "text-muted-foreground"
+                  } ${
+                    item.isSpecial ? "btn-royal-gold px-3 py-1 rounded-md flex items-center gap-1" : ""
+                  }`}
+                >
+                  {item.isSpecial && <Play className="h-4 w-4" />}
+                  {item.label}
+                </button>
+              ) : (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive(item.href) 
+                      ? "text-primary border-b-2 border-primary pb-1" 
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              )
             ))}
           </nav>
 
@@ -128,19 +145,31 @@ const Navigation = () => {
           <div className="md:hidden py-4 border-t">
             <nav className="flex flex-col space-y-4">
               {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive(item.href) ? "text-primary" : "text-muted-foreground"
-                  } ${
-                    item.isSpecial ? "btn-royal-gold px-3 py-2 rounded-md flex items-center gap-2 mobile-touch-optimized" : ""
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.isSpecial && <Play className="h-4 w-4" />}
-                  {item.label}
-                </Link>
+                item.isSpecial ? (
+                  <button
+                    key={item.href}
+                    onClick={startCourse}
+                    className={`text-sm font-medium transition-colors hover:text-primary ${
+                      isActive(item.href) ? "text-primary" : "text-muted-foreground"
+                    } ${
+                      item.isSpecial ? "btn-royal-gold px-3 py-2 rounded-md flex items-center gap-2 mobile-touch-optimized" : ""
+                    }`}
+                  >
+                    {item.isSpecial && <Play className="h-4 w-4" />}
+                    {item.label}
+                  </button>
+                ) : (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={`text-sm font-medium transition-colors hover:text-primary ${
+                      isActive(item.href) ? "text-primary" : "text-muted-foreground"
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                )
               ))}
               <div className="flex flex-col space-y-2 pt-4 border-t">
                 <div className="px-2 pb-2">
