@@ -15,9 +15,10 @@ import { useToast } from "@/hooks/use-toast";
 interface CourseOverviewProps {
   courseConfig: CourseConfig;
   onStartWorkflow: () => void;
+  onAccessUpdated: () => Promise<void>;
 }
 
-const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) => {
+const CourseOverview = ({ courseConfig, onStartWorkflow, onAccessUpdated }: CourseOverviewProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -137,13 +138,14 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
           description: "Starting your course now...",
         });
 
-        // Set as purchased and immediately start the workflow
+        // Set as purchased and refresh parent access state
         setHasPurchased(true);
+        await onAccessUpdated();
         
-        // Auto-start the course workflow after a brief delay for the toast
+        // Auto-start the course workflow after state update
         setTimeout(() => {
           onStartWorkflow();
-        }, 1000);
+        }, 500);
       } else {
         toast({
           title: "Invalid gift code",

@@ -116,6 +116,10 @@ const Automation = () => {
     setShowOverview(true);
   };
 
+  const refreshCourseAccess = async () => {
+    await checkCourseAccess();
+  };
+
   if (!showOverview && hasCourseAccess) {
     return (
       <WorkflowEngine 
@@ -129,6 +133,7 @@ const Automation = () => {
     <CourseOverview 
       courseConfig={courseConfig}
       onStartWorkflow={startWorkflow}
+      onAccessUpdated={refreshCourseAccess}
     />
   );
 };
