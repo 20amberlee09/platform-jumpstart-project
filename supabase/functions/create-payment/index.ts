@@ -14,26 +14,24 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client using the anon key for user authentication
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
-
-    // Create service role client for bypassing RLS
+    // Create service role client for authentication and database operations
     const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
 
-    // Get authenticated user
-    const authHeader = req.headers.get("Authorization")!;
+    // Get authenticated user using service role client
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("No authorization header provided");
+    }
+    
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data, error: authError } = await supabaseService.auth.getUser(token);
     const user = data.user;
     
-    if (!user?.email) {
+    if (authError || !user?.email) {
       throw new Error("User not authenticated or email not available");
     }
 
