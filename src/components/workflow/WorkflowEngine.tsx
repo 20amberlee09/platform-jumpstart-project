@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProgress } from '@/hooks/useUserProgress';
+import { useCourseData } from '@/hooks/useCourseData';
 import { CourseConfig, WorkflowState } from '@/types/course';
-import { courseConfigs } from '@/config/courses';
 import StepIndicator from './StepIndicator';
 import { moduleRegistry } from './moduleRegistry';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ interface WorkflowEngineProps {
 const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { courseConfigs, loading: courseLoading } = useCourseData();
   const courseConfig = courseConfigs[courseId];
   const [hasCourseAccess, setHasCourseAccess] = useState(true); // Assume access initially
   const { 
@@ -68,13 +69,15 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
     checkCourseAccess();
   }, [user, courseId]);
 
-  // Show loading state while progress loads
-  if (loading) {
+  // Show loading state while progress or course data loads
+  if (loading || courseLoading) {
     return (
       <div className="min-h-screen bg-background py-8 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading your progress...</p>
+          <p className="text-muted-foreground">
+            {courseLoading ? 'Loading course...' : 'Loading your progress...'}
+          </p>
         </div>
       </div>
     );

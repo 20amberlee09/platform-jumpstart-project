@@ -30,15 +30,18 @@ const Navigation = () => {
   };
 
   const baseNavItems: NavItem[] = [
-    { href: "/", label: "Home" },
-    { href: "/automation", label: "Boot Camp documents" }
+    { href: "/", label: "Home" }
   ];
   
   // Add course access and admin items based on user permissions
   let navItems: NavItem[] = [...baseNavItems];
   
   if (hasCourseAccess) {
-    navItems.push({ href: "/automation?start=true", label: "Start Course", isSpecial: true });
+    navItems.push({ href: "/automation", label: "Boot Camp documents" });
+    // Make the start course button more prominent by putting it first
+    navItems.unshift({ href: "/automation?start=true", label: "▶ Start Course", isSpecial: true });
+  } else {
+    navItems.push({ href: "/automation", label: "Boot Camp documents" });
   }
   
   if (isAdmin) {
