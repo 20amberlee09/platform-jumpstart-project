@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { CreditCard, CheckCircle, Gift, Loader2 } from 'lucide-react';
-import { useDemoMode } from '@/contexts/DemoModeContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,11 +16,9 @@ interface StepPaymentProps {
 }
 
 const StepPayment = ({ onNext, data, courseConfig }: StepPaymentProps) => {
-  const { isDemoMode, getDummyData } = useDemoMode();
   const { user } = useAuth();
   const { toast } = useToast();
-  const demoData = isDemoMode ? getDummyData('step-payment') : {};
-  const [paymentComplete, setPaymentComplete] = useState(demoData?.status === 'completed' || false);
+  const [paymentComplete, setPaymentComplete] = useState(false);
   const [giftCode, setGiftCode] = useState('');
   const [validatingGift, setValidatingGift] = useState(false);
   const [showGiftInput, setShowGiftInput] = useState(false);
@@ -189,7 +186,7 @@ const StepPayment = ({ onNext, data, courseConfig }: StepPaymentProps) => {
         <CardContent>
           <Button onClick={handlePayment} size="lg" className="w-full">
             <CreditCard className="mr-2 h-4 w-4" />
-            {isDemoMode ? 'Complete Demo Payment' : `Pay $${courseConfig.price}`}
+            Pay ${courseConfig.price}
           </Button>
         </CardContent>
       </Card>

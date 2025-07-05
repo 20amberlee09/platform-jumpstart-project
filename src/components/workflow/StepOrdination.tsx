@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Award, ExternalLink, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DocumentUpload from './DocumentUpload';
-import { useDemoMode } from '@/contexts/DemoModeContext';
 
 interface StepOrdinationProps {
   onNext: (data: any) => void;
@@ -13,11 +12,8 @@ interface StepOrdinationProps {
 }
 
 const StepOrdination = ({ onNext, onPrev, data }: StepOrdinationProps) => {
-  const { isDemoMode, getDummyData } = useDemoMode();
-  const demoData = isDemoMode ? getDummyData('step-ordination') : {};
-  
-  const [isOrdained, setIsOrdained] = useState(data?.isOrdained || demoData?.ministerName || isDemoMode || false);
-  const [uploadedFiles, setUploadedFiles] = useState(data?.uploadedFiles || demoData?.uploadedFiles || []);
+  const [isOrdained, setIsOrdained] = useState(data?.isOrdained || false);
+  const [uploadedFiles, setUploadedFiles] = useState(data?.uploadedFiles || []);
   const { toast } = useToast();
 
   const documentRequirements = [
@@ -50,33 +46,30 @@ const StepOrdination = ({ onNext, onPrev, data }: StepOrdinationProps) => {
       return;
     }
 
-    // In demo mode, skip certificate upload requirement
-    if (!isDemoMode) {
-      // Check if required certificate is uploaded (only in non-demo mode)
-      const requiredUploads = documentRequirements.filter(req => req.required);
-      const uploadedRequiredFiles = requiredUploads.filter(req => 
-        uploadedFiles.some(file => file.requirementId === req.id)
-      );
+    // Check if required certificate is uploaded
+    const requiredUploads = documentRequirements.filter(req => req.required);
+    const uploadedRequiredFiles = requiredUploads.filter(req => 
+      uploadedFiles.some(file => file.requirementId === req.id)
+    );
 
-      if (uploadedRequiredFiles.length < requiredUploads.length) {
-        toast({
-          title: "Certificate Upload Required",
-          description: "Please upload your minister certificate before continuing.",
-          variant: "destructive"
-        });
-        return;
-      }
+    if (uploadedRequiredFiles.length < requiredUploads.length) {
+      toast({
+        title: "Certificate Upload Required",
+        description: "Please upload your minister certificate before continuing.",
+        variant: "destructive"
+      });
+      return;
     }
-
-    const ministerName = data?.fullName ? `Minister ${data.fullName}` : demoData?.ministerName || 'Minister';
+    
+    const ministerName = data?.fullName ? `Minister ${data.fullName}` : 'Minister';
     
     onNext({ 
       isOrdained: true,
-      uploadedFiles: isDemoMode ? demoData?.uploadedFiles || [] : uploadedFiles,
+      uploadedFiles: uploadedFiles,
       ministerName,
       ministerTitle: 'Minister',
-      ordinationDate: demoData?.ordinationDate || new Date().toISOString().split('T')[0],
-      ministerialCredentials: demoData?.ministerialCredentials || 'Universal Life Church Minister'
+      ordinationDate: new Date().toISOString().split('T')[0],
+      ministerialCredentials: 'Universal Life Church Minister'
     });
   };
 
@@ -216,25 +209,13 @@ const StepOrdination = ({ onNext, onPrev, data }: StepOrdinationProps) => {
         </CardContent>
       </Card>
 
-      {isOrdained && !isDemoMode && (
+      {isOrdained && (
         <DocumentUpload
           title="Document Upload"
           requirements={documentRequirements}
           uploadedFiles={uploadedFiles}
           onFilesChange={setUploadedFiles}
         />
-      )}
-
-      {isOrdained && isDemoMode && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center">
-            <CheckCircle className="h-5 w-5 text-blue-500 mr-2" />
-            <p className="font-medium text-blue-800">Demo Mode: Certificate Pre-loaded</p>
-          </div>
-          <p className="text-sm text-blue-700 mt-1">
-            Your ordination certificate has been automatically loaded for demo purposes.
-          </p>
-        </div>
       )}
 
       {isOrdained && (

@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Shield, FileText } from 'lucide-react';
-import { useDemoMode } from '@/contexts/DemoModeContext';
 
 interface StepNDAProps {
   onNext: (data: any) => void;
@@ -12,15 +11,12 @@ interface StepNDAProps {
 }
 
 const StepNDA = ({ onNext, data }: StepNDAProps) => {
-  const { isDemoMode, getDummyData } = useDemoMode();
-  const demoData = isDemoMode ? getDummyData('step-nda') : {};
-  
-  const [agreed, setAgreed] = useState(data?.agreed || demoData?.agreed || false);
+  const [agreed, setAgreed] = useState(data?.agreed || false);
 
   const handleNext = () => {
     onNext({ 
       agreed: true, 
-      signature: demoData?.signature || 'Digital Signature',
+      signature: 'Digital Signature',
       signedAt: new Date().toISOString() 
     });
   };

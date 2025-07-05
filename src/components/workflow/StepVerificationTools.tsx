@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { QrCode, BarChart, Stamp, ExternalLink, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DocumentUpload from './DocumentUpload';
-import { useDemoMode } from '@/contexts/DemoModeContext';
 
 interface StepVerificationToolsProps {
   onNext: (data: any) => void;
@@ -15,34 +14,11 @@ interface StepVerificationToolsProps {
 }
 
 const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsProps) => {
-  const { isDemoMode, getDummyData } = useDemoMode();
-  const demoData = isDemoMode ? getDummyData('step-verification-tools') : {};
-  
-  const [qrCodeGenerated, setQrCodeGenerated] = useState(data?.qrCodeGenerated || demoData?.qrCodes?.length > 0 || false);
-  const [barcodeObtained, setBarcodeObtained] = useState(data?.barcodeObtained || demoData?.barcodes?.length > 0 || false);
-  const [driveQrCode, setDriveQrCode] = useState(data?.driveQrCode || demoData?.qrCodes?.[0]?.url || '');
-  const [barcodeNumber, setBarcodeNumber] = useState(data?.barcodeNumber || demoData?.barcodes?.[0]?.code || '');
-  
-  // Create dummy files for demo mode
-  const createDummyFiles = () => {
-    if (!isDemoMode) return [];
-    
-    return [
-      {
-        id: 'demo-barcode-cert',
-        file: new File(['dummy certificate content'], 'barcode-certificate.pdf', { type: 'application/pdf' }),
-        requirementId: 'barcode-certificate'
-      },
-      {
-        id: 'demo-barcode-img', 
-        file: new File(['dummy image content'], 'barcode-image.jpg', { type: 'image/jpeg' }),
-        requirementId: 'barcode-image'
-      }
-    ];
-  };
-  
-  const [uploadedFiles, setUploadedFiles] = useState(data?.uploadedFiles || createDummyFiles());
-  
+  const [qrCodeGenerated, setQrCodeGenerated] = useState(data?.qrCodeGenerated || false);
+  const [barcodeObtained, setBarcodeObtained] = useState(data?.barcodeObtained || false);
+  const [driveQrCode, setDriveQrCode] = useState(data?.driveQrCode || '');
+  const [barcodeNumber, setBarcodeNumber] = useState(data?.barcodeNumber || '');
+  const [uploadedFiles, setUploadedFiles] = useState(data?.uploadedFiles || []);
   const { toast } = useToast();
 
   const documentRequirements = [
@@ -103,21 +79,19 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
       return;
     }
 
-    // In demo mode, skip document upload requirement
-    if (!isDemoMode) {
-      const requiredUploads = documentRequirements.filter(req => req.required);
-      const uploadedRequiredFiles = requiredUploads.filter(req => 
-        uploadedFiles.some(file => file.requirementId === req.id)
-      );
+    // Check if required certificate is uploaded
+    const requiredUploads = documentRequirements.filter(req => req.required);
+    const uploadedRequiredFiles = requiredUploads.filter(req => 
+      uploadedFiles.some(file => file.requirementId === req.id)
+    );
 
-      if (uploadedRequiredFiles.length < requiredUploads.length) {
-        toast({
-          title: "Document Upload Required",
-          description: "Please upload required documents before continuing.",
-          variant: "destructive"
-        });
-        return;
-      }
+    if (uploadedRequiredFiles.length < requiredUploads.length) {
+      toast({
+        title: "Document Upload Required",
+        description: "Please upload required documents before continuing.",
+        variant: "destructive"
+      });
+      return;
     }
     
     onNext({ 
@@ -282,30 +256,15 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
         </CardContent>
       </Card>
 
-      {!isDemoMode && (
-        <DocumentUpload
-          title="Required Documents"
-          requirements={documentRequirements}
-          uploadedFiles={uploadedFiles}
-          onFilesChange={setUploadedFiles}
-          className="mt-6"
-        />
-      )}
+      <DocumentUpload
+        title="Required Documents"
+        requirements={documentRequirements}
+        uploadedFiles={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        className="mt-6"
+      />
 
-      {isDemoMode && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mt-6">
-          <div className="flex items-center">
-            <CheckCircle className="h-5 w-5 text-blue-500 mr-2" />
-            <p className="font-medium text-blue-800">Demo Mode: Documents Pre-loaded</p>
-          </div>
-          <p className="text-sm text-blue-700 mt-1">
-            Barcode certificate and barcode image have been automatically loaded for demo purposes.
-          </p>
-        </div>
-      )}
-
-
-      {qrCodeGenerated && barcodeObtained && (isDemoMode || uploadedFiles.length >= documentRequirements.filter(r => r.required).length) && (
+      {qrCodeGenerated && barcodeObtained && uploadedFiles.length >= documentRequirements.filter(r => r.required).length && (
         <Card>
           <CardHeader>
             <CardTitle>Document Footer Preview</CardTitle>
@@ -340,7 +299,7 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
         </Button>
         <Button 
           onClick={handleNext} 
-          disabled={!qrCodeGenerated || !barcodeObtained || (!isDemoMode && uploadedFiles.filter(f => documentRequirements.find(r => r.required && r.id === f.requirementId)).length < documentRequirements.filter(r => r.required).length)} 
+          disabled={!qrCodeGenerated || !barcodeObtained || uploadedFiles.filter(f => documentRequirements.find(r => r.required && r.id === f.requirementId)).length < documentRequirements.filter(r => r.required).length} 
           size="lg"
           variant="neon-gold"
         >

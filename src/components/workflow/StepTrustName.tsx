@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
-import { useDemoMode } from '@/contexts/DemoModeContext';
 
 interface StepTrustNameProps {
   onNext: (data: any) => void;
@@ -13,13 +12,10 @@ interface StepTrustNameProps {
 }
 
 const StepTrustName = ({ onNext, onPrev, data }: StepTrustNameProps) => {
-  const { isDemoMode, getDummyData } = useDemoMode();
-  const demoData = isDemoMode ? getDummyData('step-trust-name') : {};
-  
   const [formData, setFormData] = useState({
-    trustBaseName: data?.trustBaseName || demoData?.trustBaseName || '',
-    fullTrustName: data?.fullTrustName || demoData?.fullTrustName || '',
-    trustType: data?.trustType || demoData?.trustType || 'ecclesiastic-revocable-living'
+    trustBaseName: data?.trustBaseName || '',
+    fullTrustName: data?.fullTrustName || '',
+    trustType: data?.trustType || 'ecclesiastic-revocable-living'
   });
 
   const handleNext = () => {
