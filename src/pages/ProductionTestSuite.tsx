@@ -433,6 +433,23 @@ const ProductionTestSuite = () => {
                       "❌ Critical issues found. Address failed tests before public release."
                     }
                   </p>
+                  
+                  {overallScore >= 70 && (
+                    <div className="mt-4 pt-3 border-t border-blue-200">
+                      <p className="text-blue-800 font-medium text-sm mb-2">🚀 Ready for Advanced Testing?</p>
+                      <p className="text-blue-700 text-xs mb-3">
+                        Take your app to enterprise-grade quality with advanced performance, security, and compliance testing.
+                      </p>
+                      <Button 
+                        onClick={() => window.location.href = '/advanced-test-suite'}
+                        variant="outline" 
+                        size="sm"
+                        className="bg-white hover:bg-blue-50"
+                      >
+                        🏆 Run Advanced Test Suite
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
