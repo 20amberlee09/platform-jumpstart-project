@@ -64,14 +64,14 @@ const Index = () => {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <Card className="card-royal shadow-royal border-2 border-primary glow-gold">
+            <Card className="card-royal shadow-royal border-2 border-primary">
               <CardHeader className="pb-6 bg-gradient-gold/10">
                 <div className="flex justify-between items-start mb-4">
-                  <Badge variant="secondary" className="bg-primary text-black border-primary glow-gold">
+                  <Badge variant="secondary" className="bg-primary text-black border-primary">
                     Complete Package
                   </Badge>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-primary glow-gold">$150</div>
+                    <div className="text-3xl font-bold text-primary">$150</div>
                     <div className="text-sm text-electric-blue">One-time payment</div>
                   </div>
                 </div>
