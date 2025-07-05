@@ -499,6 +499,23 @@ const AdvancedTestSuite = () => {
                       "📈 Good foundation! Address the key recommendations to reach enterprise-grade quality."
                     }
                   </p>
+                  
+                  {overallScore >= 80 && (
+                    <div className="mt-4 pt-3 border-t border-blue-200">
+                      <p className="text-blue-800 font-medium text-sm mb-2">🔍 Want Ultimate Code Quality?</p>
+                      <p className="text-blue-700 text-xs mb-3">
+                        Run professional code analysis with industry-standard tools used by Google, Microsoft, and top tech companies.
+                      </p>
+                      <Button 
+                        onClick={() => window.location.href = '/code-quality-test-suite'}
+                        variant="outline" 
+                        size="sm"
+                        className="bg-white hover:bg-blue-50"
+                      >
+                        🔍 Run Code Quality Analysis
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

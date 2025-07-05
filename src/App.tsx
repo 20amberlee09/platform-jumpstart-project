@@ -15,6 +15,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import TestingReturnUser from "./pages/TestingReturnUser";
 import ProductionTestSuite from "./pages/ProductionTestSuite";
 import AdvancedTestSuite from "./pages/AdvancedTestSuite";
+import CodeQualityTestSuite from "./pages/CodeQualityTestSuite";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/test-return-user" element={<TestingReturnUser />} />
           <Route path="/production-test-suite" element={<ProductionTestSuite />} />
           <Route path="/advanced-test-suite" element={<AdvancedTestSuite />} />
+          <Route path="/code-quality-test-suite" element={<CodeQualityTestSuite />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
