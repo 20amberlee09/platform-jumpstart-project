@@ -1,9 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { Scale, Menu, X, User } from "lucide-react";
+import { Scale, Menu, X, User, Play } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminData } from "@/hooks/useAdminData";
+import { useCourseAccess } from "@/hooks/useCourseAccess";
+
+interface NavItem {
+  href: string;
+  label: string;
+  isSpecial?: boolean;
+}
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,21 +18,32 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminData();
+  const { hasCourseAccess } = useCourseAccess();
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
 
-  const baseNavItems = [
+  const startCourse = () => {
+    navigate('/automation?start=true');
+  };
+
+  const baseNavItems: NavItem[] = [
     { href: "/", label: "Home" },
     { href: "/automation", label: "Boot Camp documents" }
   ];
   
-  // Only show admin link if user is actually an admin
-  const navItems = isAdmin 
-    ? [...baseNavItems, { href: "/admin", label: "Admin" }]
-    : baseNavItems;
+  // Add course access and admin items based on user permissions
+  let navItems: NavItem[] = [...baseNavItems];
+  
+  if (hasCourseAccess) {
+    navItems.push({ href: "/automation?start=true", label: "Start Course", isSpecial: true });
+  }
+  
+  if (isAdmin) {
+    navItems.push({ href: "/admin", label: "Admin" });
+  }
 
   const isActive = (href: string) => {
     if (href === "/") return location.pathname === "/";
@@ -52,8 +70,11 @@ const Navigation = () => {
                   isActive(item.href) 
                     ? "text-primary border-b-2 border-primary pb-1" 
                     : "text-muted-foreground"
+                } ${
+                  item.isSpecial ? "btn-royal-gold px-3 py-1 rounded-md flex items-center gap-1" : ""
                 }`}
               >
+                {item.isSpecial && <Play className="h-4 w-4" />}
                 {item.label}
               </Link>
             ))}
@@ -107,9 +128,12 @@ const Navigation = () => {
                   to={item.href}
                   className={`text-sm font-medium transition-colors hover:text-primary ${
                     isActive(item.href) ? "text-primary" : "text-muted-foreground"
+                  } ${
+                    item.isSpecial ? "btn-royal-gold px-3 py-2 rounded-md flex items-center gap-2 mobile-touch-optimized" : ""
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
+                  {item.isSpecial && <Play className="h-4 w-4" />}
                   {item.label}
                 </Link>
               ))}
