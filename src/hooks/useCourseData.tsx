@@ -77,12 +77,8 @@ export const useCourseData = () => {
         // Transform data into the expected CourseConfig format
         const configs: Record<string, CourseConfig> = {};
         
-        console.log('Processing courses:', coursesData);
-        console.log('Processing modules:', modulesData);
-        
         coursesData?.forEach(course => {
           const courseModules = modulesData?.filter(m => m.course_id === course.id) || [];
-          console.log(`Creating config for course ${course.id} with ${courseModules.length} modules`);
           
           configs[course.id] = {
             id: course.id,
@@ -107,7 +103,6 @@ export const useCourseData = () => {
           };
         });
 
-        console.log('Final course configs:', configs);
         setCourseConfigs(configs);
       } catch (error) {
         console.error('Error fetching course data:', error);

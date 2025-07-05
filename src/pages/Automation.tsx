@@ -85,11 +85,8 @@ const Automation = () => {
   }
 
   const courseConfig = courseConfigs[courseId];
-  console.log('Course ID:', courseId);
-  console.log('Available course configs:', Object.keys(courseConfigs));
-  console.log('Found course config:', courseConfig);
   
-  if (!courseConfig) {
+  if (!courseConfig && !loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md">
@@ -124,7 +121,7 @@ const Automation = () => {
     await checkCourseAccess();
   };
 
-  if (!showOverview && hasCourseAccess) {
+  if (!showOverview && hasCourseAccess && courseConfig) {
     return (
       <WorkflowEngine 
         courseId={courseId}
@@ -133,12 +130,25 @@ const Automation = () => {
     );
   }
 
+  // Only render CourseOverview if we have a valid courseConfig
+  if (courseConfig) {
+    return (
+      <CourseOverview 
+        courseConfig={courseConfig}
+        onStartWorkflow={startWorkflow}
+        onAccessUpdated={refreshCourseAccess}
+      />
+    );
+  }
+
+  // Fallback loading state
   return (
-    <CourseOverview 
-      courseConfig={courseConfig}
-      onStartWorkflow={startWorkflow}
-      onAccessUpdated={refreshCourseAccess}
-    />
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Loading course...</p>
+      </div>
+    </div>
   );
 };
 
