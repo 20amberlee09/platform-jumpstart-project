@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, FileText, Shield, Scale, Award, Users } from "lucide-react";
@@ -7,20 +7,23 @@ import { useAuth } from "@/hooks/useAuth";
 import WorkflowEngine from "@/components/workflow/WorkflowEngine";
 import CourseOverview from "@/components/CourseOverview";
 import { useCourseData } from "@/hooks/useCourseData";
+import { supabase } from "@/integrations/supabase/client";
 
 const Automation = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { courseConfigs, loading } = useCourseData();
   const [showOverview, setShowOverview] = useState(true);
+  const [hasCourseAccess, setHasCourseAccess] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const courseId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'; // Using the UUID from our migration
 
-  if (loading) {
+  if (loading || checkingAccess) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading course...</p>
+          <p className="text-muted-foreground">{loading ? 'Loading course...' : 'Checking access...'}</p>
         </div>
       </div>
     );
@@ -42,9 +45,57 @@ const Automation = () => {
     );
   }
 
+  // Check if user has access to this course (via purchase or gift code)
+  const checkCourseAccess = async () => {
+    if (!user) {
+      setCheckingAccess(false);
+      return;
+    }
+    
+    try {
+      // Check for paid orders
+      const { data: orderData } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .eq('status', 'paid')
+        .maybeSingle();
+      
+      if (orderData) {
+        setHasCourseAccess(true);
+        setCheckingAccess(false);
+        return;
+      }
+      
+      // Check for redeemed gift codes
+      const { data: giftData } = await supabase
+        .from('gift_codes')
+        .select('*')
+        .eq('used_by', user.id)
+        .eq('course_id', courseId)
+        .maybeSingle();
+        
+      setHasCourseAccess(!!giftData);
+    } catch (error) {
+      console.error('Error checking course access:', error);
+      setHasCourseAccess(false);
+    } finally {
+      setCheckingAccess(false);
+    }
+  };
+
+  useEffect(() => {
+    checkCourseAccess();
+  }, [user]);
+
   const startWorkflow = () => {
     if (!user) {
       navigate('/auth');
+      return;
+    }
+    if (!hasCourseAccess) {
+      // Stay on overview to show purchase options
       return;
     }
     setShowOverview(false);
@@ -54,7 +105,7 @@ const Automation = () => {
     setShowOverview(true);
   };
 
-  if (!showOverview) {
+  if (!showOverview && hasCourseAccess) {
     return (
       <WorkflowEngine 
         courseId={courseId}
