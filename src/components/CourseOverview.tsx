@@ -4,13 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, CreditCard, TestTube, Gift, Loader2 } from "lucide-react";
+import { CheckCircle, CreditCard, Gift, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CourseConfig } from "@/hooks/useCourseData";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useDemoMode } from "@/contexts/DemoModeContext";
+
 
 interface CourseOverviewProps {
   courseConfig: CourseConfig;
@@ -20,7 +20,7 @@ interface CourseOverviewProps {
 const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isDemoMode, setDemoMode } = useDemoMode();
+  
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   const [hasPurchased, setHasPurchased] = useState(false);
   const [giftCode, setGiftCode] = useState('');
@@ -161,28 +161,15 @@ const CourseOverview = ({ courseConfig, onStartWorkflow }: CourseOverviewProps) 
                   Start Your Course
                 </Button>
               ) : (
-                <>
-                  <Button 
-                    size="lg" 
-                    className="btn-royal-gold text-lg px-8" 
-                    onClick={handlePayment}
-                    disabled={isPaymentLoading}
-                  >
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    {isPaymentLoading ? "Processing..." : `Purchase Course - $${courseConfig.price}`}
-                  </Button>
-                  <Button 
-                    size="lg" 
-                    className="btn-royal-teal text-lg px-8" 
-                    onClick={() => {
-                      setDemoMode(true);
-                      onStartWorkflow();
-                    }}
-                  >
-                    <TestTube className="mr-2 h-4 w-4" />
-                    Try Demo Mode
-                  </Button>
-                </>
+                <Button 
+                  size="lg" 
+                  className="btn-royal-gold text-lg px-8" 
+                  onClick={handlePayment}
+                  disabled={isPaymentLoading}
+                >
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  {isPaymentLoading ? "Processing..." : `Purchase Course - $${courseConfig.price}`}
+                </Button>
               )}
               <Link to="/">
                 <Button size="lg" variant="outline" className="text-lg px-8 border-primary text-primary hover:bg-primary hover:text-black">

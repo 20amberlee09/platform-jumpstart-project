@@ -118,14 +118,16 @@ const dummyData = {
 };
 
 export const DemoModeProvider = ({ children }: { children: ReactNode }) => {
-  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [isDemoMode] = useState(false); // Demo mode permanently disabled
 
-  const setDemoMode = (enabled: boolean) => {
-    setIsDemoMode(enabled);
+  const setDemoMode = () => {
+    // Demo mode is disabled - this function does nothing
+    return;
   };
 
-  const getDummyData = (stepId: string) => {
-    return dummyData[stepId as keyof typeof dummyData] || {};
+  const getDummyData = () => {
+    // Demo mode disabled - return empty object
+    return {};
   };
 
   return (
