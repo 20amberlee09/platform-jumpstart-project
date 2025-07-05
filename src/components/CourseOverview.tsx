@@ -215,6 +215,27 @@ const CourseOverview = ({ courseConfig, onStartWorkflow, onAccessUpdated }: Cour
           </div>
         </div>
 
+        {/* Prominent Course Access Button for Users with Access */}
+        {hasPurchased && (
+          <div className="mb-12">
+            <Card className="card-royal border-2 border-primary glow-gold bg-gradient-royal">
+              <CardContent className="p-8 text-center">
+                <h2 className="text-3xl font-bold mb-4 text-primary">You Have Access!</h2>
+                <p className="text-xl mb-6 text-foreground/90">
+                  Ready to start your {courseConfig.title.toLowerCase()}? Click below to begin.
+                </p>
+                <Button 
+                  size="lg" 
+                  className="btn-royal-gold text-xl px-12 py-4 mobile-touch-optimized"
+                  onClick={onStartWorkflow}
+                >
+                  🚀 Start Your Course Now
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Course Features */}
         <div className="space-y-8">
           {courseConfig.modules.map((module, index) => (
