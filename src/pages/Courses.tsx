@@ -9,7 +9,7 @@ const Courses = () => {
     {
       id: "trust-bootcamp",
       name: "Boot Camp",
-      price: "$497",
+      price: "",
       duration: "One-time",
       category: "Complete Course",
       description: "Complete ecclesiastic revocable living trust creation with ministerial ordination and professional documentation.",
