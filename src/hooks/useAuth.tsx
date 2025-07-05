@@ -108,8 +108,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      // Force a page refresh to ensure clean state
-      window.location.href = '/';
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully.",
+      });
     } catch (error: any) {
       toast({
         title: "Sign Out Error",

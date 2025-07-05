@@ -1,15 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Scale, Menu, X, User } from "lucide-react";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminData } from "@/hooks/useAdminData";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminData();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   const baseNavItems = [
     { href: "/", label: "Home" },
@@ -61,7 +67,7 @@ const Navigation = () => {
                   <User className="h-4 w-4" />
                   <span className="text-muted-foreground">Welcome back!</span>
                 </div>
-                <Button variant="ghost" size="sm" onClick={signOut}>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
                   Sign Out
                 </Button>
               </>
@@ -114,7 +120,7 @@ const Navigation = () => {
                       <User className="h-4 w-4" />
                       <span className="text-muted-foreground">Welcome back!</span>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={signOut}>
+                    <Button variant="ghost" size="sm" onClick={handleSignOut}>
                       Sign Out
                     </Button>
                   </>
