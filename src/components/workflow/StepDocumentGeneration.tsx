@@ -153,27 +153,45 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
       });
     }
     
-    // Add footer with verification
+    // Add footer with verification elements (3 QR codes/barcodes)
     const pageCount = doc.getNumberOfPages();
+    
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
       doc.setFont("helvetica", "italic");
       doc.text("This document contains verification elements and should be authenticated before use.", 105, 285, { align: "center" });
       doc.text(`Page ${i} of ${pageCount} • Generated ${todayDate}`, 105, 290, { align: "center" });
+      
+      // Add verification element placeholders (in real implementation, would embed actual QR codes and barcode)
+      doc.setFontSize(6);
+      doc.text("QR1: Certificate", 25, 275);
+      doc.text("Barcode: " + (verificationData?.barcodeNumber || 'N/A'), 105, 275, { align: "center" });
+      doc.text("QR2: Drive", 185, 275);
     }
     
     return doc;
   };
   const downloadDocument = (documentType: string) => {
-    const pdf = createProfessionalPDF(documentType);
-    const fileName = `${documentType.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
-    pdf.save(fileName);
-    
-    toast({
-      title: "Document Downloaded",
-      description: `${documentType} has been downloaded successfully.`,
-    });
+    try {
+      const pdf = createProfessionalPDF(documentType);
+      const fileName = `${documentType.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // Force download using jsPDF save method
+      pdf.save(fileName);
+      
+      toast({
+        title: "Document Downloaded",
+        description: `${documentType} has been downloaded successfully.`,
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Failed",
+        description: "There was an error downloading the document. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleNext = () => {

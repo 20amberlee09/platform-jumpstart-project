@@ -19,9 +19,20 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
   const [driveQrCode, setDriveQrCode] = useState(data?.driveQrCode || '');
   const [barcodeNumber, setBarcodeNumber] = useState(data?.barcodeNumber || '');
   const [uploadedFiles, setUploadedFiles] = useState(data?.uploadedFiles || []);
+  const [driveQrCodeFile, setDriveQrCodeFile] = useState(data?.driveQrCodeFile || null);
+  const [extractedBarcodeQr, setExtractedBarcodeQr] = useState(data?.extractedBarcodeQr || '');
+  const [extractedBarcode, setExtractedBarcode] = useState(data?.extractedBarcode || '');
   const { toast } = useToast();
 
   const documentRequirements = [
+    {
+      id: 'drive-qr-code',
+      name: 'Google Drive QR Code',
+      description: 'Upload the QR code image file created from your Google Drive folder',
+      required: true,
+      acceptedTypes: ['.jpg', '.jpeg', '.png'],
+      maxSize: 5
+    },
     {
       id: 'barcode-certificate',
       name: 'Barcode Certificate',
@@ -40,16 +51,20 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
     }
   ];
 
-  const generateQrCode = () => {
-    // In real implementation, would generate actual QR code for Google Drive folder
-    const qrCodeData = `https://drive.google.com/folder/${Math.random().toString(36).substring(7)}`;
-    setDriveQrCode(qrCodeData);
-    setQrCodeGenerated(true);
-    
-    toast({
-      title: "QR Code Generated",
-      description: "QR code for your Google Drive folder has been created.",
-    });
+  const processUploadedFiles = async (files) => {
+    // Process uploaded files to extract QR codes and barcodes
+    for (const file of files) {
+      if (file.requirementId === 'drive-qr-code') {
+        setDriveQrCodeFile(file);
+        setQrCodeGenerated(true);
+      } else if (file.requirementId === 'barcode-certificate') {
+        // In a real implementation, would extract QR code from certificate
+        setExtractedBarcodeQr('barcode-certificate-qr-extracted');
+      } else if (file.requirementId === 'barcode-image') {
+        // In a real implementation, would extract barcode from image
+        setExtractedBarcode('barcode-extracted-from-image');
+      }
+    }
   };
 
   const handleBarcodeObtained = () => {
@@ -70,16 +85,16 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
   };
 
   const handleNext = () => {
-    if (!qrCodeGenerated || !barcodeObtained) {
+    if (!barcodeObtained) {
       toast({
-        title: "Verification Tools Required", 
-        description: "Please complete all verification tools before continuing.",
+        title: "Barcode Certificate Required", 
+        description: "Please complete barcode certificate purchase before continuing.",
         variant: "destructive"
       });
       return;
     }
 
-    // Check if required certificate is uploaded
+    // Check if required documents are uploaded
     const requiredUploads = documentRequirements.filter(req => req.required);
     const uploadedRequiredFiles = requiredUploads.filter(req => 
       uploadedFiles.some(file => file.requirementId === req.id)
@@ -88,7 +103,7 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
     if (uploadedRequiredFiles.length < requiredUploads.length) {
       toast({
         title: "Document Upload Required",
-        description: "Please upload required documents before continuing.",
+        description: "Please upload all required documents before continuing.",
         variant: "destructive"
       });
       return;
@@ -99,7 +114,10 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
       barcodeObtained: true,
       driveQrCode,
       barcodeNumber,
-      uploadedFiles
+      uploadedFiles,
+      driveQrCodeFile,
+      extractedBarcodeQr,
+      extractedBarcode
     });
   };
 
@@ -119,47 +137,44 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
         <CardHeader>
           <CardTitle className="flex items-center">
             <QrCode className="h-5 w-5 mr-2" />
-            Google Drive QR Code
+            Google Drive QR Code Setup
           </CardTitle>
           <CardDescription>
-            Generate QR code that links to your Google Drive folder
+            Create and upload your Google Drive QR code
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              This QR code will be placed on the far right of document footers to provide 
-              direct access to your Google Drive folder.
+            <h3 className="font-semibold mb-3 text-primary">Step-by-Step Google Drive QR Code Creation:</h3>
+            <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+              <li><strong>Go to Google Drive:</strong> Visit <a href="https://drive.google.com" target="_blank" className="text-primary underline">drive.google.com</a></li>
+              <li><strong>Create a New Folder:</strong> Click "New" → "Folder" and name it "{data?.fullTrustName || 'Your Trust Name'} Documents"</li>
+              <li><strong>Get the Folder Link:</strong> Right-click the folder → "Share" → "Get Link" → Copy the link</li>
+              <li><strong>Generate QR Code:</strong> Go to <a href="https://qr-generator.qrcode.studio/" target="_blank" className="text-primary underline">QR Code Generator</a></li>
+              <li><strong>Create QR Code:</strong> Paste your Google Drive folder link and generate the QR code</li>
+              <li><strong>Download Image:</strong> Download the QR code as PNG or JPG</li>
+              <li><strong>Upload Below:</strong> Upload the QR code image in the Required Documents section</li>
+            </ol>
+          </div>
+
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <h4 className="font-semibold text-amber-800 mb-2">⚠️ Important:</h4>
+            <p className="text-sm text-amber-700">
+              This QR code will appear on document footers to provide direct access to your Google Drive folder. 
+              Make sure the folder is set to "Anyone with the link can view" for proper access.
             </p>
           </div>
 
-          {driveQrCode && (
-            <div className="p-4 bg-muted rounded-lg text-center">
-              <div className="w-32 h-32 bg-white border-2 border-primary mx-auto mb-2 flex items-center justify-center">
-                <QrCode className="h-16 w-16 text-primary" />
+          {driveQrCodeFile && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                <p className="text-sm font-medium text-green-800">
+                  Google Drive QR Code Uploaded Successfully
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">QR Code Preview</p>
             </div>
           )}
-
-          <Button
-            onClick={generateQrCode}
-            disabled={qrCodeGenerated}
-            variant="neon-blue"
-            className="w-full"
-          >
-            {qrCodeGenerated ? (
-              <>
-                <CheckCircle className="mr-2 h-4 w-4" />
-                QR Code Generated
-              </>
-            ) : (
-              <>
-                <QrCode className="mr-2 h-4 w-4" />
-                Generate QR Code
-              </>
-            )}
-          </Button>
         </CardContent>
       </Card>
 
@@ -260,7 +275,10 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
         title="Required Documents"
         requirements={documentRequirements}
         uploadedFiles={uploadedFiles}
-        onFilesChange={setUploadedFiles}
+        onFilesChange={(files) => {
+          setUploadedFiles(files);
+          processUploadedFiles(files);
+        }}
         className="mt-6"
       />
 
@@ -299,7 +317,7 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
         </Button>
         <Button 
           onClick={handleNext} 
-          disabled={!qrCodeGenerated || !barcodeObtained || uploadedFiles.filter(f => documentRequirements.find(r => r.required && r.id === f.requirementId)).length < documentRequirements.filter(r => r.required).length} 
+          disabled={!barcodeObtained || uploadedFiles.filter(f => documentRequirements.find(r => r.required && r.id === f.requirementId)).length < documentRequirements.filter(r => r.required).length} 
           size="lg"
           variant="neon-gold"
         >
