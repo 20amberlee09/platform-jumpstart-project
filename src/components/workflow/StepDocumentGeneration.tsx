@@ -41,14 +41,14 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
   };
 
   const handleDownload = (documentType: string) => {
-    // Extract data from previous steps
-    const identityData = data?.['step-identity'] || data?.['step-1-identity'] || {};
-    const trustNameData = data?.['step-trust-name'] || {};
-    const gmailData = data?.['step-gmail-setup'] || {};
-    const verificationData = data?.['step-verification-tools'] || {};
+    // Extract data from previous steps using numeric step keys
+    const identityData = data?.['step_0'] || data?.['step_1'] || {}; // Identity step
+    const trustNameData = data?.['step_2'] || data?.['step_3'] || {}; // Trust name step  
+    const gmailData = data?.['step_4'] || data?.['step_5'] || {}; // Gmail setup step
+    const verificationData = data?.['step_6'] || data?.['step_7'] || {}; // Verification tools step
     
-    const ministerName = `Minister ${identityData?.fullName || data?.fullName || 'Name Not Provided'}`;
-    const trustName = trustNameData?.fullTrustName || data?.fullTrustName || 'Trust Name Not Provided';
+    const ministerName = `Minister ${identityData?.fullName || data?.fullName || identityData?.name || 'Name Not Provided'}`;
+    const trustName = trustNameData?.fullTrustName || trustNameData?.trustName || data?.fullTrustName || 'Trust Name Not Provided';
     
     const documentData = {
       identityData,
@@ -78,14 +78,15 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
     });
   };
 
-  // Extract data from previous steps
-  const identityData = data?.['step-identity'] || data?.['step-1-identity'] || {};
-  const trustNameData = data?.['step-trust-name'] || {};
-  const gmailData = data?.['step-gmail-setup'] || {};
-  const ordinationData = data?.['step-ordination'] || {};
+  // Extract data from previous steps using numeric step keys
+  const identityData = data?.['step_0'] || data?.['step_1'] || {}; // Identity step
+  const trustNameData = data?.['step_2'] || data?.['step_3'] || {}; // Trust name step
+  const gmailData = data?.['step_4'] || data?.['step_5'] || {}; // Gmail setup step
+  const ordinationData = data?.['step_6'] || data?.['step_7'] || {}; // Ordination step
+  const verificationData = data?.['step_6'] || data?.['step_7'] || data?.['step_8'] || {}; // Verification tools step
   
-  const ministerName = `Minister ${identityData?.fullName || data?.fullName || 'Name Not Provided'}`;
-  const trustName = trustNameData?.fullTrustName || data?.fullTrustName || 'Trust Name Not Provided';
+  const ministerName = `Minister ${identityData?.fullName || data?.fullName || identityData?.name || 'Name Not Provided'}`;
+  const trustName = trustNameData?.fullTrustName || trustNameData?.trustName || data?.fullTrustName || 'Trust Name Not Provided';
 
   return (
     <div className="space-y-6">
@@ -127,10 +128,10 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
                  <Label className="text-sm font-medium">Google Drive Folder</Label>
                  <p className="text-sm text-muted-foreground">{gmailData?.googleDriveFolder || data?.googleDriveFolder || 'Not Provided'}</p>
                </div>
-               <div>
-                 <Label className="text-sm font-medium">Barcode Certificate</Label>
-                 <p className="text-sm text-muted-foreground">{data?.['step-verification-tools']?.barcodeNumber || data?.barcodeNumber || 'Not Provided'}</p>
-               </div>
+                <div>
+                  <Label className="text-sm font-medium">Barcode Certificate</Label>
+                  <p className="text-sm text-muted-foreground">{verificationData?.barcodeNumber || data?.barcodeNumber || 'Not Provided'}</p>
+                </div>
                <div>
                  <Label className="text-sm font-medium">Address</Label>
                  <p className="text-sm text-muted-foreground">
