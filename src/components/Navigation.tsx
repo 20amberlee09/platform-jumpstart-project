@@ -11,7 +11,8 @@ const Navigation = () => {
 
   const navItems = [
     { href: "/", label: "Home" },
-    { href: "/automation", label: "Boot Camp documents" }
+    { href: "/automation", label: "Boot Camp documents" },
+    { href: "/admin", label: "Admin" }
   ];
 
   const isActive = (href: string) => {
