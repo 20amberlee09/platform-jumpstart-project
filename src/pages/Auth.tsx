@@ -22,8 +22,6 @@ const Auth = () => {
   const checkAndRedirect = async (user: any) => {
     if (!user) return;
     
-    console.log('Checking course access for user:', user.id);
-    
     try {
       // Check for paid orders
       const { data: orderData } = await supabase
@@ -34,11 +32,8 @@ const Auth = () => {
         .eq('status', 'paid')
         .maybeSingle();
       
-      console.log('Order data:', orderData);
-      
       if (orderData) {
         // User has paid - go directly to course
-        console.log('User has paid order, redirecting to course');
         navigate('/automation?start=true');
         return;
       }
@@ -50,18 +45,14 @@ const Auth = () => {
         .eq('used_by', user.id)
         .eq('course_id', courseId)
         .maybeSingle();
-      
-      console.log('Gift data:', giftData);
         
       if (giftData) {
         // User has redeemed gift code - go directly to course
-        console.log('User has redeemed gift code, redirecting to course');
         navigate('/automation?start=true');
         return;
       }
       
       // User has no course access - go to home page
-      console.log('User has no course access, going to home');
       navigate('/');
     } catch (error) {
       console.error('Error checking course access:', error);

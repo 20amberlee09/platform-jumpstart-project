@@ -66,11 +66,9 @@ const Automation = () => {
     checkCourseAccess();
   }, [user]);
 
-  // Auto-start course if user has access and is being redirected from login
+  // Auto-start course if user has access and is being redirected from login/payment/gift
   useEffect(() => {
-    console.log('Auto-start check:', { shouldAutoStart, hasCourseAccess, checkingAccess, loading });
     if (shouldAutoStart && hasCourseAccess && !checkingAccess && !loading) {
-      console.log('Auto-starting course workflow');
       setShowOverview(false);
     }
   }, [shouldAutoStart, hasCourseAccess, checkingAccess, loading]);
