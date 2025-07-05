@@ -173,25 +173,32 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
     return doc;
   };
   const downloadDocument = (documentType: string) => {
+    console.log('Download button clicked for:', documentType);
+    
     try {
+      console.log('Creating PDF...');
       const pdf = createProfessionalPDF(documentType);
+      console.log('PDF created successfully');
+      
       const fileName = `${documentType.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      console.log('Generated filename:', fileName);
       
-      // Get PDF as blob and create download link
-      const pdfBlob = pdf.output('blob');
-      const url = URL.createObjectURL(pdfBlob);
+      // Use the most reliable download method - direct jsPDF save
+      console.log('Attempting to save PDF...');
+      pdf.save(fileName);
+      console.log('PDF save method called');
       
-      // Create temporary download link and trigger download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Clean up the URL
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      // Also try the blob method as fallback
+      try {
+        const pdfData = pdf.output('dataurlstring');
+        const link = document.createElement('a');
+        link.href = pdfData;
+        link.download = fileName;
+        link.click();
+        console.log('Fallback blob method executed');
+      } catch (blobError) {
+        console.error('Blob method failed:', blobError);
+      }
       
       toast({
         title: "Document Downloaded",
