@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Scale, Menu, X, User, Play } from "lucide-react";
+import { Scale, Menu, X, User, Play, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminData } from "@/hooks/useAdminData";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import GiftCodeDropdown from "@/components/GiftCodeDropdown";
 
 interface NavItem {
@@ -20,6 +22,9 @@ const Navigation = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminData();
   const { hasCourseAccess } = useCourseAccess();
+  const { toast } = useToast();
+
+  const courseId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 
   const handleSignOut = async () => {
     await signOut();
@@ -36,9 +41,51 @@ const Navigation = () => {
     }
   };
 
+  const handlePurchase = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to purchase this course.",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
+    try {
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          course_id: courseId,
+          amount: 15000, // $150 in cents
+          currency: 'usd',
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      localStorage.setItem('pendingOrderId', order.id);
+      window.open('https://www.paypal.com/ncp/payment/4QSTXR5Z9UVEW', '_blank');
+      
+      toast({
+        title: "Redirecting to PayPal",
+        description: "Complete your payment to access the course.",
+      });
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast({
+        title: "Payment Error",
+        description: "Unable to process payment. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const baseNavItems: NavItem[] = [
-    { href: "/", label: "Home" },
-    { href: "/purchase", label: "Purchase" }
+    { href: "/", label: "Home" }
   ];
   
   // Add admin items based on user permissions
@@ -100,6 +147,15 @@ const Navigation = () => {
                 </Link>
               )
             ))}
+            {!hasCourseAccess && (
+              <button
+                onClick={handlePurchase}
+                className="text-sm font-medium transition-colors hover:text-primary bg-primary text-black px-4 py-2 rounded-md flex items-center gap-2 hover:bg-primary/90"
+              >
+                <CreditCard className="h-4 w-4" />
+                Purchase $150
+              </button>
+            )}
           </nav>
 
           {/* Desktop CTA */}
@@ -172,6 +228,18 @@ const Navigation = () => {
                   </Link>
                 )
               ))}
+              {!hasCourseAccess && (
+                <button
+                  onClick={() => {
+                    handlePurchase();
+                    setIsMenuOpen(false);
+                  }}
+                  className="text-sm font-medium transition-colors bg-primary text-black px-4 py-3 rounded-md flex items-center gap-2 hover:bg-primary/90 mobile-touch-optimized"
+                >
+                  <CreditCard className="h-4 w-4" />
+                  Purchase Course $150
+                </button>
+              )}
               <div className="flex flex-col space-y-2 pt-4 border-t">
                 <div className="px-2 pb-2">
                   <GiftCodeDropdown />
