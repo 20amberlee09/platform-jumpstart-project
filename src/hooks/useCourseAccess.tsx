@@ -8,7 +8,10 @@ export const useCourseAccess = (courseId: string = 'a1b2c3d4-e5f6-7890-abcd-ef12
   const [loading, setLoading] = useState(true);
 
   const checkCourseAccess = async () => {
+    console.log('Checking course access for user:', user?.id, 'courseId:', courseId);
+    
     if (!user) {
+      console.log('No user found, setting access to false');
       setHasCourseAccess(false);
       setLoading(false);
       return;
@@ -16,7 +19,7 @@ export const useCourseAccess = (courseId: string = 'a1b2c3d4-e5f6-7890-abcd-ef12
     
     try {
       // Check for paid orders
-      const { data: orderData } = await supabase
+      const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .select('*')
         .eq('user_id', user.id)
@@ -24,21 +27,28 @@ export const useCourseAccess = (courseId: string = 'a1b2c3d4-e5f6-7890-abcd-ef12
         .eq('status', 'paid')
         .maybeSingle();
       
+      console.log('Order check result:', { orderData, orderError });
+      
       if (orderData) {
+        console.log('Found paid order, granting access');
         setHasCourseAccess(true);
         setLoading(false);
         return;
       }
       
       // Check for redeemed gift codes
-      const { data: giftData } = await supabase
+      const { data: giftData, error: giftError } = await supabase
         .from('gift_codes')
         .select('*')
         .eq('used_by', user.id)
         .eq('course_id', courseId)
         .maybeSingle();
+      
+      console.log('Gift code check result:', { giftData, giftError });
         
-      setHasCourseAccess(!!giftData);
+      const hasAccess = !!giftData;
+      console.log('Final course access result:', hasAccess);
+      setHasCourseAccess(hasAccess);
     } catch (error) {
       console.error('Error checking course access:', error);
       setHasCourseAccess(false);
