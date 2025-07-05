@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProgress } from '@/hooks/useUserProgress';
 import { CourseConfig, WorkflowState } from '@/types/course';
 import { courseConfigs } from '@/config/courses';
 import StepIndicator from './StepIndicator';
 import { moduleRegistry } from './moduleRegistry';
 import { Button } from '@/components/ui/button';
+import { Loader2, Save } from 'lucide-react';
 
 interface WorkflowEngineProps {
   courseId: string;
@@ -16,16 +18,27 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const courseConfig = courseConfigs[courseId];
-  
-  const [workflowState, setWorkflowState] = useState<WorkflowState>(() => {
-    return {
-      courseId,
-      currentStep: 0,
-      completedSteps: [],
-      stepData: {},
-      isComplete: false
-    };
-  });
+  const { 
+    workflowState, 
+    loading, 
+    saving, 
+    completeStep, 
+    goBackStep, 
+    markComplete,
+    updateStepData
+  } = useUserProgress(courseId);
+
+  // Show loading state while progress loads
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background py-8 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading your progress...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!courseConfig) {
     return (
@@ -48,35 +61,20 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
   const stepNames = sortedModules.map(module => module.name);
 
   const handleStepComplete = (stepData?: any) => {
-    const newStepData = { ...workflowState.stepData };
-    if (stepData) {
-      newStepData[currentModule.id] = stepData;
-    }
-
-    const newCompletedSteps = [...workflowState.completedSteps, workflowState.currentStep];
+    completeStep(stepData);
+    
+    // Check if this was the last step
     const nextStep = workflowState.currentStep + 1;
-    const isComplete = nextStep >= sortedModules.length;
-
-    setWorkflowState({
-      ...workflowState,
-      currentStep: nextStep,
-      completedSteps: newCompletedSteps,
-      stepData: newStepData,
-      isComplete
-    });
-
-    if (isComplete && onComplete) {
-      onComplete();
+    if (nextStep >= sortedModules.length) {
+      markComplete();
+      if (onComplete) {
+        onComplete();
+      }
     }
   };
 
   const handleStepBack = () => {
-    if (workflowState.currentStep > 0) {
-      setWorkflowState({
-        ...workflowState,
-        currentStep: workflowState.currentStep - 1
-      });
-    }
+    goBackStep();
   };
 
   const renderCurrentStep = () => {
@@ -123,6 +121,8 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
         onPrev={workflowState.currentStep > 0 ? handleStepBack : undefined}
         data={workflowState.stepData}
         courseConfig={courseConfig}
+        updateStepData={updateStepData}
+        currentStepKey={`step_${workflowState.currentStep}`}
       />
     );
   };
@@ -138,6 +138,14 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Progress saving indicator */}
+        {saving && (
+          <div className="fixed top-4 right-4 bg-primary text-primary-foreground px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 z-50">
+            <Save className="h-4 w-4" />
+            <span className="text-sm">Saving progress...</span>
+          </div>
+        )}
+        
         <StepIndicator 
           steps={stepNames} 
           currentStep={workflowState.currentStep} 

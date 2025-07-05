@@ -208,6 +208,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_progress: {
+        Row: {
+          completed_steps: number[] | null
+          course_id: string
+          created_at: string
+          current_step: number
+          id: string
+          is_complete: boolean | null
+          step_data: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_steps?: number[] | null
+          course_id: string
+          created_at?: string
+          current_step?: number
+          id?: string
+          is_complete?: boolean | null
+          step_data?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_steps?: number[] | null
+          course_id?: string
+          created_at?: string
+          current_step?: number
+          id?: string
+          is_complete?: boolean | null
+          step_data?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
