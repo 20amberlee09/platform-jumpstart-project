@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { sendWelcomeEmail } from '@/utils/emailHelpers';
 
 interface AuthContextType {
   user: User | null;
@@ -42,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/automation`;
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -62,10 +63,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           variant: "destructive",
         });
       } else {
-        toast({
-          title: "Check your email",
-          description: "Please check your email to confirm your account.",
-        });
+        // Send beautiful welcome email
+        const emailResult = await sendWelcomeEmail(
+          email, 
+          fullName, 
+          `${window.location.origin}/automation?welcome=true`
+        );
+        
+        if (emailResult.success) {
+          toast({
+            title: "Welcome to TROOTHHURTZ! 🎉",
+            description: "Please check your email to confirm your account and start your Boot Camp journey.",
+          });
+        } else {
+          toast({
+            title: "Account created!",
+            description: "Please check your email to confirm your account.",
+          });
+        }
       }
 
       return { error };
