@@ -5,10 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Settings, Users, BookOpen, Layers, DollarSign } from 'lucide-react';
+import { Plus, Settings, Users, BookOpen, Layers, DollarSign, Gift } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import CourseEditor from '@/components/admin/CourseEditor';
 import ModuleEditor from '@/components/admin/ModuleEditor';
+import GiftCodeManager from '@/components/admin/GiftCodeManager';
 
 const Admin = () => {
   const { user } = useAuth();
@@ -106,6 +107,7 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="courses">Courses</TabsTrigger>
             <TabsTrigger value="modules">Modules</TabsTrigger>
+            <TabsTrigger value="gift-codes">Gift Codes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="courses">
@@ -225,6 +227,10 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="gift-codes">
+            <GiftCodeManager courses={courses} />
           </TabsContent>
         </Tabs>
 
