@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ExternalLink, CheckCircle, QrCode, Mail } from 'lucide-react';
+import { ExternalLink, CheckCircle, QrCode, Mail, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import DocumentUpload from '@/components/DocumentUpload';
@@ -47,9 +47,30 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
 
   const handleDriveUrlChange = async (url: string) => {
     setGoogleDriveUrl(url);
-    const isValid = url.includes('drive.google.com') && url.includes('share');
+    
+    // Enhanced validation for Google Drive links
+    const isDriveLink = url.includes('drive.google.com') && url.includes('folders');
+    const hasShareParams = url.includes('/share') || url.includes('usp=sharing');
+    
+    const isValid = isDriveLink && (hasShareParams || url.includes('/folders/'));
+    
     const newStatus = { ...verificationStatus, drive: isValid };
     setVerificationStatus(newStatus);
+
+    if (isValid) {
+      toast({
+        title: "Google Drive Link Valid",
+        description: "Please ensure the folder has 'Editor' permissions for document upload",
+      });
+    }
+  };
+
+  const checkDrivePermissions = async (driveUrl: string) => {
+    // This would ideally test the actual permissions, but for now we'll provide instructions
+    toast({
+      title: "Permission Check",
+      description: "Please verify the folder allows editing by testing the link in an incognito window",
+    });
   };
 
   const openBarcodeLink = () => {
@@ -135,29 +156,124 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
             </div>
           </div>
 
-          {/* Google Drive Setup */}
+          {/* Google Drive Setup - Enhanced with Permissions */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Google Drive Folder</h3>
+            <h3 className="text-lg font-semibold">Google Drive Folder Setup</h3>
             <p className="text-muted-foreground">
-              Create a shared Google Drive folder for your trust documents
+              Create a shared Google Drive folder for your trust documents with proper permissions
             </p>
+            
+            {/* Step-by-step Google Drive Instructions */}
+            <Card className="p-4 bg-blue-50 border-blue-200">
+              <h4 className="font-medium mb-3">Step-by-Step Google Drive Setup:</h4>
+              <div className="space-y-3 text-sm">
+                <div className="flex gap-3">
+                  <span className="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full text-xs">1</span>
+                  <div>
+                    <div className="font-medium">Create Your Trust Folder</div>
+                    <div className="text-blue-700">
+                      Go to Google Drive and create a new folder named "{trustEmail ? trustEmail.replace('@gmail.com', '') : '[YourTrustName]'} Documents"
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3">
+                  <span className="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full text-xs">2</span>
+                  <div>
+                    <div className="font-medium">Configure Folder Permissions</div>
+                    <div className="text-blue-700">
+                      Right-click the folder → "Share" → Change access to "Anyone with the link can edit"
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3">
+                  <span className="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full text-xs">3</span>
+                  <div>
+                    <div className="font-medium">Copy the Share Link</div>
+                    <div className="text-blue-700">
+                      Click "Copy link" and paste it in the field below
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3">
+                  <span className="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full text-xs">4</span>
+                  <div>
+                    <div className="font-medium">Verify Permissions</div>
+                    <div className="text-blue-700">
+                      Test the link in an incognito window to ensure it's accessible
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Permission Requirements Alert */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-yellow-800">Important Permission Requirements:</div>
+                  <ul className="text-sm text-yellow-700 mt-1 space-y-1">
+                    <li>• Folder must be set to "Anyone with the link can edit"</li>
+                    <li>• This allows the platform to save your completed documents</li>
+                    <li>• Without edit permissions, documents cannot be automatically uploaded</li>
+                    <li>• You can change permissions back to private after document delivery</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
             
             <div className="space-y-2">
               <Label htmlFor="driveUrl">Google Drive Share Link</Label>
               <Input
                 id="driveUrl"
                 type="url"
-                placeholder="https://drive.google.com/drive/folders/..."
+                placeholder="https://drive.google.com/drive/folders/1a2b3c4d5e6f7g8h9i0j..."
                 value={googleDriveUrl}
                 onChange={(e) => handleDriveUrlChange(e.target.value)}
                 className={verificationStatus.drive ? "border-green-500" : ""}
               />
-              {verificationStatus.drive && (
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle className="h-4 w-4" />
-                  <span className="text-sm">Valid Google Drive link</span>
+              
+              {/* Enhanced Validation */}
+              {googleDriveUrl && (
+                <div className="space-y-2">
+                  {verificationStatus.drive ? (
+                    <div className="flex items-center gap-2 text-green-600">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-sm">Valid Google Drive link detected</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-red-600">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="text-sm">Please ensure this is a proper Google Drive folder share link</span>
+                    </div>
+                  )}
+                  
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => window.open(googleDriveUrl, '_blank')}
+                    className="text-xs"
+                  >
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    Test Link
+                  </Button>
                 </div>
               )}
+            </div>
+            
+            {/* Permission Verification Helper */}
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="text-sm font-medium mb-2">How to Verify Permissions:</div>
+              <ol className="text-xs text-muted-foreground space-y-1">
+                <li>1. Copy your Google Drive link</li>
+                <li>2. Open an incognito/private browser window</li>
+                <li>3. Paste the link and press Enter</li>
+                <li>4. You should see the folder and be able to upload files</li>
+                <li>5. If you can't upload, the permissions need to be changed to "Editor"</li>
+              </ol>
             </div>
           </div>
         </CardContent>
