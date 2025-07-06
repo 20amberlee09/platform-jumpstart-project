@@ -66,27 +66,32 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
     try {
       setIsProcessing(true);
       
-      // Update certificate status
-      setCertificateUrl(fileUrl);
-      setCertificateUploaded(true);
-
-      // Update minister status in auth
+      // Update minister status in auth first
       if (user) {
         await updateMinisterStatus(true, fileUrl, user.user_metadata?.full_name);
       }
+
+      // Update all state at once to avoid race conditions
+      setCertificateUrl(fileUrl);
+      setCertificateUploaded(true);
+      setIsOrdained(true);
 
       toast({
         title: "Certificate Uploaded Successfully",
         description: "Your minister status has been activated!",
       });
 
-      setIsOrdained(true);
     } catch (error: any) {
       toast({
         title: "Upload Error",
         description: error.message || "Failed to process certificate",
         variant: "destructive"
       });
+      
+      // Reset states on error
+      setCertificateUrl('');
+      setCertificateUploaded(false);
+      setIsOrdained(false);
     } finally {
       setIsProcessing(false);
     }
