@@ -227,7 +227,7 @@ describe('Performance Tests', () => {
       })
 
       const LazyComponent2 = lazy(() => {
-        component2Loaded = true
+        component2Loaded = true  
         return Promise.resolve({
           default: () => <div data-testid="lazy-2">Component 2</div>
         })
@@ -261,7 +261,7 @@ describe('Performance Tests', () => {
       const createLazyComponent = (name: string, delay: number) => 
         lazy(() => {
           const start = performance.now()
-          return new Promise(resolve => {
+          return new Promise<{ default: React.ComponentType<any> }>(resolve => {
             setTimeout(() => {
               loadTimes.push(performance.now() - start)
               resolve({

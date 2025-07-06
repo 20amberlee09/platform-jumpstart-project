@@ -200,8 +200,7 @@ export const simulateAuthError = () => {
   return error
 }
 
-// Re-export everything
+// Re-export everything from testing library
 export * from '@testing-library/react'
 export { customRender as render }
 export { default as userEvent } from '@testing-library/user-event'
-export { screen, fireEvent, waitFor } from '@testing-library/react'
