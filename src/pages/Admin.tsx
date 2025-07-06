@@ -497,42 +497,49 @@ const Admin = () => {
       try {
         setLoading(true);
         
-        // Get revenue by course
-        const { data: revenueData, error } = await supabase
+        // Get completed orders first (no join since course_id is TEXT)
+        const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
-          .select(`
-            course_id,
-            amount,
-            status,
-            created_at,
-            courses!inner (
-              id,
-              title,
-              price
-            )
-          `)
+          .select('course_id, amount, status, created_at')
           .eq('status', 'completed')
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (ordersError) throw ordersError;
+
+        // Get all courses
+        const { data: coursesData, error: coursesError } = await supabase
+          .from('courses')
+          .select('id, title, price');
+
+        if (coursesError) throw coursesError;
+
+        // Create course lookup map
+        const courseMap = {};
+        coursesData?.forEach((course) => {
+          courseMap[course.id] = course;
+        });
 
         // Group revenue by course
         const revenueByQourse = {};
-        revenueData?.forEach((order: any) => {
+        ordersData?.forEach((order: any) => {
           const courseId = order.course_id;
-          if (!revenueByQourse[courseId]) {
-            revenueByQourse[courseId] = {
-              courseId,
-              title: order.courses.title,
-              price: order.courses.price,
-              totalRevenue: 0,
-              orderCount: 0,
-              orders: []
-            };
+          const course = courseMap[courseId];
+          
+          if (course) {
+            if (!revenueByQourse[courseId]) {
+              revenueByQourse[courseId] = {
+                courseId,
+                title: course.title,
+                price: course.price,
+                totalRevenue: 0,
+                orderCount: 0,
+                orders: []
+              };
+            }
+            revenueByQourse[courseId].totalRevenue += order.amount;
+            revenueByQourse[courseId].orderCount += 1;
+            revenueByQourse[courseId].orders.push(order);
           }
-          revenueByQourse[courseId].totalRevenue += order.amount;
-          revenueByQourse[courseId].orderCount += 1;
-          revenueByQourse[courseId].orders.push(order);
         });
 
         setCourseRevenue(Object.values(revenueByQourse));
@@ -630,57 +637,70 @@ const Admin = () => {
       try {
         setLoading(true);
         
-        // Get all customers with their course purchases and progress
-        const { data: customersData, error } = await supabase
+        // Get all customers (no join with auth.users since it's not accessible)
+        const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
-          .select(`
-            id,
-            full_name,
-            created_at,
-            users!inner (
-              email
-            ),
-            orders!left (
-              id,
-              course_id,
-              status,
-              amount,
-              created_at,
-              courses!inner (
-                id,
-                title
-              )
-            ),
-            user_progress!left (
-              course_id,
-              current_step,
-              is_complete,
-              updated_at,
-              courses!inner (
-                id,
-                title
-              )
-            )
-          `)
+          .select('id, full_name, created_at, user_id')
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (profilesError) throw profilesError;
+
+        // Get all completed orders
+        const { data: ordersData, error: ordersError } = await supabase
+          .from('orders')
+          .select('user_id, course_id, status, amount, created_at')
+          .eq('status', 'completed');
+
+        if (ordersError) throw ordersError;
+
+        // Get all user progress
+        const { data: progressData, error: progressError } = await supabase
+          .from('user_progress')
+          .select('user_id, course_id, current_step, is_complete, updated_at');
+
+        if (progressError) throw progressError;
+
+        // Get all courses for titles
+        const { data: coursesData, error: coursesError } = await supabase
+          .from('courses')
+          .select('id, title');
+
+        if (coursesError) throw coursesError;
+
+        // Create lookup maps
+        const courseMap = {};
+        coursesData?.forEach((course) => {
+          courseMap[course.id] = course;
+        });
+
+        const ordersByUser = {};
+        ordersData?.forEach((order) => {
+          if (!ordersByUser[order.user_id]) ordersByUser[order.user_id] = [];
+          ordersByUser[order.user_id].push(order);
+        });
+
+        const progressByUser = {};
+        progressData?.forEach((progress) => {
+          if (!progressByUser[progress.user_id]) progressByUser[progress.user_id] = [];
+          progressByUser[progress.user_id].push(progress);
+        });
 
         // Process and organize customer data
-        const processedData = customersData?.map((customer: any) => {
-          const completedOrders = customer.orders?.filter((order: any) => order.status === 'completed') || [];
-          const progressData = customer.user_progress || [];
+        const processedData = profilesData?.map((customer: any) => {
+          const userOrders = ordersByUser[customer.user_id] || [];
+          const userProgress = progressByUser[customer.user_id] || [];
           
           return {
             id: customer.id,
             name: customer.full_name || 'Unknown User',
-            email: customer.users?.email || 'No email',
+            email: 'Contact admin for email', // Can't access auth.users email
             joinDate: customer.created_at,
-            courses: completedOrders.map((order: any) => {
-              const progress = progressData.find((p: any) => p.course_id === order.course_id);
+            courses: userOrders.map((order: any) => {
+              const progress = userProgress.find((p: any) => p.course_id === order.course_id);
+              const course = courseMap[order.course_id];
               return {
                 courseId: order.course_id,
-                courseName: order.courses?.title || 'Unknown Course',
+                courseName: course?.title || 'Unknown Course',
                 purchaseDate: order.created_at,
                 amount: order.amount,
                 isComplete: progress?.is_complete || false,
