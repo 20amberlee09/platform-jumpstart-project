@@ -47,8 +47,8 @@ export const useDocumentDownload = () => {
       );
       console.log('Blockchain submission successful:', blockchainResult.transactionHash);
 
-      // 4. Upload document to storage
-      const fileName = `${documentType}_${user.id}_${Date.now()}.pdf`;
+      // 4. Upload document to storage with user-specific path
+      const fileName = `${user.id}/${documentType}_${Date.now()}.pdf`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('documents')
         .upload(fileName, pdfBlob, {
