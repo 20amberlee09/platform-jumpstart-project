@@ -39,13 +39,12 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
   }, [data, currentStepKey]);
 
   useEffect(() => {
-    // Auto-save when data changes
+    // Auto-save when data changes (but only if we have meaningful data)
     if ((isOrdained || certificateUploaded || certificateUrl) && updateStepData && currentStepKey) {
       updateStepData(currentStepKey, {
         isOrdained,
         certificateUploaded,
-        certificateUrl,
-        updatedAt: new Date().toISOString()
+        certificateUrl
       });
     }
   }, [isOrdained, certificateUploaded, certificateUrl, updateStepData, currentStepKey]);
