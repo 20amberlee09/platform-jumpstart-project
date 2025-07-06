@@ -12,6 +12,7 @@ import Courses from "./pages/Courses";
 import Purchase from "./pages/Purchase";
 import Auth from "./pages/Auth";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import XRPIntegrationTest from "./pages/XRPIntegrationTest";
 import TestingReturnUser from "./pages/TestingReturnUser";
 import ProductionTestSuite from "./pages/ProductionTestSuite";
 import AdvancedTestSuite from "./pages/AdvancedTestSuite";
@@ -69,6 +70,11 @@ const App = () => (
           } />
           <Route path="/auth" element={<Auth />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/xrp-test" element={
+            <ProtectedRoute>
+              <XRPIntegrationTest />
+            </ProtectedRoute>
+          } />
           <Route path="/test-return-user" element={<TestingReturnUser />} />
           <Route path="/production-test-suite" element={<ProductionTestSuite />} />
           <Route path="/advanced-test-suite" element={<AdvancedTestSuite />} />

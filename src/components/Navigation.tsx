@@ -119,6 +119,8 @@ const Navigation = () => {
   
   if (isAdmin) {
     navItems.push({ href: "/admin", label: "Admin" });
+    // Add XRP test link for admins
+    navItems.push({ href: "/xrp-test", label: "🧪 XRP Test" });
   }
 
   const isActive = (href: string) => {
