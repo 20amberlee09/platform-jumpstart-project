@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Scale, Menu, X, User, Play, CreditCard } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminData } from "@/hooks/useAdminData";
@@ -17,6 +17,7 @@ interface NavItem {
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [ministerStatus, setMinisterStatus] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -25,6 +26,26 @@ const Navigation = () => {
   const { toast } = useToast();
 
   const courseId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+
+  useEffect(() => {
+    const checkMinisterStatus = async () => {
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('minister_verified, first_name')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile?.minister_verified) {
+          setMinisterStatus(`Minister ${profile.first_name}`);
+        } else {
+          setMinisterStatus(profile?.first_name || 'User');
+        }
+      }
+    };
+    
+    checkMinisterStatus();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
