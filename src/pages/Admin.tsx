@@ -484,6 +484,293 @@ const Admin = () => {
     window.open(url, '_blank');
   };
 
+  // Course Revenue Breakdown Component
+  const CourseRevenueBreakdown = () => {
+    const [courseRevenue, setCourseRevenue] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      loadCourseRevenue();
+    }, []);
+
+    const loadCourseRevenue = async () => {
+      try {
+        setLoading(true);
+        
+        // Get revenue by course
+        const { data: revenueData, error } = await supabase
+          .from('orders')
+          .select(`
+            course_id,
+            amount,
+            status,
+            created_at,
+            courses!inner (
+              id,
+              title,
+              price
+            )
+          `)
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Group revenue by course
+        const revenueByQourse = {};
+        revenueData?.forEach((order: any) => {
+          const courseId = order.course_id;
+          if (!revenueByQourse[courseId]) {
+            revenueByQourse[courseId] = {
+              courseId,
+              title: order.courses.title,
+              price: order.courses.price,
+              totalRevenue: 0,
+              orderCount: 0,
+              orders: []
+            };
+          }
+          revenueByQourse[courseId].totalRevenue += order.amount;
+          revenueByQourse[courseId].orderCount += 1;
+          revenueByQourse[courseId].orders.push(order);
+        });
+
+        setCourseRevenue(Object.values(revenueByQourse));
+      } catch (error: any) {
+        console.error('Error loading course revenue:', error);
+        toast({
+          title: "Error Loading Revenue Data",
+          description: error.message,
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (loading) {
+      return <div className="text-center py-4">Loading revenue data...</div>;
+    }
+
+    if (courseRevenue.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          <DollarSign className="mx-auto h-12 w-12 mb-4" />
+          <p>No revenue data available yet</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {courseRevenue.map((course: any) => (
+          <div key={course.courseId} className="border rounded-lg p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h4 className="font-medium">{course.title}</h4>
+                <p className="text-sm text-muted-foreground">
+                  Course Price: ${(course.price / 100).toFixed(2)}
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-bold text-green-600">
+                  ${(course.totalRevenue / 100).toFixed(2)}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {course.orderCount} sales
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Average per Sale:</span>
+                <div className="font-medium">
+                  ${((course.totalRevenue / course.orderCount) / 100).toFixed(2)}
+                </div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Total Sales:</span>
+                <div className="font-medium">{course.orderCount}</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Revenue Share:</span>
+                <div className="font-medium">
+                  {stats.totalRevenue > 0 ? 
+                    Math.round((course.totalRevenue / (stats.totalRevenue * 100)) * 100) : 0
+                  }%
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        <div className="border-t pt-4">
+          <div className="flex justify-between items-center">
+            <span className="font-medium">Total Platform Revenue:</span>
+            <span className="text-lg font-bold text-green-600">
+              ${(courseRevenue.reduce((sum, course) => sum + course.totalRevenue, 0) / 100).toFixed(2)}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Customer Course Tracking Component
+  const CustomerCourseTracking = () => {
+    const [customerData, setCustomerData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      loadCustomerData();
+    }, []);
+
+    const loadCustomerData = async () => {
+      try {
+        setLoading(true);
+        
+        // Get all customers with their course purchases and progress
+        const { data: customersData, error } = await supabase
+          .from('profiles')
+          .select(`
+            id,
+            full_name,
+            created_at,
+            users!inner (
+              email
+            ),
+            orders!left (
+              id,
+              course_id,
+              status,
+              amount,
+              created_at,
+              courses!inner (
+                id,
+                title
+              )
+            ),
+            user_progress!left (
+              course_id,
+              current_step,
+              is_complete,
+              updated_at,
+              courses!inner (
+                id,
+                title
+              )
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Process and organize customer data
+        const processedData = customersData?.map((customer: any) => {
+          const completedOrders = customer.orders?.filter((order: any) => order.status === 'completed') || [];
+          const progressData = customer.user_progress || [];
+          
+          return {
+            id: customer.id,
+            name: customer.full_name || 'Unknown User',
+            email: customer.users?.email || 'No email',
+            joinDate: customer.created_at,
+            courses: completedOrders.map((order: any) => {
+              const progress = progressData.find((p: any) => p.course_id === order.course_id);
+              return {
+                courseId: order.course_id,
+                courseName: order.courses?.title || 'Unknown Course',
+                purchaseDate: order.created_at,
+                amount: order.amount,
+                isComplete: progress?.is_complete || false,
+                currentStep: progress?.current_step || 0,
+                lastActivity: progress?.updated_at || order.created_at
+              };
+            })
+          };
+        }) || [];
+
+        setCustomerData(processedData);
+      } catch (error: any) {
+        console.error('Error loading customer data:', error);
+        toast({
+          title: "Error Loading Customer Data",
+          description: error.message,
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (loading) {
+      return <div className="text-center py-4">Loading customer data...</div>;
+    }
+
+    if (customerData.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          <Users className="mx-auto h-12 w-12 mb-4" />
+          <p>No customer data available yet</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {customerData.map((customer: any) => (
+          <div key={customer.id} className="border rounded-lg p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h4 className="font-medium">{customer.name}</h4>
+                <p className="text-sm text-muted-foreground">{customer.email}</p>
+                <p className="text-xs text-muted-foreground">
+                  Joined: {new Date(customer.joinDate).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="font-medium">
+                  {customer.courses.length} Course{customer.courses.length !== 1 ? 's' : ''}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  ${(customer.courses.reduce((sum: number, course: any) => sum + course.amount, 0) / 100).toFixed(2)} total
+                </div>
+              </div>
+            </div>
+
+            {customer.courses.length > 0 ? (
+              <div className="space-y-2">
+                {customer.courses.map((course: any, index: number) => (
+                  <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
+                    <div>
+                      <span className="font-medium text-sm">{course.courseName}</span>
+                      <div className="text-xs text-muted-foreground">
+                        Purchased: {new Date(course.purchaseDate).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm">
+                        ${(course.amount / 100).toFixed(2)}
+                      </span>
+                      <Badge variant={course.isComplete ? "default" : "secondary"}>
+                        {course.isComplete ? "Completed" : `Step ${course.currentStep}`}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-2 text-muted-foreground text-sm">
+                No course purchases yet
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   // Course Form Modal
   const CourseForm = ({ show, onClose, course, onSubmit }: any) => {
     const [formData, setFormData] = useState({
@@ -1023,94 +1310,64 @@ const Admin = () => {
 
         {/* Analytics Tab */}
         <TabsContent value="analytics" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Platform Growth
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Users</span>
-                    <span className="font-medium">{stats.totalUsers}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Verified Ministers</span>
-                    <span className="font-medium">{stats.ministerCount}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Conversion Rate</span>
-                    <span className="font-medium">
-                      {stats.totalUsers > 0 ? Math.round((stats.ministerCount / stats.totalUsers) * 100) : 0}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Documents per Minister</span>
-                    <span className="font-medium">
-                      {stats.ministerCount > 0 ? Math.round(stats.documentsGenerated / stats.ministerCount) : 0}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
+          <div className="grid gap-6">
+            {/* Revenue by Course Section */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="h-5 w-5" />
-                  Revenue Analytics
+                  Revenue by Course
                 </CardTitle>
+                <CardDescription>
+                  Track revenue performance for each course
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Revenue</span>
-                    <span className="font-medium">${stats.totalRevenue.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Average per User</span>
-                    <span className="font-medium">
-                      ${stats.totalUsers > 0 ? (stats.totalRevenue / stats.totalUsers).toFixed(2) : '0.00'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Revenue per Minister</span>
-                    <span className="font-medium">
-                      ${stats.ministerCount > 0 ? (stats.totalRevenue / stats.ministerCount).toFixed(2) : '0.00'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Pending Verifications</span>
-                    <span className="font-medium">{stats.pendingVerifications}</span>
-                  </div>
-                </div>
+                <CourseRevenueBreakdown />
               </CardContent>
             </Card>
 
-            <Card className="md:col-span-2">
+            {/* Customer Course Tracking */}
+            <Card>
               <CardHeader>
-                <CardTitle>Platform Status</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Customer Course Progress
+                </CardTitle>
+                <CardDescription>
+                  Track all customers, their courses, and completion status
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CustomerCourseTracking />
+              </CardContent>
+            </Card>
+
+            {/* Platform Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Platform Overview
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{stats.ministerCount}</div>
-                    <div className="text-sm text-muted-foreground">Active Ministers</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{stats.documentsGenerated}</div>
-                    <div className="text-sm text-muted-foreground">Documents Created</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">{stats.pendingVerifications}</div>
-                    <div className="text-sm text-muted-foreground">Pending Reviews</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">${stats.totalRevenue.toFixed(0)}</div>
+                    <div className="text-2xl font-bold text-green-600">${stats.totalRevenue.toFixed(2)}</div>
                     <div className="text-sm text-muted-foreground">Total Revenue</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">{stats.totalUsers}</div>
+                    <div className="text-sm text-muted-foreground">Total Customers</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">{stats.totalCourses}</div>
+                    <div className="text-sm text-muted-foreground">Active Courses</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">{stats.documentsGenerated}</div>
+                    <div className="text-sm text-muted-foreground">Documents Created</div>
                   </div>
                 </div>
               </CardContent>
