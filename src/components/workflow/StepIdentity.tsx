@@ -1,202 +1,295 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { FileText, Shield, Check } from 'lucide-react';
-import DocumentUpload from './DocumentUpload';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { User, Crown } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserProgress } from '@/hooks/useUserProgress';
+import { useToast } from '@/hooks/use-toast';
 
 interface StepIdentityProps {
-  onNext: (data: any) => void;
-  onPrev: () => void;
-  data: any;
-  updateStepData?: (stepKey: string, data: any) => void;
-  currentStepKey?: string;
+  onNext: () => void;
+  onPrevious: () => void;
+  courseId: string;
 }
 
-const StepIdentity = ({ onNext, onPrev, data, updateStepData, currentStepKey }: StepIdentityProps) => {
-  // Load existing data for this specific step
-  const existingStepData = currentStepKey ? data[currentStepKey] : {};
-  const [showSaved, setShowSaved] = useState(false);
-  
-  const [formData, setFormData] = useState({
-    fullName: existingStepData?.fullName || data?.fullName || '',
-    dateOfBirth: existingStepData?.dateOfBirth || data?.dateOfBirth || '',
-    address: existingStepData?.address || data?.address || '',
-    city: existingStepData?.city || data?.city || '',
-    state: existingStepData?.state || data?.state || '',
-    zipCode: existingStepData?.zipCode || data?.zipCode || '',
-    ...existingStepData
+interface IdentityData {
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  displayName: string;
+  ministerTitle: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+}
+
+const StepIdentity = ({ onNext, onPrevious, courseId }: StepIdentityProps) => {
+  const [identityData, setIdentityData] = useState<IdentityData>({
+    firstName: '',
+    lastName: '',
+    fullName: '',
+    displayName: '',
+    ministerTitle: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: ''
   });
 
-  const [uploadedFiles, setUploadedFiles] = useState(existingStepData?.uploadedFiles || data?.uploadedFiles || []);
+  const [isValid, setIsValid] = useState(false);
+  const { user } = useAuth();
+  const { saveStepData, getStepData, getMinisterStatus } = useUserProgress(courseId);
+  const { toast } = useToast();
 
-  // Auto-save form data when it changes
   useEffect(() => {
-    if (updateStepData && currentStepKey) {
-      const dataToSave = { ...formData, uploadedFiles };
-      updateStepData(currentStepKey, dataToSave);
+    // Load saved step data
+    const stepData = getStepData('identity');
+    const ministerStatus = getMinisterStatus();
+    
+    if (stepData) {
+      setIdentityData(stepData);
+    } else if (user) {
+      // Initialize with user data
+      const userData = {
+        firstName: user.user_metadata?.first_name || '',
+        lastName: user.user_metadata?.last_name || '',
+        fullName: user.user_metadata?.full_name || '',
+        displayName: ministerStatus.verified ? 
+          `Minister ${user.user_metadata?.full_name || ''}` : 
+          user.user_metadata?.full_name || '',
+        ministerTitle: ministerStatus.verified ? 
+          `Minister ${user.user_metadata?.first_name || ''}` : '',
+        email: user.email || '',
+        phone: '',
+        address: '',
+        city: '',
+        state: '',
+        zipCode: ''
+      };
+      setIdentityData(userData);
+    }
+  }, [getStepData, getMinisterStatus, user]);
+
+  useEffect(() => {
+    // Auto-save when data changes
+    if (identityData.firstName || identityData.email) {
+      saveStepData('identity', identityData);
+    }
+
+    // Validate form
+    const required = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'zipCode'];
+    const valid = required.every(field => identityData[field as keyof IdentityData]);
+    setIsValid(valid);
+  }, [identityData, saveStepData]);
+
+  const handleInputChange = (field: keyof IdentityData, value: string) => {
+    const updatedData = { ...identityData, [field]: value };
+    
+    // Auto-generate full name and display name
+    if (field === 'firstName' || field === 'lastName') {
+      const fullName = `${updatedData.firstName} ${updatedData.lastName}`.trim();
+      const ministerStatus = getMinisterStatus();
       
-      // Show saved indicator
-      setShowSaved(true);
-      const timer = setTimeout(() => setShowSaved(false), 2000);
-      return () => clearTimeout(timer);
+      updatedData.fullName = fullName;
+      updatedData.displayName = ministerStatus.verified ? 
+        `Minister ${fullName}` : fullName;
+      updatedData.ministerTitle = ministerStatus.verified ? 
+        `Minister ${updatedData.firstName}` : '';
     }
-  }, [formData, uploadedFiles, updateStepData, currentStepKey]);
-
-  const documentRequirements = [
-    {
-      id: 'government-id',
-      name: 'Government-Issued ID',
-      description: 'Upload a driver\'s license, passport, or other government-issued identification',
-      required: false,
-      acceptedTypes: ['.pdf', '.jpg', '.jpeg', '.png'],
-      maxSize: 10
-    }
-  ];
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    setIdentityData(updatedData);
   };
 
-
-  const handleNext = () => {
-    onNext({ ...formData, uploadedFiles });
-  };
-
-  const isFormValid = formData.fullName && formData.dateOfBirth && formData.address && formData.city && formData.state && formData.zipCode;
+  const ministerStatus = getMinisterStatus();
 
   return (
-    <div className="space-y-6">
-      {/* Auto-save indicator */}
-      {showSaved && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 z-50">
-          <Check className="h-4 w-4" />
-          <span className="text-sm">Progress saved</span>
-        </div>
-      )}
-      
-      <div className="text-center mb-8">
-        <div className="flex justify-center mb-4">
-          <Shield className="h-12 w-12 text-primary" />
-        </div>
-        <h2 className="text-2xl font-bold mb-2">Identity Verification</h2>
-        <p className="text-muted-foreground">
-          Secure identity verification and personal information collection
-        </p>
-        <p className="text-xs text-muted-foreground mt-2">
-          💾 Your progress is automatically saved as you type
-        </p>
-      </div>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Personal Information
+            {ministerStatus.verified && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Crown className="h-3 w-3" />
+                Minister
+              </Badge>
+            )}
+          </CardTitle>
+          <CardDescription>
+            {ministerStatus.verified 
+              ? "Complete your information as an ordained minister"
+              : "Provide your personal information for document generation"
+            }
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Minister Status Display */}
+          {ministerStatus.verified && (
+            <Card className="p-4 bg-blue-50 border-blue-200">
+              <div className="flex items-center gap-3">
+                <Crown className="h-6 w-6 text-blue-600" />
+                <div>
+                  <div className="font-medium text-blue-800">Minister Status Active</div>
+                  <div className="text-sm text-blue-600">
+                    Your documents will be signed as: {identityData.ministerTitle || 'Minister [First Name]'}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FileText className="h-5 w-5 mr-2" />
-              Personal Information
-            </CardTitle>
-            <CardDescription>
-              Enter your personal details for trust creation
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Legal Name</Label>
+              <Label htmlFor="firstName">First Name *</Label>
               <Input
-                id="fullName"
-                value={formData.fullName}
-                onChange={(e) => handleInputChange('fullName', e.target.value)}
-                placeholder="Enter your full legal name"
+                id="firstName"
+                value={identityData.firstName}
+                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                placeholder="Enter your first name"
                 required
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">Date of Birth</Label>
-              <Input
-                id="dateOfBirth"
-                type="date"
-                value={formData.dateOfBirth}
-                onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                required
-              />
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FileText className="h-5 w-5 mr-2" />
-              Address Information
-            </CardTitle>
-            <CardDescription>
-              Your primary residential address
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="address">Street Address</Label>
+              <Label htmlFor="lastName">Last Name *</Label>
               <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
-                placeholder="123 Main Street"
+                id="lastName"
+                value={identityData.lastName}
+                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                placeholder="Enter your last name"
                 required
               />
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+          </div>
+
+          {/* Display Names */}
+          <div className="space-y-4 p-4 bg-muted rounded-lg">
+            <h4 className="font-medium">Generated Names (Auto-filled)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label>Full Name</Label>
+                <Input value={identityData.fullName} disabled className="bg-background" />
+              </div>
+              
+              {ministerStatus.verified && (
+                <div className="space-y-2">
+                  <Label>Minister Title</Label>
+                  <Input value={identityData.ministerTitle} disabled className="bg-background" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Contact Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
                 <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  placeholder="City"
+                  id="email"
+                  type="email"
+                  value={identityData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="Enter your email"
                   required
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
+                <Label htmlFor="phone">Phone Number *</Label>
                 <Input
-                  id="state"
-                  value={formData.state}
-                  onChange={(e) => handleInputChange('state', e.target.value)}
-                  placeholder="State"
+                  id="phone"
+                  type="tel"
+                  value={identityData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  placeholder="(555) 123-4567"
                   required
                 />
               </div>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="zipCode">ZIP Code</Label>
-              <Input
-                id="zipCode"
-                value={formData.zipCode}
-                onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                placeholder="12345"
-                required
-              />
+          {/* Address Information */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Address Information</h4>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="address">Street Address *</Label>
+                <Input
+                  id="address"
+                  value={identityData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  placeholder="123 Main Street"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City *</Label>
+                  <Input
+                    id="city"
+                    value={identityData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    placeholder="City"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="state">State *</Label>
+                  <Input
+                    id="state"
+                    value={identityData.state}
+                    onChange={(e) => handleInputChange('state', e.target.value)}
+                    placeholder="State"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="zipCode">ZIP Code *</Label>
+                  <Input
+                    id="zipCode"
+                    value={identityData.zipCode}
+                    onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                    placeholder="12345"
+                    required
+                  />
+                </div>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
 
-      <DocumentUpload
-        title="Identity Verification Documents"
-        requirements={documentRequirements}
-        uploadedFiles={uploadedFiles}
-        onFilesChange={setUploadedFiles}
-      />
+          {/* Validation Status */}
+          <div className="text-sm text-muted-foreground">
+            * Required fields - {isValid ? 'All fields complete' : 'Please fill all required fields'}
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="flex justify-between pt-6">
-        <Button onClick={onPrev} variant="outline" size="lg">
-          Back to NDA
+      {/* Navigation */}
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={onPrevious}>
+          Previous
         </Button>
-        <Button onClick={handleNext} disabled={!isFormValid} size="lg">
-          Continue to Trust Name
+        <Button 
+          onClick={onNext} 
+          disabled={!isValid}
+          className={isValid ? "bg-green-600 hover:bg-green-700" : ""}
+        >
+          {isValid ? "Continue" : "Complete Required Fields"}
         </Button>
       </div>
     </div>
