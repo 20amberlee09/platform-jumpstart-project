@@ -41,17 +41,26 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
   useEffect(() => {
     // Auto-save when data changes (but only if we have meaningful data)
     if ((isOrdained || certificateUploaded || certificateUrl) && updateStepData && currentStepKey) {
-      updateStepData(currentStepKey, {
+      console.log('Auto-saving step data:', { isOrdained, certificateUploaded, certificateUrl });
+      const stepData = {
         isOrdained,
         certificateUploaded,
         certificateUrl
-      });
+      };
+      
+      // Use try-catch to prevent saving errors from breaking the component
+      try {
+        updateStepData(currentStepKey, stepData);
+      } catch (error) {
+        console.error('Error in auto-save:', error);
+      }
     }
   }, [isOrdained, certificateUploaded, certificateUrl, updateStepData, currentStepKey]);
 
   useEffect(() => {
     // Ensure consistency - if we have a certificate uploaded, user should be considered ordained
     if (certificateUploaded && certificateUrl && !isOrdained) {
+      console.log('Setting isOrdained to true due to certificate upload');
       setIsOrdained(true);
     }
   }, [certificateUploaded, certificateUrl, isOrdained]);
@@ -359,29 +368,38 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
 
       {/* Navigation */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={onPrev} disabled={!onPrev}>
+        <Button 
+          variant="outline" 
+          onClick={onPrev} 
+          disabled={!onPrev || isProcessing}
+        >
           Previous
         </Button>
         <Button 
-          onClick={() => onNext({ 
-            isOrdained,
-            certificateUploaded,
-            certificateUrl
-          })} 
-          disabled={!certificateUploaded || !certificateUrl} // Simplified condition
+          onClick={() => {
+            console.log('Continue button clicked:', { certificateUploaded, certificateUrl });
+            if (certificateUploaded && certificateUrl) {
+              onNext({ 
+                isOrdained: true,
+                certificateUploaded: true,
+                certificateUrl
+              });
+            }
+          }} 
+          disabled={!certificateUploaded || !certificateUrl || isProcessing}
           className={certificateUploaded && certificateUrl ? "bg-green-600 hover:bg-green-700" : ""}
         >
-          {certificateUploaded && certificateUrl ? "Continue as Minister" : "Upload Certificate to Continue"}
+          {isProcessing ? "Processing..." : 
+           certificateUploaded && certificateUrl ? "Continue as Minister" : "Upload Certificate to Continue"}
         </Button>
       </div>
 
       {/* Debug info temporarily */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="text-xs text-gray-500 mt-2">
-          Debug: isOrdained={isOrdained.toString()}, certificateUploaded={certificateUploaded.toString()}, 
-          hasUrl={!!certificateUrl}, canProceed={canProceed.toString()}
-        </div>
-      )}
+      <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
+        <div>Debug: isOrdained={isOrdained.toString()}, certificateUploaded={certificateUploaded.toString()}</div>
+        <div>hasUrl={!!certificateUrl}, canProceed={canProceed.toString()}, isProcessing={isProcessing.toString()}</div>
+        <div>onPrev available: {!!onPrev}, onNext available: {!!onNext}</div>
+      </div>
 
       {/* Progress Indicator */}
       {!canProceed && (
