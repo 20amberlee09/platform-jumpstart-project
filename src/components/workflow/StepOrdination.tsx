@@ -378,19 +378,29 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
         <Button 
           onClick={() => {
             console.log('Continue button clicked:', { certificateUploaded, certificateUrl });
+            console.log('About to call onNext with data:', { 
+              isOrdained: true,
+              certificateUploaded: true,
+              certificateUrl
+            });
+            
+            // Force the step completion
             if (certificateUploaded && certificateUrl) {
+              console.log('Calling onNext...');
               onNext({ 
                 isOrdained: true,
                 certificateUploaded: true,
                 certificateUrl
               });
+            } else {
+              console.error('Button clicked but certificate not ready:', { certificateUploaded, certificateUrl });
             }
           }} 
           disabled={!certificateUploaded || !certificateUrl || isProcessing}
           className={certificateUploaded && certificateUrl ? "bg-green-600 hover:bg-green-700" : ""}
         >
           {isProcessing ? "Processing..." : 
-           certificateUploaded && certificateUrl ? "Continue as Minister" : "Upload Certificate to Continue"}
+           certificateUploaded && certificateUrl ? "Continue to Gmail Setup" : "Upload Certificate to Continue"}
         </Button>
       </div>
 
