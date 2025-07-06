@@ -44,6 +44,7 @@ export const ProtectedRoute = ({
 
   // Check admin role requirement
   if (requiredRole === 'admin' && !isAdmin) {
+    console.log('🔍 ProtectedRoute: Access denied for user:', user?.email, 'isAdmin:', isAdmin, 'requiredRole:', requiredRole);
     toast({
       title: "Access Denied",
       description: "You don't have permission to access this page.",
@@ -51,6 +52,8 @@ export const ProtectedRoute = ({
     });
     return <Navigate to="/" replace />;
   }
+
+  console.log('🔍 ProtectedRoute: Access granted for user:', user?.email, 'isAdmin:', isAdmin, 'requiredRole:', requiredRole);
 
   // Check course access requirement
   if (requireCourseAccess) {

@@ -49,10 +49,10 @@ export const useAdminData = () => {
     if (!user) {
       console.log('🔍 Admin check: No user logged in');
       setIsAdmin(false);
-      return;
+      return false;
     }
     
-    console.log('🔍 Admin check: Checking admin status for user:', user.id);
+    console.log('🔍 Admin check: Checking admin status for user:', user.id, 'email:', user.email);
     
     try {
       const { data, error } = await supabase
@@ -60,19 +60,29 @@ export const useAdminData = () => {
         .select('role')
         .eq('user_id', user.id);
       
-      console.log('🔍 Admin check: Query result:', { data, error });
-      
-      // Check if user has admin role in the returned data
-      const hasAdminRole = data && data.some(role => role.role === 'admin');
-      setIsAdmin(hasAdminRole);
-      console.log('🔍 Admin check: Final admin status:', hasAdminRole);
+      console.log('🔍 Admin check: Query result:', { 
+        data, 
+        error, 
+        userId: user.id,
+        userEmail: user.email 
+      });
       
       if (error) {
         console.error('🔍 Admin check: Database error:', error);
+        setIsAdmin(false);
+        return false;
       }
+      
+      // Check if user has admin role in the returned data
+      const hasAdminRole = data && Array.isArray(data) && data.some(role => role.role === 'admin');
+      setIsAdmin(hasAdminRole);
+      console.log('🔍 Admin check: Final admin status:', hasAdminRole, 'for user:', user.email);
+      
+      return hasAdminRole;
     } catch (error) {
-      console.log('🔍 Admin check: Error occurred:', error);
+      console.error('🔍 Admin check: Exception occurred:', error);
       setIsAdmin(false);
+      return false;
     }
   };
 
@@ -204,16 +214,28 @@ export const useAdminData = () => {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await checkAdminStatus();
+      console.log('🔍 Loading admin data for user:', user?.email);
+      
+      const isAdminUser = await checkAdminStatus();
+      console.log('🔍 Admin status determined:', isAdminUser);
+      
       await fetchCourses();
       await fetchModules();
+      
+      // Fetch user roles only if admin
+      if (isAdminUser) {
+        await fetchUserRoles();
+      }
+      
       setLoading(false);
+      console.log('🔍 Admin data loading complete');
     };
 
     if (user) {
       loadData();
     } else {
       // Clear admin status when user signs out
+      console.log('🔍 User signed out, clearing admin status');
       setIsAdmin(false);
       setUserRoles([]);
       setLoading(false);
