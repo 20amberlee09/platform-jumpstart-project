@@ -49,6 +49,13 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
     }
   }, [isOrdained, certificateUploaded, certificateUrl, updateStepData, currentStepKey]);
 
+  useEffect(() => {
+    // Ensure consistency - if we have a certificate uploaded, user should be considered ordained
+    if (certificateUploaded && certificateUrl && !isOrdained) {
+      setIsOrdained(true);
+    }
+  }, [certificateUploaded, certificateUrl, isOrdained]);
+
   const handleOrdinationClick = () => {
     // Open affiliate ordination link
     window.open('https://www.ulc.org/landing/get-ordained', '_blank');
@@ -67,16 +74,16 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
     try {
       setIsProcessing(true);
       
-      // Update minister status in auth first
+      // Update certificate status FIRST
+      setCertificateUrl(fileUrl);
+      setCertificateUploaded(true);
+      setIsOrdained(true); // Set this to true when certificate is uploaded
+      
+      // Update minister status in auth
       if (user) {
         await updateMinisterStatus(true, fileUrl, user.user_metadata?.full_name);
         console.log('Minister status updated in auth');
       }
-
-      // Update all state at once to avoid race conditions
-      setCertificateUrl(fileUrl);
-      setCertificateUploaded(true);
-      setIsOrdained(true);
       
       console.log('State updated:', { 
         certificateUrl: fileUrl, 
@@ -86,7 +93,7 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
 
       toast({
         title: "Certificate Uploaded Successfully",
-        description: "Your minister status has been activated!",
+        description: "Your minister status has been activated! You can now continue.",
       });
 
     } catch (error: any) {
@@ -114,12 +121,12 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
     });
   };
 
-  const canProceed = isOrdained && certificateUploaded;
+  const canProceed = certificateUploaded && certificateUrl && (isOrdained || certificateUploaded);
   
   console.log('StepOrdination state:', { 
     isOrdained, 
     certificateUploaded, 
-    certificateUrl, 
+    certificateUrl: !!certificateUrl, 
     canProceed, 
     isProcessing 
   });
@@ -331,7 +338,7 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
       </Card>
 
       {/* Completion Status */}
-      {canProceed && (
+      {(certificateUploaded && certificateUrl) && (
         <Card className="border-green-200 bg-green-50">
           <CardContent className="p-6">
             <div className="text-center space-y-3">
@@ -361,12 +368,20 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
             certificateUploaded,
             certificateUrl
           })} 
-          disabled={!canProceed}
-          className={canProceed ? "bg-green-600 hover:bg-green-700" : ""}
+          disabled={!certificateUploaded || !certificateUrl} // Simplified condition
+          className={certificateUploaded && certificateUrl ? "bg-green-600 hover:bg-green-700" : ""}
         >
-          {canProceed ? "Continue as Minister" : "Upload Certificate to Continue"}
+          {certificateUploaded && certificateUrl ? "Continue as Minister" : "Upload Certificate to Continue"}
         </Button>
       </div>
+
+      {/* Debug info temporarily */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="text-xs text-gray-500 mt-2">
+          Debug: isOrdained={isOrdained.toString()}, certificateUploaded={certificateUploaded.toString()}, 
+          hasUrl={!!certificateUrl}, canProceed={canProceed.toString()}
+        </div>
+      )}
 
       {/* Progress Indicator */}
       {!canProceed && (
