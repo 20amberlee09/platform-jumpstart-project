@@ -132,6 +132,16 @@ const XRPIntegrationTest = () => {
     updateTestResult('Edge Function Availability', 'running', 'Testing xrp-submit-document function...');
     
     try {
+      // First run diagnostic function to check environment
+      console.log('🧪 Running XRP diagnostic function...');
+      const diagnosticResponse = await supabase.functions.invoke('xrp-diagnostic');
+      
+      if (diagnosticResponse.error) {
+        console.error('🧪 Diagnostic function error:', diagnosticResponse.error);
+      } else {
+        console.log('🧪 Diagnostic results:', diagnosticResponse.data);
+      }
+      
       // Test with minimal data to check function availability
       const testHash = 'test_hash_' + Date.now();
       const response = await supabase.functions.invoke('xrp-submit-document', {
@@ -150,7 +160,10 @@ const XRPIntegrationTest = () => {
           'Edge Function Availability', 
           'success', 
           'xrp-submit-document function is available',
-          { available: true },
+          { 
+            available: true,
+            diagnostic: diagnosticResponse.data?.diagnostics || 'No diagnostic data'
+          },
           Date.now() - startTime
         );
         return true;
@@ -568,7 +581,7 @@ const XRPIntegrationTest = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
+          <div className="flex gap-4 mb-4">
             <Button
               onClick={initializeTestSession}
               disabled={!!currentTest}
@@ -594,6 +607,26 @@ const XRPIntegrationTest = () => {
                   Run All Tests
                 </>
               )}
+            </Button>
+          </div>
+          
+          <div className="flex gap-2 mb-4">
+            <Button
+              onClick={async () => {
+                console.log('🧪 Running XRP diagnostic...');
+                const response = await supabase.functions.invoke('xrp-diagnostic');
+                console.log('🧪 Diagnostic response:', response);
+                toast({
+                  title: "XRP Diagnostic Complete",
+                  description: "Check browser console for detailed results",
+                });
+              }}
+              disabled={!!currentTest || !user}
+              variant="outline"
+              size="sm"
+            >
+              <Hash className="mr-2 h-4 w-4" />
+              Run XRP Diagnostic
             </Button>
           </div>
           

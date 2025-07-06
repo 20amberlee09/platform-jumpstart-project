@@ -83,27 +83,51 @@ serve(async (req) => {
       : 'wss://s.altnet.rippletest.net:51233/'
     
     console.log(`🔗 Connecting to XRP ${isProduction ? 'mainnet' : 'testnet'} at ${server}`)
+    console.log('🔗 Seed format check:', seed.substring(0, 5) + '...' + seed.substring(seed.length - 5));
+    console.log('🔗 Seed length:', seed.length);
+    console.log('🔗 Seed starts with "s":', seed.startsWith('s'));
     
     let client;
     let wallet;
     
     try {
+      console.log('🔗 Creating wallet from seed...');
+      
+      // Validate seed format before using
+      if (!seed.startsWith('s') || seed.length < 25) {
+        throw new Error(`Invalid seed format: expected family seed starting with 's', got length ${seed.length}, starts with '${seed.substring(0, 3)}'`);
+      }
+      
+      wallet = Wallet.fromSeed(seed)
+      console.log(`🔗 Wallet created with address: ${wallet.address}`)
+      
       client = new Client(server)
       console.log('🔗 XRP Client created, connecting...');
       await client.connect()
       console.log('🔗 XRP Client connected successfully');
       
-      console.log('🔗 Creating wallet from seed...');
-      wallet = Wallet.fromSeed(seed)
-      console.log(`🔗 Wallet created with address: ${wallet.address}`)
-      
       // Verify wallet has sufficient balance (for testnet, we'll skip this check)
       if (!isProduction) {
-        console.log('🔗 Testnet mode - skipping balance check');
+        console.log('🔗 Testnet mode - checking account status');
+        try {
+          const accountInfo = await client.request({
+            command: 'account_info',
+            account: wallet.address,
+            ledger_index: 'validated'
+          });
+          console.log('🔗 Account balance:', accountInfo.result.account_data.Balance, 'drops');
+        } catch (accountError) {
+          console.log('🔗 Account not found on testnet (normal for new wallets)');
+        }
       }
       
     } catch (xrpError) {
       console.error('🔗 XRP Connection/Wallet Error:', xrpError);
+      console.error('🔗 Error details:', {
+        message: xrpError.message,
+        type: xrpError.constructor.name,
+        stack: xrpError.stack
+      });
       throw new Error(`XRP connection failed: ${xrpError.message}`);
     }
     
