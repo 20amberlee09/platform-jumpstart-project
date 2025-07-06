@@ -366,23 +366,150 @@ const Admin = () => {
           </Card>
         </TabsContent>
 
-        {/* Placeholder tabs for Documents and Analytics */}
-        <TabsContent value="documents">
+        {/* Documents Tab */}
+        <TabsContent value="documents" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Document Management</CardTitle>
-              <CardDescription>Coming in next update</CardDescription>
+              <CardDescription>
+                View and manage all generated documents
+              </CardDescription>
             </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-4">Loading document data...</div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold">{stats.documentsGenerated}</div>
+                        <p className="text-sm text-muted-foreground">Total Documents</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold">{stats.ministerCount}</div>
+                        <p className="text-sm text-muted-foreground">Minister Documents</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold">
+                          {Math.round((stats.documentsGenerated / Math.max(stats.totalUsers, 1)) * 100)}%
+                        </div>
+                        <p className="text-sm text-muted-foreground">Completion Rate</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="mx-auto h-12 w-12 mb-4" />
+                    <h3 className="text-lg font-medium mb-2">Document Archive</h3>
+                    <p>Individual document management features will be added as usage grows.</p>
+                    <p className="text-sm">Current focus: Minister verification and document generation pipeline.</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="analytics">
-          <Card>
-            <CardHeader>
-              <CardTitle>Analytics Dashboard</CardTitle>
-              <CardDescription>Coming in next update</CardDescription>
-            </CardHeader>
-          </Card>
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Platform Growth
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Users</span>
+                    <span className="font-medium">{stats.totalUsers}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Verified Ministers</span>
+                    <span className="font-medium">{stats.ministerCount}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Conversion Rate</span>
+                    <span className="font-medium">
+                      {stats.totalUsers > 0 ? Math.round((stats.ministerCount / stats.totalUsers) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Documents per Minister</span>
+                    <span className="font-medium">
+                      {stats.ministerCount > 0 ? Math.round(stats.documentsGenerated / stats.ministerCount) : 0}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Revenue Analytics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Revenue</span>
+                    <span className="font-medium">${stats.totalRevenue.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Average per User</span>
+                    <span className="font-medium">
+                      ${stats.totalUsers > 0 ? (stats.totalRevenue / stats.totalUsers).toFixed(2) : '0.00'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Revenue per Minister</span>
+                    <span className="font-medium">
+                      ${stats.ministerCount > 0 ? (stats.totalRevenue / stats.ministerCount).toFixed(2) : '0.00'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Pending Verifications</span>
+                    <span className="font-medium">{stats.pendingVerifications}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Platform Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">{stats.ministerCount}</div>
+                    <div className="text-sm text-muted-foreground">Active Ministers</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">{stats.documentsGenerated}</div>
+                    <div className="text-sm text-muted-foreground">Documents Created</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">{stats.pendingVerifications}</div>
+                    <div className="text-sm text-muted-foreground">Pending Reviews</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">${stats.totalRevenue.toFixed(0)}</div>
+                    <div className="text-sm text-muted-foreground">Total Revenue</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
