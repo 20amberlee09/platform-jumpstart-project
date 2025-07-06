@@ -71,7 +71,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/xrp-test" element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="admin">
               <XRPIntegrationTest />
             </ProtectedRoute>
           } />
