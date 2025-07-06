@@ -9,6 +9,7 @@ import { useAdminData } from "@/hooks/useAdminData";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import CourseDetailView from "@/components/admin/CourseDetailView";
+import GiftCodeManager from "@/components/admin/GiftCodeManager";
 import { 
   Users, 
   BookOpen, 
@@ -1107,13 +1108,14 @@ const Admin = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="ministers">Ministers</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="templates">Templates</TabsTrigger>
+          <TabsTrigger value="gift-codes">Gift Codes</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -1514,6 +1516,11 @@ const Admin = () => {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        {/* Gift Codes Management Tab */}
+        <TabsContent value="gift-codes" className="space-y-6">
+          <GiftCodeManager courses={courses} />
         </TabsContent>
       </Tabs>
 
