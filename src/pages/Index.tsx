@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,7 +46,7 @@ const Index = () => {
   ];
 
   // Check if user has already purchased this course or redeemed a gift code
-  const checkPurchaseStatus = async () => {
+  const checkPurchaseStatus = useCallback(async () => {
     if (!user) {
       setCheckingAccess(false);
       return;
@@ -82,7 +82,7 @@ const Index = () => {
     } finally {
       setCheckingAccess(false);
     }
-  };
+  }, [user, courseId]);
 
   const handlePayment = () => {
     if (!user) {
@@ -165,7 +165,7 @@ const Index = () => {
 
   useEffect(() => {
     checkPurchaseStatus();
-  }, [user]);
+  }, [checkPurchaseStatus]);
 
   if (loading || checkingAccess) {
     return (
