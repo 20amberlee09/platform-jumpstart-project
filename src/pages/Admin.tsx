@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAdminData } from "@/hooks/useAdminData";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import CourseDetailView from "@/components/admin/CourseDetailView";
 import { 
   Users, 
   BookOpen, 
@@ -15,7 +16,8 @@ import {
   TrendingUp,
   CheckCircle,
   AlertCircle,
-  Download
+  Download,
+  Plus
 } from "lucide-react";
 
 interface AdminStats {
@@ -50,14 +52,317 @@ const Admin = () => {
   
   const [ministerUsers, setMinisterUsers] = useState<MinisterUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [modules, setModules] = useState<any[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [showCourseForm, setShowCourseForm] = useState(false);
+  const [showModuleForm, setShowModuleForm] = useState(false);
+  const [showTemplateForm, setShowTemplateForm] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<any>(null);
+  const [editingModule, setEditingModule] = useState<any>(null);
+  const [editingTemplate, setEditingTemplate] = useState<any>(null);
   const { isAdmin } = useAdminData();
   const { toast } = useToast();
 
   useEffect(() => {
     if (isAdmin) {
       loadAdminData();
+      loadCourses();
+      loadTemplates();
     }
   }, [isAdmin]);
+
+  const loadCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select(`
+          *,
+          modules (
+            id,
+            name,
+            description,
+            order_index,
+            component,
+            icon,
+            required
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCourses(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error Loading Courses",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const loadTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('document_templates')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTemplates(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error Loading Templates",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const createCourse = async (courseData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .insert([courseData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Course Created",
+        description: "New course has been created successfully",
+      });
+
+      loadCourses();
+      setShowCourseForm(false);
+      setEditingCourse(null);
+    } catch (error: any) {
+      toast({
+        title: "Error Creating Course",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const updateCourse = async (courseId: string, courseData: any) => {
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .update(courseData)
+        .eq('id', courseId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Course Updated",
+        description: "Course has been updated successfully",
+      });
+
+      loadCourses();
+      setShowCourseForm(false);
+      setEditingCourse(null);
+    } catch (error: any) {
+      toast({
+        title: "Error Updating Course",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteCourse = async (courseId: string) => {
+    if (!confirm('Are you sure you want to delete this course? This will also delete all modules within it.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', courseId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Course Deleted",
+        description: "Course and all its modules have been deleted",
+      });
+
+      loadCourses();
+      setSelectedCourse(null);
+    } catch (error: any) {
+      toast({
+        title: "Error Deleting Course",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const createModule = async (moduleData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('modules')
+        .insert([moduleData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Module Created",
+        description: "New module has been created successfully",
+      });
+
+      loadCourses();
+      setShowModuleForm(false);
+      setEditingModule(null);
+    } catch (error: any) {
+      toast({
+        title: "Error Creating Module",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const updateModule = async (moduleId: string, moduleData: any) => {
+    try {
+      const { error } = await supabase
+        .from('modules')
+        .update(moduleData)
+        .eq('id', moduleId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Module Updated",
+        description: "Module has been updated successfully",
+      });
+
+      loadCourses();
+      setShowModuleForm(false);
+      setEditingModule(null);
+    } catch (error: any) {
+      toast({
+        title: "Error Updating Module",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteModule = async (moduleId: string) => {
+    if (!confirm('Are you sure you want to delete this module?')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('modules')
+        .delete()
+        .eq('id', moduleId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Module Deleted",
+        description: "Module has been deleted successfully",
+      });
+
+      loadCourses();
+    } catch (error: any) {
+      toast({
+        title: "Error Deleting Module",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const createTemplate = async (templateData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('document_templates')
+        .insert([templateData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Template Created",
+        description: "New template has been created successfully",
+      });
+
+      loadTemplates();
+      setShowTemplateForm(false);
+      setEditingTemplate(null);
+    } catch (error: any) {
+      toast({
+        title: "Error Creating Template",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const updateTemplate = async (templateId: string, templateData: any) => {
+    try {
+      const { error } = await supabase
+        .from('document_templates')
+        .update(templateData)
+        .eq('id', templateId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Template Updated",
+        description: "Template has been updated successfully",
+      });
+
+      loadTemplates();
+      setShowTemplateForm(false);
+      setEditingTemplate(null);
+    } catch (error: any) {
+      toast({
+        title: "Error Updating Template",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteTemplate = async (templateId: string) => {
+    if (!confirm('Are you sure you want to delete this template?')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('document_templates')
+        .delete()
+        .eq('id', templateId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Template Deleted",
+        description: "Template has been deleted successfully",
+      });
+
+      loadTemplates();
+    } catch (error: any) {
+      toast({
+        title: "Error Deleting Template",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
 
   const loadAdminData = async () => {
     try {
@@ -196,11 +501,13 @@ const Admin = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="ministers">Ministers</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="courses">Courses</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -509,6 +816,127 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
+
+        {/* Courses Management Tab */}
+        <TabsContent value="courses" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Course Management</h2>
+              <p className="text-muted-foreground">Manage courses and their modules</p>
+            </div>
+            <Button onClick={() => setShowCourseForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Course
+            </Button>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Course List */}
+            <Card className="md:col-span-1">
+              <CardHeader>
+                <CardTitle>Courses</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {courses.map((course) => (
+                  <div 
+                    key={course.id}
+                    className={`p-3 border rounded cursor-pointer transition-colors ${
+                      selectedCourse === course.id ? 'bg-primary/10 border-primary' : 'hover:bg-muted'
+                    }`}
+                    onClick={() => setSelectedCourse(course.id)}
+                  >
+                    <div className="font-medium">{course.title}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {course.modules?.length || 0} modules
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Course Details */}
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Course Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedCourse ? (
+                  <CourseDetailView 
+                    course={courses.find(c => c.id === selectedCourse)}
+                    onEditCourse={(course) => {
+                      setEditingCourse(course);
+                      setShowCourseForm(true);
+                    }}
+                    onDeleteCourse={deleteCourse}
+                    onCreateModule={() => setShowModuleForm(true)}
+                    onEditModule={(module) => {
+                      setEditingModule(module);
+                      setShowModuleForm(true);
+                    }}
+                    onDeleteModule={deleteModule}
+                    templates={templates}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Select a course to view details
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Templates Management Tab */}
+        <TabsContent value="templates" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Template Library</h2>
+              <p className="text-muted-foreground">Manage document templates for courses</p>
+            </div>
+            <Button onClick={() => setShowTemplateForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Template
+            </Button>
+          </div>
+
+          <div className="grid gap-4">
+            {templates.map((template) => (
+              <Card key={template.id}>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-2">
+                      <h3 className="font-semibold">{template.name}</h3>
+                      <p className="text-muted-foreground">{template.description}</p>
+                      <div className="flex gap-2">
+                        <Badge variant="outline">{template.category}</Badge>
+                        <Badge variant="outline">{template.document_type}</Badge>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          setEditingTemplate(template);
+                          setShowTemplateForm(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => deleteTemplate(template.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </TabsContent>
       </Tabs>

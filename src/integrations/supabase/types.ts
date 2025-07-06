@@ -139,6 +139,45 @@ export type Database = {
           },
         ]
       }
+      document_templates: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          document_type: string
+          id: string
+          is_active: boolean
+          name: string
+          template_content: Json
+          updated_at: string
+          variables: Json | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          document_type: string
+          id?: string
+          is_active?: boolean
+          name: string
+          template_content?: Json
+          updated_at?: string
+          variables?: Json | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          template_content?: Json
+          updated_at?: string
+          variables?: Json | null
+        }
+        Relationships: []
+      }
       gift_codes: {
         Row: {
           code: string
