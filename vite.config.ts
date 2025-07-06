@@ -15,23 +15,36 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         // Manual chunk splitting for better caching
-        manualChunks: {
+        manualChunks: (id) => {
           // Vendor chunks
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-select',
-            '@radix-ui/react-toast'
-          ],
-          'supabase-vendor': ['@supabase/supabase-js'],
-          'blockchain-vendor': ['xrpl', 'qrcode'],
-          'utils-vendor': ['jspdf', 'lucide-react'],
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('@supabase/supabase-js')) {
+              return 'supabase-vendor';
+            }
+            if (id.includes('xrpl') || id.includes('qrcode')) {
+              return 'blockchain-vendor';
+            }
+            if (id.includes('jspdf') || id.includes('lucide-react')) {
+              return 'utils-vendor';
+            }
+          }
           
           // Application chunks
-          'admin': ['./src/pages/Admin.tsx'],
-          'workflow': ['./src/components/workflow'],
-          'auth': ['./src/pages/Auth.tsx', './src/hooks/useAuth.tsx']
+          if (id.includes('/pages/Admin.')) {
+            return 'admin';
+          }
+          if (id.includes('/components/workflow/')) {
+            return 'workflow';
+          }
+          if (id.includes('/pages/Auth.') || id.includes('/hooks/useAuth.')) {
+            return 'auth';
+          }
         }
       }
     },
