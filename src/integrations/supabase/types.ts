@@ -143,36 +143,45 @@ export type Database = {
         Row: {
           category: string
           created_at: string
+          created_by: string | null
           description: string | null
           document_type: string
+          file_url: string | null
           id: string
           is_active: boolean
           name: string
           template_content: Json
+          template_fields: Json | null
           updated_at: string
           variables: Json | null
         }
         Insert: {
           category: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           document_type: string
+          file_url?: string | null
           id?: string
           is_active?: boolean
           name: string
           template_content?: Json
+          template_fields?: Json | null
           updated_at?: string
           variables?: Json | null
         }
         Update: {
           category?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           document_type?: string
+          file_url?: string | null
           id?: string
           is_active?: boolean
           name?: string
           template_content?: Json
+          template_fields?: Json | null
           updated_at?: string
           variables?: Json | null
         }
@@ -225,6 +234,7 @@ export type Database = {
       modules: {
         Row: {
           component: string
+          content: Json | null
           course_id: string
           created_at: string
           description: string | null
@@ -233,10 +243,13 @@ export type Database = {
           name: string
           order_index: number
           required: boolean | null
+          templates: Json | null
+          title: string
           updated_at: string
         }
         Insert: {
           component: string
+          content?: Json | null
           course_id: string
           created_at?: string
           description?: string | null
@@ -245,10 +258,13 @@ export type Database = {
           name: string
           order_index: number
           required?: boolean | null
+          templates?: Json | null
+          title: string
           updated_at?: string
         }
         Update: {
           component?: string
+          content?: Json | null
           course_id?: string
           created_at?: string
           description?: string | null
@@ -257,6 +273,8 @@ export type Database = {
           name?: string
           order_index?: number
           required?: boolean | null
+          templates?: Json | null
+          title?: string
           updated_at?: string
         }
         Relationships: [

@@ -106,7 +106,7 @@ const CourseDetailView = ({
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">#{module.order_index}</span>
-                      <h4 className="font-medium">{module.name}</h4>
+                      <h4 className="font-medium">{module.title || module.name}</h4>
                       {module.required && <Badge variant="secondary" className="text-xs">Required</Badge>}
                     </div>
                     {module.description && (
@@ -115,6 +115,9 @@ const CourseDetailView = ({
                     <div className="flex gap-2 mt-2">
                       <Badge variant="outline" className="text-xs">{module.component}</Badge>
                       {module.icon && <Badge variant="outline" className="text-xs">{module.icon}</Badge>}
+                      {module.templates && module.templates.length > 0 && (
+                        <Badge variant="secondary" className="text-xs">{module.templates.length} templates</Badge>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-1">

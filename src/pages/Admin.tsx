@@ -3,6 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAdminData } from "@/hooks/useAdminData";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,11 +84,14 @@ const Admin = () => {
           modules (
             id,
             name,
+            title,
             description,
             order_index,
             component,
             icon,
-            required
+            required,
+            templates,
+            content
           )
         `)
         .order('created_at', { ascending: false });
@@ -477,6 +482,300 @@ const Admin = () => {
 
   const downloadCertificate = (url: string) => {
     window.open(url, '_blank');
+  };
+
+  // Course Form Modal
+  const CourseForm = ({ show, onClose, course, onSubmit }: any) => {
+    const [formData, setFormData] = useState({
+      title: '',
+      description: '',
+      price: 0,
+      is_active: true,
+      ...course
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      onSubmit(formData);
+    };
+
+    if (!show) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <Card className="w-full max-w-md mx-4">
+          <CardHeader>
+            <CardTitle>{course ? 'Edit Course' : 'Create New Course'}</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Course Title</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <textarea
+                  id="description"
+                  className="w-full p-2 border rounded-md"
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="price">Price (cents)</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => setFormData({...formData, price: parseInt(e.target.value)})}
+                  required
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
+                />
+                <Label htmlFor="is_active">Active</Label>
+              </div>
+            </CardContent>
+            <div className="flex justify-end gap-2 p-6 pt-0">
+              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+              <Button type="submit">{course ? 'Update' : 'Create'}</Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+    );
+  };
+
+  // Module Form Modal
+  const ModuleForm = ({ show, onClose, module, courseId, onSubmit, templates }: any) => {
+    const [formData, setFormData] = useState({
+      name: '',
+      title: '',
+      description: '',
+      content: {},
+      templates: [],
+      order_index: 0,
+      course_id: courseId,
+      component: 'default',
+      icon: '',
+      required: true,
+      ...module
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      onSubmit(formData);
+    };
+
+    const toggleTemplate = (templateId: string) => {
+      const templates = formData.templates || [];
+      const updated = templates.includes(templateId)
+        ? templates.filter((id: string) => id !== templateId)
+        : [...templates, templateId];
+      setFormData({...formData, templates: updated});
+    };
+
+    if (!show) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <Card className="w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <CardHeader>
+            <CardTitle>{module ? 'Edit Module' : 'Create New Module'}</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Module Title</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value, name: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <textarea
+                  id="description"
+                  className="w-full p-2 border rounded-md"
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="order_index">Order</Label>
+                  <Input
+                    id="order_index"
+                    type="number"
+                    value={formData.order_index}
+                    onChange={(e) => setFormData({...formData, order_index: parseInt(e.target.value)})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="component">Component</Label>
+                  <Input
+                    id="component"
+                    value={formData.component}
+                    onChange={(e) => setFormData({...formData, component: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="required"
+                  checked={formData.required}
+                  onChange={(e) => setFormData({...formData, required: e.target.checked})}
+                />
+                <Label htmlFor="required">Required</Label>
+              </div>
+              <div className="space-y-2">
+                <Label>Available Templates</Label>
+                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border rounded p-2">
+                  {templates.map((template: any) => (
+                    <div key={template.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={template.id}
+                        checked={(formData.templates || []).includes(template.id)}
+                        onChange={() => toggleTemplate(template.id)}
+                      />
+                      <Label htmlFor={template.id} className="text-sm">{template.name}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+            <div className="flex justify-end gap-2 p-6 pt-0">
+              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+              <Button type="submit">{module ? 'Update' : 'Create'}</Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+    );
+  };
+
+  // Template Form Modal
+  const TemplateForm = ({ show, onClose, template, onSubmit }: any) => {
+    const [formData, setFormData] = useState({
+      name: '',
+      description: '',
+      category: 'trust',
+      document_type: 'pdf_template',
+      template_content: '',
+      template_fields: [],
+      is_active: true,
+      ...template
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      onSubmit(formData);
+    };
+
+    if (!show) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <Card className="w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <CardHeader>
+            <CardTitle>{template ? 'Edit Template' : 'Create New Template'}</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Template Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <textarea
+                  id="description"
+                  className="w-full p-2 border rounded-md"
+                  rows={2}
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <select
+                    id="category"
+                    className="w-full p-2 border rounded-md"
+                    value={formData.category}
+                    onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  >
+                    <option value="trust">Trust Documents</option>
+                    <option value="legal">Legal Documents</option>
+                    <option value="certificate">Certificates</option>
+                    <option value="form">Forms</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="document_type">Document Type</Label>
+                  <select
+                    id="document_type"
+                    className="w-full p-2 border rounded-md"
+                    value={formData.document_type}
+                    onChange={(e) => setFormData({...formData, document_type: e.target.value})}
+                  >
+                    <option value="pdf_template">PDF Template</option>
+                    <option value="html_template">HTML Template</option>
+                    <option value="form_template">Form Template</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="template_content">Template Content</Label>
+                <textarea
+                  id="template_content"
+                  className="w-full p-2 border rounded-md font-mono text-sm"
+                  rows={8}
+                  value={formData.template_content}
+                  onChange={(e) => setFormData({...formData, template_content: e.target.value})}
+                  placeholder="Enter template content (HTML, text, or upload file URL)"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
+                />
+                <Label htmlFor="is_active">Active</Label>
+              </div>
+            </CardContent>
+            <div className="flex justify-end gap-2 p-6 pt-0">
+              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+              <Button type="submit">{template ? 'Update' : 'Create'}</Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+    );
   };
 
   if (!isAdmin) {
@@ -940,6 +1239,48 @@ const Admin = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Form Modals */}
+      <CourseForm
+        show={showCourseForm}
+        onClose={() => {
+          setShowCourseForm(false);
+          setEditingCourse(null);
+        }}
+        course={editingCourse}
+        onSubmit={editingCourse ? 
+          (data: any) => updateCourse(editingCourse.id, data) : 
+          createCourse
+        }
+      />
+
+      <ModuleForm
+        show={showModuleForm}
+        onClose={() => {
+          setShowModuleForm(false);
+          setEditingModule(null);
+        }}
+        module={editingModule}
+        courseId={selectedCourse}
+        templates={templates}
+        onSubmit={editingModule ? 
+          (data: any) => updateModule(editingModule.id, data) : 
+          createModule
+        }
+      />
+
+      <TemplateForm
+        show={showTemplateForm}
+        onClose={() => {
+          setShowTemplateForm(false);
+          setEditingTemplate(null);
+        }}
+        template={editingTemplate}
+        onSubmit={editingTemplate ? 
+          (data: any) => updateTemplate(editingTemplate.id, data) : 
+          createTemplate
+        }
+      />
     </div>
   );
 };
