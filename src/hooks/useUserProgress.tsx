@@ -148,6 +148,29 @@ export const useUserProgress = (courseId: string) => {
       try {
         setSaving(true);
         
+        // Clean step data to remove any circular references or non-serializable objects
+        const cleanStepData = JSON.parse(JSON.stringify(progressData.step_data || {}, (key, value) => {
+          // Remove File objects and other non-serializable objects
+          if (value instanceof File) {
+            return `[File: ${value.name}]`;
+          }
+          if (value instanceof FileList) {
+            return `[FileList: ${value.length} files]`;
+          }
+          if (value instanceof Blob) {
+            return `[Blob: ${value.size} bytes]`;
+          }
+          // Remove DOM elements
+          if (value && typeof value === 'object' && value.nodeType) {
+            return '[DOM Element]';
+          }
+          // Remove functions
+          if (typeof value === 'function') {
+            return '[Function]';
+          }
+          return value;
+        }));
+        
         const { error } = await supabase
           .from('user_progress')
           .upsert({
@@ -155,7 +178,7 @@ export const useUserProgress = (courseId: string) => {
             course_id: progressData.course_id,
             current_step: progressData.current_step,
             completed_steps: progressData.completed_steps,
-            step_data: progressData.step_data,
+            step_data: cleanStepData,
             is_complete: progressData.is_complete,
             updated_at: new Date().toISOString()
           }, {

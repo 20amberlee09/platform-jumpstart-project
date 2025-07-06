@@ -110,15 +110,16 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
     return true;
   });
   
-  const currentModule = availableModules[workflowState.currentStep];
+  // Convert 1-based step to 0-based index for array access
+  const currentStepIndex = Math.max(0, workflowState.currentStep - 1);
+  const currentModule = availableModules[currentStepIndex];
   const stepNames = availableModules.map(module => module.name);
 
   const handleStepComplete = (stepData?: any) => {
     completeStep(stepData);
     
-    // Check if this was the last step (use availableModules length)
-    const nextStep = workflowState.currentStep + 1;
-    if (nextStep >= availableModules.length) {
+    // Check if this was the last step (current step is 1-based, array length is count)
+    if (workflowState.currentStep >= availableModules.length) {
       markComplete();
       if (onComplete) {
         onComplete();
@@ -201,7 +202,7 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
         
         <StepIndicator 
           steps={stepNames} 
-          currentStep={workflowState.currentStep} 
+          currentStep={currentStepIndex} 
           completedSteps={workflowState.completedSteps} 
         />
         
