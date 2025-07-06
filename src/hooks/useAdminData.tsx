@@ -48,6 +48,7 @@ export const useAdminData = () => {
   const checkAdminStatus = async () => {
     if (!user) {
       console.log('🔍 Admin check: No user logged in');
+      setIsAdmin(false);
       return;
     }
     
@@ -57,15 +58,18 @@ export const useAdminData = () => {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .single();
+        .eq('user_id', user.id);
       
       console.log('🔍 Admin check: Query result:', { data, error });
       
-      const adminStatus = !!data;
-      setIsAdmin(adminStatus);
-      console.log('🔍 Admin check: Final admin status:', adminStatus);
+      // Check if user has admin role in the returned data
+      const hasAdminRole = data && data.some(role => role.role === 'admin');
+      setIsAdmin(hasAdminRole);
+      console.log('🔍 Admin check: Final admin status:', hasAdminRole);
+      
+      if (error) {
+        console.error('🔍 Admin check: Database error:', error);
+      }
     } catch (error) {
       console.log('🔍 Admin check: Error occurred:', error);
       setIsAdmin(false);

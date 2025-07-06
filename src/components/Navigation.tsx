@@ -117,10 +117,13 @@ const Navigation = () => {
     navItems.unshift({ href: "/#start", label: "▶ Start Course", isSpecial: true });
   }
   
+  console.log('🔍 Navigation: isAdmin status:', isAdmin, 'user:', !!user);
+  
   if (isAdmin) {
     navItems.push({ href: "/admin", label: "Admin" });
     // Add XRP test link for admins
     navItems.push({ href: "/xrp-test", label: "🧪 XRP Test" });
+    console.log('🔍 Navigation: Added admin nav items');
   }
 
   const isActive = (href: string) => {
