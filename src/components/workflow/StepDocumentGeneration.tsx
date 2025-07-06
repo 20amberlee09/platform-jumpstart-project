@@ -21,6 +21,30 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
     setIsGenerating(true);
     
     try {
+      // Pre-validate data before generation
+      const extractedData = extractStepData();
+      const validation = validateRequiredData(extractedData);
+      
+      if (!validation.isValid) {
+        toast({
+          title: "Missing Required Information",
+          description: `Please complete these steps first: ${validation.missingFields.join(', ')}`,
+          variant: "destructive"
+        });
+        setIsGenerating(false);
+        return;
+      }
+      
+      // Log successful data extraction for debugging
+      const documentData = createDocumentData(extractedData);
+      console.log('✅ Document generation starting with validated data:', {
+        ministerName: documentData.ministerName,
+        trustName: documentData.trustName,
+        hasIdentity: !!documentData.identityData?.firstName,
+        hasAddress: !!documentData.identityData?.address,
+        hasEmail: !!documentData.identityData?.email
+      });
+      
       // Simulate comprehensive trust document generation process
       await new Promise(resolve => setTimeout(resolve, 3000));
       
@@ -30,6 +54,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
         description: "Your ecclesiastic revocable living trust with all annexes and certificates has been created.",
       });
     } catch (error) {
+      console.error('❌ Document generation failed:', error);
       toast({
         title: "Generation Failed",
         description: "Failed to generate trust documents. Please try again.",
@@ -40,26 +65,155 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
     }
   };
 
-  const handleDownload = (documentType: string) => {
-    // Extract data from previous steps using numeric step keys
-    const identityData = data?.['step_0'] || data?.['step_1'] || {}; // Identity step
-    const trustNameData = data?.['step_2'] || data?.['step_3'] || {}; // Trust name step  
-    const gmailData = data?.['step_4'] || data?.['step_5'] || {}; // Gmail setup step
-    const verificationData = data?.['step_6'] || data?.['step_7'] || {}; // Verification tools step
+  /**
+   * Extract step data with proper fallback handling
+   * Handles both named keys (identity) and numbered keys (step_1, step_2, etc.)
+   */
+  const extractStepData = () => {
+    // Identity data - uses 'identity' key specifically
+    const identityData = data?.identity || data?.step_2 || {};
     
-    const ministerName = `Minister ${identityData?.fullName || data?.fullName || identityData?.name || 'Name Not Provided'}`;
-    const trustName = trustNameData?.fullTrustName || trustNameData?.trustName || data?.fullTrustName || 'Trust Name Not Provided';
+    // Trust name data - step 3
+    const trustNameData = data?.step_3 || {};
     
-    const documentData = {
+    // Ordination data - step 4  
+    const ordinationData = data?.step_4 || {};
+    
+    // Gmail setup data - step 5
+    const gmailData = data?.step_5 || {};
+    
+    // Verification tools data - step 6
+    const verificationData = data?.step_6 || {};
+    
+    return {
       identityData,
-      trustData: trustNameData,
+      trustNameData, 
+      ordinationData,
       gmailData,
-      verificationData,
+      verificationData
+    };
+  };
+
+  /**
+   * Validate required data is available for document generation
+   */
+  const validateRequiredData = (extractedData: any) => {
+    const { identityData, trustNameData } = extractedData;
+    
+    const missingFields = [];
+    
+    // Check identity data
+    if (!identityData?.firstName) missingFields.push('First Name');
+    if (!identityData?.lastName) missingFields.push('Last Name');
+    if (!identityData?.email) missingFields.push('Email');
+    if (!identityData?.address) missingFields.push('Address');
+    if (!identityData?.city) missingFields.push('City');
+    if (!identityData?.state) missingFields.push('State');
+    if (!identityData?.zipCode) missingFields.push('ZIP Code');
+    
+    // Check trust name
+    if (!trustNameData?.trustName && !trustNameData?.fullTrustName) {
+      missingFields.push('Trust Name');
+    }
+    
+    return {
+      isValid: missingFields.length === 0,
+      missingFields
+    };
+  };
+
+  /**
+   * Create document data with proper fallbacks
+   */
+  const createDocumentData = (extractedData: any) => {
+    const { identityData, trustNameData, gmailData, verificationData } = extractedData;
+    
+    // Create minister name with fallbacks
+    const fullName = identityData?.fullName || 
+                    `${identityData?.firstName || ''} ${identityData?.lastName || ''}`.trim() ||
+                    'Name Not Provided';
+    const ministerName = `Minister ${fullName}`;
+    
+    // Create trust name with fallbacks
+    const trustName = trustNameData?.fullTrustName || 
+                     trustNameData?.trustName || 
+                     'Trust Name Not Provided';
+    
+    return {
+      identityData: {
+        ...identityData,
+        fullName,
+        // Ensure all required fields have fallbacks
+        firstName: identityData?.firstName || 'First',
+        lastName: identityData?.lastName || 'Last', 
+        email: identityData?.email || 'email@example.com',
+        phone: identityData?.phone || '(555) 123-4567',
+        address: identityData?.address || '123 Main Street',
+        city: identityData?.city || 'City',
+        state: identityData?.state || 'State',
+        zipCode: identityData?.zipCode || '12345'
+      },
+      trustData: {
+        ...trustNameData,
+        trustName,
+        fullTrustName: trustName
+      },
+      gmailData: {
+        ...gmailData,
+        gmailAccount: gmailData?.gmailAccount || 'account@gmail.com',
+        googleDriveFolder: gmailData?.googleDriveFolder || 'Google Drive Folder'
+      },
+      verificationData: {
+        ...verificationData,
+        barcodeNumber: verificationData?.barcodeNumber || 'Barcode ID'
+      },
       ministerName,
       trustName
     };
-    
-    downloadDocument(documentType, documentData);
+  };
+
+  const handleDownload = (documentType: string) => {
+    try {
+      // Extract data with proper fallback handling
+      const extractedData = extractStepData();
+      
+      // Validate required data
+      const validation = validateRequiredData(extractedData);
+      
+      if (!validation.isValid) {
+        toast({
+          title: "Missing Required Information",
+          description: `Please complete the following fields: ${validation.missingFields.join(', ')}`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Create document data with fallbacks
+      const documentData = createDocumentData(extractedData);
+      
+      console.log('✅ Document download prepared with data:', {
+        type: documentType,
+        ministerName: documentData.ministerName,
+        trustName: documentData.trustName,
+        dataIntegrity: {
+          identity: !!documentData.identityData?.firstName,
+          trust: !!documentData.trustData?.trustName,
+          gmail: !!documentData.gmailData?.gmailAccount,
+          verification: !!documentData.verificationData?.barcodeNumber
+        }
+      });
+      
+      downloadDocument(documentType, documentData);
+      
+    } catch (error) {
+      console.error('Error preparing document data:', error);
+      toast({
+        title: "Document Preparation Error",
+        description: "Failed to prepare document data. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleNext = () => {
@@ -79,15 +233,45 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
     });
   };
 
-  // Extract data from previous steps using numeric step keys
-  const identityData = data?.['step_0'] || data?.['step_1'] || {}; // Identity step
-  const trustNameData = data?.['step_2'] || data?.['step_3'] || {}; // Trust name step
-  const gmailData = data?.['step_4'] || data?.['step_5'] || {}; // Gmail setup step
-  const ordinationData = data?.['step_6'] || data?.['step_7'] || {}; // Ordination step
-  const verificationData = data?.['step_6'] || data?.['step_7'] || data?.['step_8'] || {}; // Verification tools step
-  
-  const ministerName = `Minister ${identityData?.fullName || data?.fullName || identityData?.name || 'Name Not Provided'}`;
-  const trustName = trustNameData?.fullTrustName || trustNameData?.trustName || data?.fullTrustName || 'Trust Name Not Provided';
+  // Extract and validate data for display with proper fallback handling
+  const displayData = (() => {
+    try {
+      const extractedData = extractStepData();
+      const documentData = createDocumentData(extractedData);
+      return documentData;
+    } catch (error) {
+      console.error('Error extracting display data:', error);
+      // Return safe fallback data for display
+      return {
+        identityData: {
+          firstName: 'First',
+          lastName: 'Last',
+          fullName: 'Name Not Provided',
+          address: 'Address Not Provided',
+          city: 'City',
+          state: 'State',
+          zipCode: '12345'
+        },
+        trustData: { trustName: 'Trust Name Not Provided' },
+        gmailData: { 
+          gmailAccount: 'Gmail Account Not Provided',
+          googleDriveFolder: 'Google Drive Not Provided'
+        },
+        verificationData: { barcodeNumber: 'Barcode Not Provided' },
+        ministerName: 'Minister Name Not Provided',
+        trustName: 'Trust Name Not Provided'
+      };
+    }
+  })();
+
+  const { 
+    identityData: displayIdentityData, 
+    trustData: displayTrustData,
+    gmailData: displayGmailData,
+    verificationData: displayVerificationData,
+    ministerName: displayMinisterName,
+    trustName: displayTrustName
+  } = displayData;
 
   return (
     <div className="space-y-6">
@@ -113,33 +297,31 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
             <div className="space-y-3">
               <div>
                 <Label className="text-sm font-medium">Minister Name</Label>
-                <p className="text-sm text-muted-foreground">{ministerName}</p>
+                <p className="text-sm text-muted-foreground">{displayMinisterName}</p>
               </div>
               <div>
                 <Label className="text-sm font-medium">Trust Name</Label>
-                <p className="text-sm text-muted-foreground">{trustName}</p>
+                <p className="text-sm text-muted-foreground">{displayTrustName}</p>
               </div>
                <div>
                  <Label className="text-sm font-medium">Gmail Account</Label>
-                 <p className="text-sm text-muted-foreground">{gmailData?.gmailAccount || data?.gmailAccount || 'Not Provided'}</p>
+                 <p className="text-sm text-muted-foreground">{displayGmailData?.gmailAccount}</p>
                </div>
              </div>
              <div className="space-y-3">
                <div>
                  <Label className="text-sm font-medium">Google Drive Folder</Label>
-                 <p className="text-sm text-muted-foreground">{gmailData?.googleDriveFolder || data?.googleDriveFolder || 'Not Provided'}</p>
+                 <p className="text-sm text-muted-foreground">{displayGmailData?.googleDriveFolder}</p>
                </div>
                 <div>
                   <Label className="text-sm font-medium">Barcode Certificate</Label>
-                  <p className="text-sm text-muted-foreground">{verificationData?.barcodeNumber || data?.barcodeNumber || 'Not Provided'}</p>
+                  <p className="text-sm text-muted-foreground">{displayVerificationData?.barcodeNumber}</p>
                 </div>
                <div>
                  <Label className="text-sm font-medium">Address</Label>
                  <p className="text-sm text-muted-foreground">
-                   {identityData?.address && identityData?.city && identityData?.state && identityData?.zipCode 
-                     ? `${identityData.address}, ${identityData.city}, ${identityData.state} ${identityData.zipCode}`
-                     : data?.address && data?.city && data?.state && data?.zipCode
-                     ? `${data.address}, ${data.city}, ${data.state} ${data.zipCode}`
+                   {displayIdentityData?.address && displayIdentityData?.city && displayIdentityData?.state && displayIdentityData?.zipCode 
+                     ? `${displayIdentityData.address}, ${displayIdentityData.city}, ${displayIdentityData.state} ${displayIdentityData.zipCode}`
                      : 'Address Not Provided'
                    }
                  </p>
@@ -304,7 +486,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
                 <p className="font-medium text-green-800">Boot Camp Complete!</p>
               </div>
               <p className="text-sm text-green-700 mt-1">
-                Congratulations {ministerName}! Your ecclesiastic revocable living trust 
+                Congratulations {displayMinisterName}! Your ecclesiastic revocable living trust 
                 has been successfully created with all verification elements. All documents are 
                 professionally formatted PDFs that would be recognized by legal teams and authorities.
               </p>
