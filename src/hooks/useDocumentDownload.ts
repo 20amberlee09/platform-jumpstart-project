@@ -31,9 +31,7 @@ export const useDocumentDownload = () => {
       console.log('PDF generated successfully');
 
       // 2. Generate document hash
-      const pdfBuffer = await pdfBlob.arrayBuffer();
-      const uint8Array = new Uint8Array(pdfBuffer);
-      const documentHash = generateDocumentHash(uint8Array);
+      const documentHash = await generateDocumentHash(pdfBlob);
       console.log('Document hash generated:', documentHash);
 
       // 3. Submit to blockchain
