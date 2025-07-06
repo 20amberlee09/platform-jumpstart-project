@@ -46,7 +46,12 @@ export const useAdminData = () => {
 
   // Check if current user is admin
   const checkAdminStatus = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('🔍 Admin check: No user logged in');
+      return;
+    }
+    
+    console.log('🔍 Admin check: Checking admin status for user:', user.id);
     
     try {
       const { data, error } = await supabase
@@ -55,9 +60,14 @@ export const useAdminData = () => {
         .eq('user_id', user.id)
         .eq('role', 'admin')
         .single();
-        
-      setIsAdmin(!!data);
+      
+      console.log('🔍 Admin check: Query result:', { data, error });
+      
+      const adminStatus = !!data;
+      setIsAdmin(adminStatus);
+      console.log('🔍 Admin check: Final admin status:', adminStatus);
     } catch (error) {
+      console.log('🔍 Admin check: Error occurred:', error);
       setIsAdmin(false);
     }
   };
