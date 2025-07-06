@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { XRPLService } from '@/services/xrplService';
 
 export interface DocumentData {
   identityData?: any;
@@ -153,4 +154,16 @@ export const createProfessionalPDF = (documentType: string, data: DocumentData) 
   }
   
   return doc;
+};
+
+// Generate secure document hash from PDF buffer
+export const generateDocumentHash = (pdfBuffer: Buffer | Uint8Array): string => {
+  try {
+    // Convert Uint8Array to Buffer if needed for compatibility
+    const buffer = pdfBuffer instanceof Uint8Array ? Buffer.from(pdfBuffer) : pdfBuffer;
+    return XRPLService.generateDocumentHash(buffer);
+  } catch (error) {
+    console.error('Document hash generation failed:', error);
+    throw new Error('Failed to generate document hash');
+  }
 };

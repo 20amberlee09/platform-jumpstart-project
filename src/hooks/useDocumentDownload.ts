@@ -1,11 +1,14 @@
 import { useToast } from '@/hooks/use-toast';
-import { createProfessionalPDF, DocumentData } from '@/utils/pdfGenerator';
+import { createProfessionalPDF, DocumentData, generateDocumentHash } from '@/utils/pdfGenerator';
+import { BlockchainService } from '@/services/documentService';
+import { useAuth } from './useAuth';
 
 export const useDocumentDownload = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const downloadDocument = (documentType: string, data: DocumentData) => {
-    console.log('=== DOWNLOAD DEBUG START ===');
+  const downloadDocument = async (documentType: string, data: DocumentData) => {
+    console.log('=== DOWNLOAD WITH BLOCKCHAIN DEBUG START ===');
     console.log('Document type:', documentType);
     console.log('Data received:', data);
     
@@ -14,6 +17,58 @@ export const useDocumentDownload = () => {
       console.log('Creating PDF...');
       const pdf = createProfessionalPDF(documentType, data);
       console.log('PDF created successfully:', !!pdf);
+      
+      // Generate PDF buffer for hashing
+      const pdfBuffer = pdf.output('arraybuffer');
+      const uint8Array = new Uint8Array(pdfBuffer);
+      console.log('PDF buffer size:', uint8Array.length);
+      
+      // Generate document hash
+      console.log('Generating document hash...');
+      const documentHash = generateDocumentHash(uint8Array);
+      console.log('Document hash generated:', documentHash);
+      
+      // Submit to blockchain if user is authenticated
+      let blockchainResult = null;
+      if (user) {
+        try {
+          console.log('Submitting to blockchain...');
+          const documentId = `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          
+          blockchainResult = await BlockchainService.submitToBlockchain(
+            documentHash,
+            documentId,
+            {
+              userId: user.id,
+              ministerName: data.ministerName,
+              trustName: data.trustName
+            }
+          );
+          
+          console.log('Blockchain submission successful:', blockchainResult.transactionHash);
+          
+          // Save verification record
+          await BlockchainService.saveBlockchainVerification(
+            blockchainResult.transactionHash,
+            documentHash,
+            user.id,
+            documentId
+          );
+          
+          toast({
+            title: "Blockchain Verification Complete",
+            description: `Document secured on XRP Ledger: ${blockchainResult.transactionHash.substring(0, 8)}...`,
+          });
+          
+        } catch (blockchainError) {
+          console.error('Blockchain submission failed:', blockchainError);
+          toast({
+            title: "Blockchain Warning",
+            description: "Document generated but blockchain verification failed. PDF still downloadable.",
+            variant: "destructive"
+          });
+        }
+      }
       
       const fileName = `${documentType.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
       console.log('Generated filename:', fileName);
@@ -25,8 +80,10 @@ export const useDocumentDownload = () => {
         console.log('jsPDF.save() executed successfully');
         
         toast({
-          title: "Download Method 1 Attempted",
-          description: `Using jsPDF.save() for ${documentType}`,
+          title: blockchainResult ? "Document Downloaded & Verified" : "Document Downloaded",
+          description: blockchainResult 
+            ? `Document secured on blockchain and downloaded: ${documentType}` 
+            : `Downloaded: ${documentType}`,
         });
       } catch (saveError) {
         console.error('jsPDF.save() failed:', saveError);
@@ -124,7 +181,7 @@ export const useDocumentDownload = () => {
       });
     }
     
-    console.log('=== DOWNLOAD DEBUG END ===');
+    console.log('=== DOWNLOAD WITH BLOCKCHAIN DEBUG END ===');
   };
 
   return { downloadDocument };

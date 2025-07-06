@@ -1,5 +1,7 @@
 // Document and PDF generation service integration
 import { supabase } from '@/integrations/supabase/client';
+import { XRPLService } from './xrplService';
+import { QRCodeService } from './qrCodeService';
 
 interface DocumentGenerationRequest {
   userId: string;
@@ -92,36 +94,99 @@ export class DocumentService {
 }
 
 /**
- * Blockchain service for document verification
+ * Real Blockchain service for document verification using XRP Ledger
  */
 export class BlockchainService {
   /**
    * Submit document to XRP Ledger for verification
    */
-  static async submitToBlockchain(documentHash: string): Promise<{
+  static async submitToBlockchain(
+    documentHash: string,
+    documentId: string,
+    userInfo: {
+      userId: string;
+      ministerName?: string;
+      trustName?: string;
+    }
+  ): Promise<{
     transactionHash: string;
     verificationUrl: string;
+    qrCodeData: string;
+    ledgerIndex: number;
   }> {
-    console.log('Blockchain submission for hash:', documentHash);
+    console.log('Real blockchain submission for hash:', documentHash);
     
-    // TODO: Integrate with XRP Ledger using xrpl package
-    // This would create actual blockchain transactions
-    
-    const mockTransaction = {
-      transactionHash: 'mock_tx_' + Date.now(),
-      verificationUrl: `https://xrpl.org/tx/mock_tx_${Date.now()}`
-    };
-
-    return mockTransaction;
+    try {
+      // Initialize XRP Ledger service
+      await XRPLService.initialize();
+      
+      // Submit document to blockchain
+      const result = await XRPLService.submitDocumentToBlockchain({
+        documentId,
+        hash: documentHash,
+        timestamp: new Date().toISOString(),
+        userInfo
+      });
+      
+      console.log('Blockchain submission successful:', result.transactionHash);
+      return result;
+      
+    } catch (error) {
+      console.error('Blockchain submission failed:', error);
+      throw new Error(`Blockchain verification failed: ${error.message}`);
+    }
   }
 
   /**
    * Verify document authenticity via blockchain
    */
-  static async verifyDocument(transactionHash: string): Promise<boolean> {
+  static async verifyDocument(transactionHash: string): Promise<{
+    isValid: boolean;
+    documentInfo?: any;
+    timestamp?: string;
+  }> {
     console.log('Verify document with transaction:', transactionHash);
     
-    // TODO: Implement blockchain verification
-    return true;
+    try {
+      await XRPLService.initialize();
+      return await XRPLService.verifyDocument(transactionHash);
+    } catch (error) {
+      console.error('Document verification failed:', error);
+      return { isValid: false };
+    }
+  }
+
+  /**
+   * Save blockchain verification record to database
+   */
+  static async saveBlockchainVerification(
+    transactionHash: string,
+    documentHash: string,
+    userId: string,
+    documentId?: string
+  ): Promise<void> {
+    try {
+      const { error } = await supabase.from('blockchain_verifications').insert({
+        transaction_hash: transactionHash,
+        user_id: userId,
+        document_id: documentId,
+        blockchain_network: 'xrp_ledger',
+        verification_url: `https://testnet.xrpl.org/transactions/${transactionHash}`,
+        metadata: {
+          document_hash: documentHash,
+          verification_date: new Date().toISOString()
+        }
+      });
+
+      if (error) {
+        console.error('Failed to save blockchain verification:', error);
+        throw error;
+      }
+
+      console.log('Blockchain verification record saved successfully');
+    } catch (error) {
+      console.error('Database save failed:', error);
+      throw error;
+    }
   }
 }
