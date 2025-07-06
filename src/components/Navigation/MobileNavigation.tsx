@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Play, CreditCard } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 interface MobileNavigationProps {
   isMenuOpen: boolean;
@@ -27,6 +27,8 @@ export const MobileNavigation = ({
   userDisplayName,
   children
 }: MobileNavigationProps) => {
+  const location = useLocation();
+  
   const isActive = (href: string) => {
     if (href === "/") return location.pathname === "/";
     return location.pathname.startsWith(href);
