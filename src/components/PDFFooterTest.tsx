@@ -211,7 +211,8 @@ const PDFFooterTest = () => {
       });
 
       if (pdfError) {
-        throw new Error('PDF generation failed: ' + pdfError.message);
+        console.error('PDF generation error details:', pdfError);
+        throw new Error('PDF generation failed: ' + (pdfError.message || JSON.stringify(pdfError)));
       }
 
       // Download the test PDF
@@ -305,7 +306,7 @@ const PDFFooterTest = () => {
                   console.error('🧪 Simple test failed:', error);
                   toast({
                     title: "PDFShift Simple Test Failed",
-                    description: error.message,
+                    description: error.message || JSON.stringify(error),
                     variant: "destructive"
                   });
                   return;

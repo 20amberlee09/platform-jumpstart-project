@@ -39,8 +39,21 @@ serve(async (req) => {
     
     if (!pdfShiftApiKey) {
       console.error('❌ PDFShift API key not configured');
-      throw new Error('PDFShift API key not configured');
+      return new Response(
+        JSON.stringify({ 
+          error: 'PDFShift API key not configured',
+          details: 'PDFSHIFT_API_KEY environment variable is missing',
+          apiKeyPresent: false
+        }), 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
+
+    // Log first few characters of API key for debugging (safely)
+    console.log('🔑 API Key first 10 chars:', pdfShiftApiKey.substring(0, 10));
 
     const requestBody = await req.json();
     console.log('📥 Request received with keys:', Object.keys(requestBody));
