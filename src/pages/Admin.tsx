@@ -1,262 +1,390 @@
-import { useState } from 'react';
-import { useAdminData } from '@/hooks/useAdminData';
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Settings, Users, BookOpen, Layers, DollarSign, Gift } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
-import CourseEditor from '@/components/admin/CourseEditor';
-import ModuleEditor from '@/components/admin/ModuleEditor';
-import GiftCodeManager from '@/components/admin/GiftCodeManager';
+import { useState, useEffect } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useAdminData } from "@/hooks/useAdminData";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { 
+  Users, 
+  BookOpen, 
+  DollarSign, 
+  Award, 
+  FileText, 
+  TrendingUp,
+  CheckCircle,
+  AlertCircle,
+  Download
+} from "lucide-react";
+
+interface AdminStats {
+  totalUsers: number;
+  totalCourses: number;
+  totalRevenue: number;
+  ministerCount: number;
+  documentsGenerated: number;
+  pendingVerifications: number;
+}
+
+interface MinisterUser {
+  id: string;
+  email: string;
+  first_name: string;
+  minister_name: string;
+  minister_verified: boolean;
+  minister_certificate_url: string;
+  created_at: string;
+  verification_status: string;
+}
 
 const Admin = () => {
-  const { user } = useAuth();
-  const { courses, modules, isAdmin, loading } = useAdminData();
-  const [editingCourse, setEditingCourse] = useState<any>(null);
-  const [editingModule, setEditingModule] = useState<any>(null);
-  const [showCourseEditor, setShowCourseEditor] = useState(false);
-  const [showModuleEditor, setShowModuleEditor] = useState(false);
+  const [stats, setStats] = useState<AdminStats>({
+    totalUsers: 0,
+    totalCourses: 0,
+    totalRevenue: 0,
+    ministerCount: 0,
+    documentsGenerated: 0,
+    pendingVerifications: 0
+  });
+  
+  const [ministerUsers, setMinisterUsers] = useState<MinisterUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { isAdmin } = useAdminData();
+  const { toast } = useToast();
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+  useEffect(() => {
+    if (isAdmin) {
+      loadAdminData();
+    }
+  }, [isAdmin]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading admin panel...</p>
-        </div>
-      </div>
-    );
-  }
+  const loadAdminData = async () => {
+    try {
+      setLoading(true);
+
+      // Get basic stats
+      const [usersResult, coursesResult, ordersResult] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact' }),
+        supabase.from('courses').select('*', { count: 'exact' }),
+        supabase.from('orders').select('amount').eq('status', 'completed')
+      ]);
+
+      // Get minister-specific stats
+      const ministerResult = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('minister_verified', true);
+
+      const pendingResult = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('verification_status', 'pending')
+        .not('minister_certificate_url', 'is', null);
+
+      const documentsResult = await supabase
+        .from('document_files')
+        .select('*', { count: 'exact' })
+        .eq('document_type', 'generated_document');
+
+      // Calculate revenue
+      const totalRevenue = ordersResult.data?.reduce((sum, order) => sum + (order.amount || 0), 0) || 0;
+
+      setStats({
+        totalUsers: usersResult.count || 0,
+        totalCourses: coursesResult.count || 0,
+        totalRevenue: totalRevenue / 100, // Convert from cents
+        ministerCount: ministerResult.data?.length || 0,
+        documentsGenerated: documentsResult.count || 0,
+        pendingVerifications: pendingResult.data?.length || 0
+      });
+
+      // Load minister users with email data
+      const { data: ministerData } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          minister_name,
+          minister_verified,
+          minister_certificate_url,
+          verification_status,
+          created_at,
+          user_id
+        `)
+        .not('minister_certificate_url', 'is', null)
+        .order('created_at', { ascending: false });
+
+      if (ministerData) {
+        const formattedMinisters = ministerData.map(user => ({
+          id: user.id,
+          email: 'Loading...', // Will be loaded separately due to auth table restrictions
+          first_name: user.first_name || '',
+          minister_name: user.minister_name || '',
+          minister_verified: user.minister_verified || false,
+          minister_certificate_url: user.minister_certificate_url || '',
+          verification_status: user.verification_status || 'pending',
+          created_at: user.created_at
+        }));
+        setMinisterUsers(formattedMinisters);
+      }
+
+    } catch (error: any) {
+      console.error('Error loading admin data:', error);
+      toast({
+        title: "Error Loading Data",
+        description: error.message || "Failed to load admin data",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyMinister = async (userId: string, verify: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          minister_verified: verify,
+          verification_status: verify ? 'verified' : 'rejected',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: verify ? "Minister Verified" : "Minister Rejected",
+        description: `Minister status has been ${verify ? 'approved' : 'rejected'}`,
+      });
+
+      // Refresh data
+      loadAdminData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update minister status",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const downloadCertificate = (url: string) => {
+    window.open(url, '_blank');
+  };
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle className="text-destructive">Access Denied</CardTitle>
-            <CardDescription>
-              You don't have admin privileges. Contact an administrator to gain access.
-            </CardDescription>
-          </CardHeader>
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+            <p className="text-muted-foreground">You don't have permission to access the admin panel.</p>
+          </CardContent>
         </Card>
       </div>
     );
   }
 
-  const totalRevenue = courses.reduce((sum, course) => sum + (course.price * 0.01), 0);
-  const totalModules = modules.length;
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage courses, modules, and system settings</p>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <p className="text-muted-foreground">Manage your platform and monitor performance</p>
+      </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{courses.length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Modules</CardTitle>
-              <Layers className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalModules}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Course Value</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Courses</CardTitle>
-              <Settings className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{courses.filter(c => c.is_active).length}</div>
-            </CardContent>
-          </Card>
-        </div>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="ministers">Ministers</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
 
-        <Tabs defaultValue="courses" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="courses">Courses</TabsTrigger>
-            <TabsTrigger value="modules">Modules</TabsTrigger>
-            <TabsTrigger value="gift-codes">Gift Codes</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="courses">
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Course Management</CardTitle>
-                    <CardDescription>Create and manage your courses</CardDescription>
-                  </div>
-                  <Button onClick={() => {
-                    setEditingCourse(null);
-                    setShowCourseEditor(true);
-                  }}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Course
-                  </Button>
-                </div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
+                <div className="text-2xl font-bold">{stats.totalUsers}</div>
+                <p className="text-xs text-muted-foreground">
+                  +{stats.ministerCount} ministers
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Verified Ministers</CardTitle>
+                <Award className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.ministerCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.pendingVerifications} pending
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Documents Generated</CardTitle>
+                <FileText className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.documentsGenerated}</div>
+                <p className="text-xs text-muted-foreground">
+                  Legal documents created
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground">
+                  From course sales
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Courses</CardTitle>
+                <BookOpen className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalCourses}</div>
+                <p className="text-xs text-muted-foreground">
+                  Available for purchase
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Pending Verifications</CardTitle>
+                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.pendingVerifications}</div>
+                <p className="text-xs text-muted-foreground">
+                  Require attention
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Ministers Tab */}
+        <TabsContent value="ministers" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Minister Management</CardTitle>
+              <CardDescription>
+                Review and manage minister verification requests
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-4">Loading minister data...</div>
+              ) : ministerUsers.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  No minister applications found
+                </div>
+              ) : (
                 <div className="space-y-4">
-                  {courses.map((course) => (
-                    <Card key={course.id} className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold">{course.title}</h3>
-                            <Badge variant={course.is_active ? 'default' : 'secondary'}>
-                              {course.is_active ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-2">{course.description}</p>
-                          <p className="text-sm font-medium">${(course.price / 100).toFixed(2)}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {modules.filter(m => m.course_id === course.id).length} modules
-                          </p>
+                  {ministerUsers.map((minister) => (
+                    <div key={minister.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="space-y-1">
+                        <div className="font-medium">
+                          {minister.minister_name || minister.first_name || 'Unknown User'}
                         </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => {
-                            setEditingCourse(course);
-                            setShowCourseEditor(true);
-                          }}
-                        >
-                          Edit
-                        </Button>
+                        <div className="text-sm text-muted-foreground">
+                          {minister.email}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={minister.minister_verified ? "default" : "secondary"}>
+                            {minister.minister_verified ? "Verified" : minister.verification_status}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            Applied: {new Date(minister.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
-                    </Card>
+                      
+                      <div className="flex items-center gap-2">
+                        {minister.minister_certificate_url && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => downloadCertificate(minister.minister_certificate_url)}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Certificate
+                          </Button>
+                        )}
+                        
+                        {!minister.minister_verified && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-green-600 border-green-600 hover:bg-green-50"
+                              onClick={() => handleVerifyMinister(minister.id, true)}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 border-red-600 hover:bg-red-50"
+                              onClick={() => handleVerifyMinister(minister.id, false)}
+                            >
+                              <AlertCircle className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <TabsContent value="modules">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Module Management</CardTitle>
-                    <CardDescription>Create and manage course modules</CardDescription>
-                  </div>
-                  <Button 
-                    onClick={() => {
-                      setEditingModule(null);
-                      setShowModuleEditor(true);
-                    }}
-                    disabled={courses.length === 0}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Module
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {courses.map((course) => {
-                    const courseModules = modules.filter(m => m.course_id === course.id);
-                    return (
-                      <div key={course.id}>
-                        <h3 className="font-semibold mb-3 text-primary">{course.title}</h3>
-                        <div className="space-y-2 mb-6">
-                          {courseModules.map((module) => (
-                            <Card key={module.id} className="p-3">
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-sm font-medium">#{module.order_index + 1}</span>
-                                    <h4 className="font-medium">{module.name}</h4>
-                                    <Badge variant={module.required ? 'default' : 'secondary'}>
-                                      {module.required ? 'Required' : 'Optional'}
-                                    </Badge>
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">{module.description}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    Component: {module.component}
-                                  </p>
-                                </div>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => {
-                                    setEditingModule(module);
-                                    setShowModuleEditor(true);
-                                  }}
-                                >
-                                  Edit
-                                </Button>
-                              </div>
-                            </Card>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* Placeholder tabs for Documents and Analytics */}
+        <TabsContent value="documents">
+          <Card>
+            <CardHeader>
+              <CardTitle>Document Management</CardTitle>
+              <CardDescription>Coming in next update</CardDescription>
+            </CardHeader>
+          </Card>
+        </TabsContent>
 
-          <TabsContent value="gift-codes">
-            <GiftCodeManager courses={courses} />
-          </TabsContent>
-        </Tabs>
-
-        {/* Course Editor Modal */}
-        {showCourseEditor && (
-          <CourseEditor
-            course={editingCourse}
-            onClose={() => {
-              setShowCourseEditor(false);
-              setEditingCourse(null);
-            }}
-          />
-        )}
-
-        {/* Module Editor Modal */}
-        {showModuleEditor && (
-          <ModuleEditor
-            module={editingModule}
-            courses={courses}
-            onClose={() => {
-              setShowModuleEditor(false);
-              setEditingModule(null);
-            }}
-          />
-        )}
-      </div>
+        <TabsContent value="analytics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics Dashboard</CardTitle>
+              <CardDescription>Coming in next update</CardDescription>
+            </CardHeader>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
