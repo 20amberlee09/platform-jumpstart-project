@@ -1,188 +1,122 @@
-import { useToast } from '@/hooks/use-toast';
-import { createProfessionalPDF, DocumentData, generateDocumentHash } from '@/utils/pdfGenerator';
+import { useState } from 'react';
+import { createProfessionalPDF, generateDocumentHash } from '@/utils/pdfGenerator';
 import { BlockchainService } from '@/services/documentService';
-import { useAuth } from './useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 export const useDocumentDownload = () => {
-  const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
+  const { toast } = useToast();
 
-  const downloadDocument = async (documentType: string, data: DocumentData) => {
-    console.log('=== DOWNLOAD WITH BLOCKCHAIN DEBUG START ===');
-    console.log('Document type:', documentType);
-    console.log('Data received:', data);
-    
-    try {
-      // Create PDF
-      console.log('Creating PDF...');
-      const pdf = createProfessionalPDF(documentType, data);
-      console.log('PDF created successfully:', !!pdf);
-      
-      // Generate PDF buffer for hashing
-      const pdfBuffer = pdf.output('arraybuffer');
-      const uint8Array = new Uint8Array(pdfBuffer);
-      console.log('PDF buffer size:', uint8Array.length);
-      
-      // Generate document hash
-      console.log('Generating document hash...');
-      const documentHash = generateDocumentHash(uint8Array);
-      console.log('Document hash generated:', documentHash);
-      
-      // Submit to blockchain if user is authenticated
-      let blockchainResult = null;
-      if (user) {
-        try {
-          console.log('Submitting to blockchain...');
-          const documentId = `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          
-          blockchainResult = await BlockchainService.submitToBlockchain(
-            documentHash,
-            documentId,
-            {
-              userId: user.id,
-              ministerName: data.ministerName,
-              trustName: data.trustName
-            }
-          );
-          
-          console.log('Blockchain submission successful:', blockchainResult.transactionHash);
-          
-          // Save verification record
-          await BlockchainService.saveBlockchainVerification(
-            blockchainResult.transactionHash,
-            documentHash,
-            user.id,
-            documentId
-          );
-          
-          toast({
-            title: "Blockchain Verification Complete",
-            description: `Document secured on XRP Ledger: ${blockchainResult.transactionHash.substring(0, 8)}...`,
-          });
-          
-        } catch (blockchainError) {
-          console.error('Blockchain submission failed:', blockchainError);
-          toast({
-            title: "Blockchain Warning",
-            description: "Document generated but blockchain verification failed. PDF still downloadable.",
-            variant: "destructive"
-          });
-        }
-      }
-      
-      const fileName = `${documentType.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
-      console.log('Generated filename:', fileName);
-      
-      // Method 1: Direct jsPDF save (most reliable)
-      console.log('Attempting Method 1: jsPDF.save()');
-      try {
-        pdf.save(fileName);
-        console.log('jsPDF.save() executed successfully');
-        
-        toast({
-          title: blockchainResult ? "Document Downloaded & Verified" : "Document Downloaded",
-          description: blockchainResult 
-            ? `Document secured on blockchain and downloaded: ${documentType}` 
-            : `Downloaded: ${documentType}`,
-        });
-      } catch (saveError) {
-        console.error('jsPDF.save() failed:', saveError);
-      }
-      
-      // Method 2: Blob approach as fallback
-      console.log('Attempting Method 2: Blob download');
-      try {
-        const pdfOutput = pdf.output('blob');
-        console.log('Blob created, size:', pdfOutput.size);
-        
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(pdfOutput);
-        
-        link.href = url;
-        link.download = fileName;
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        console.log('Download link added to DOM');
-        
-        // Force click with event
-        link.click();
-        console.log('Click triggered');
-        
-        // Cleanup
-        setTimeout(() => {
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          console.log('Cleanup completed');
-        }, 100);
-        
-      } catch (blobError) {
-        console.error('Blob method failed:', blobError);
-      }
-      
-      // Method 3: Data URL approach
-      console.log('Attempting Method 3: Data URL');
-      try {
-        const dataUri = pdf.output('datauristring');
-        console.log('Data URI length:', dataUri.length);
-        
-        const link = document.createElement('a');
-        link.href = dataUri;
-        link.download = fileName;
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        
-        setTimeout(() => {
-          document.body.removeChild(link);
-        }, 100);
-        
-        console.log('Data URI method completed');
-      } catch (dataError) {
-        console.error('Data URI method failed:', dataError);
-      }
-      
-      // Method 4: Force download with window.open fallback
-      console.log('Attempting Method 4: window.open fallback');
-      try {
-        const pdfDataUri = pdf.output('datauristring');
-        const newWindow = window.open();
-        if (newWindow) {
-          newWindow.document.write(`
-            <html>
-              <head><title>Download ${documentType}</title></head>
-              <body>
-                <h1>Document Ready</h1>
-                <p>If download doesn't start automatically, <a href="${pdfDataUri}" download="${fileName}">click here</a></p>
-                <script>
-                  window.onload = function() {
-                    var a = document.createElement('a');
-                    a.href = '${pdfDataUri}';
-                    a.download = '${fileName}';
-                    a.click();
-                  }
-                </script>
-              </body>
-            </html>
-          `);
-          console.log('Fallback window opened');
-        }
-      } catch (windowError) {
-        console.error('Window.open method failed:', windowError);
-      }
-      
-    } catch (error) {
-      console.error('CRITICAL DOWNLOAD ERROR:', error);
+  const downloadDocument = async (documentType: string, data: any) => {
+    if (!user) {
       toast({
-        title: "Download Failed",
-        description: `Critical error: ${error.message}. Check console for details.`,
+        title: "Authentication Required",
+        description: "Please log in to download documents.",
         variant: "destructive"
       });
+      return;
     }
-    
-    console.log('=== DOWNLOAD WITH BLOCKCHAIN DEBUG END ===');
+
+    setIsGenerating(true);
+
+    try {
+      console.log('Starting document generation for:', documentType);
+
+      // 1. Generate professional PDF
+      const pdf = createProfessionalPDF(documentType, data);
+      const pdfBlob = pdf.output('blob');
+      console.log('PDF generated successfully');
+
+      // 2. Generate document hash
+      const pdfBuffer = await pdfBlob.arrayBuffer();
+      const uint8Array = new Uint8Array(pdfBuffer);
+      const documentHash = generateDocumentHash(uint8Array);
+      console.log('Document hash generated:', documentHash);
+
+      // 3. Submit to blockchain
+      const documentId = `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const blockchainResult = await BlockchainService.submitToBlockchain(
+        documentHash,
+        documentId,
+        {
+          userId: user.id,
+          ministerName: data.ministerName,
+          trustName: data.trustName
+        }
+      );
+      console.log('Blockchain submission successful:', blockchainResult.transactionHash);
+
+      // 4. Upload document to storage
+      const fileName = `${documentType}_${user.id}_${Date.now()}.pdf`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(fileName, pdfBlob, {
+          contentType: 'application/pdf',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw new Error('Failed to store document');
+      }
+
+      console.log('Document uploaded to storage:', uploadData.path);
+
+      // 5. Save document record to database
+      const { error: dbError } = await supabase
+        .from('document_files')
+        .insert({
+          user_id: user.id,
+          document_type: documentType,
+          file_name: fileName,
+          file_url: uploadData.path,
+          file_type: 'application/pdf',
+          metadata: {
+            document_hash: documentHash,
+            blockchain_tx_hash: blockchainResult.transactionHash,
+            verification_status: 'verified'
+          }
+        });
+
+      if (dbError) {
+        console.error('Database save error:', dbError);
+        // Don't throw - document still downloads even if DB save fails
+      }
+
+      // 6. Download the PDF
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${documentType}_verified.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Document Generated Successfully",
+        description: `${documentType} has been verified on blockchain and downloaded.`,
+      });
+
+      console.log('Document download completed successfully');
+
+    } catch (error) {
+      console.error('Document generation failed:', error);
+      toast({
+        title: "Document Generation Failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  return { downloadDocument };
+  return {
+    downloadDocument,
+    isGenerating
+  };
 };
