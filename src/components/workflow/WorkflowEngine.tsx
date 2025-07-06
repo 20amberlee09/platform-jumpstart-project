@@ -116,7 +116,13 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
   const stepNames = availableModules.map(module => module.name);
 
   const handleStepComplete = (stepData?: any) => {
-    completeStep(stepData);
+    // Save step data first if provided
+    if (stepData && updateStepData) {
+      updateStepData(`step_${workflowState.currentStep}`, stepData);
+    }
+    
+    // Complete the current step (no parameter needed - uses current step)
+    completeStep();
     
     // Check if this was the last step (current step is 1-based, array length is count)
     if (workflowState.currentStep >= availableModules.length) {
