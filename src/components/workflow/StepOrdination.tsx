@@ -62,18 +62,27 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
   };
 
   const handleCertificateUpload = async (fileUrl: string, fileName: string, fileType: string) => {
+    console.log('Certificate upload started:', { fileUrl, fileName, fileType });
+    
     try {
       setIsProcessing(true);
       
       // Update minister status in auth first
       if (user) {
         await updateMinisterStatus(true, fileUrl, user.user_metadata?.full_name);
+        console.log('Minister status updated in auth');
       }
 
       // Update all state at once to avoid race conditions
       setCertificateUrl(fileUrl);
       setCertificateUploaded(true);
       setIsOrdained(true);
+      
+      console.log('State updated:', { 
+        certificateUrl: fileUrl, 
+        certificateUploaded: true, 
+        isOrdained: true 
+      });
 
       toast({
         title: "Certificate Uploaded Successfully",
@@ -81,6 +90,7 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
       });
 
     } catch (error: any) {
+      console.error('Certificate upload error:', error);
       toast({
         title: "Upload Error",
         description: error.message || "Failed to process certificate",
@@ -105,6 +115,14 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
   };
 
   const canProceed = isOrdained && certificateUploaded;
+  
+  console.log('StepOrdination state:', { 
+    isOrdained, 
+    certificateUploaded, 
+    certificateUrl, 
+    canProceed, 
+    isProcessing 
+  });
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
