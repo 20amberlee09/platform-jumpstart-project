@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render } from '@/test/test-utils'
-import { screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import WorkflowEngine from '@/components/workflow/WorkflowEngine'
 import { useUserProgress } from '@/hooks/useUserProgress'
 

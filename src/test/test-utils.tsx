@@ -1,6 +1,5 @@
 import React, { ReactElement } from 'react'
 import { render, RenderOptions } from '@testing-library/react'
-import { screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { vi } from 'vitest'
@@ -201,8 +200,7 @@ export const simulateAuthError = () => {
   return error
 }
 
-// Re-export everything from testing library
+// Re-export everything from testing library with proper imports
 export * from '@testing-library/react'
-export { screen, fireEvent, waitFor }
 export { customRender as render }
 export { default as userEvent } from '@testing-library/user-event'

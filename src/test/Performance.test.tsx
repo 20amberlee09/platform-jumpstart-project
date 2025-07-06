@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@/test/test-utils'
+import { render, screen } from '@testing-library/react'
 import { LazyWrapper, PageLoader, WorkflowLoader, AdminLoader } from '@/components/LazyWrapper'
 import { usePerformance, useComponentLifecycle } from '@/hooks/usePerformance'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
