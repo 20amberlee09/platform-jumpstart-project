@@ -26,7 +26,6 @@ const AVAILABLE_COMPONENTS = [
   'StepDocumentGeneration',
   'StepReview',
   'StepSignatures',
-  'StepBasicConfig',
 ];
 
 const AVAILABLE_ICONS = [

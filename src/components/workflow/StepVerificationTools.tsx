@@ -8,6 +8,7 @@ import { ExternalLink, CheckCircle, QrCode, Mail, AlertTriangle } from 'lucide-r
 import { useToast } from '@/hooks/use-toast';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import DocumentUpload from '@/components/DocumentUpload';
+import { GoogleDriveService } from '@/services/googleDriveService';
 
 interface StepVerificationToolsProps {
   onNext: (data: any) => void;
@@ -59,16 +60,12 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
   const handleDriveUrlChange = async (url: string) => {
     setGoogleDriveUrl(url);
     
-    // Enhanced validation for Google Drive links
-    const isDriveLink = url.includes('drive.google.com') && url.includes('folders');
-    const hasShareParams = url.includes('/share') || url.includes('usp=sharing');
-    
-    const isValid = isDriveLink && (hasShareParams || url.includes('/folders/'));
-    
-    const newStatus = { ...verificationStatus, drive: isValid };
+    // Use GoogleDriveService for validation
+    const validation = GoogleDriveService.validateGoogleDriveUrl(url);
+    const newStatus = { ...verificationStatus, drive: validation.isValid };
     setVerificationStatus(newStatus);
 
-    if (isValid) {
+    if (validation.isValid) {
       toast({
         title: "Google Drive Link Valid",
         description: "Please ensure the folder has 'Editor' permissions for document upload",

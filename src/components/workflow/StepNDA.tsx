@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Shield, FileText } from 'lucide-react';
 
 interface StepNDAProps {
@@ -44,7 +43,7 @@ const StepNDA = ({ onNext, data }: StepNDAProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-96 w-full border rounded-md p-4 mb-6">
+          <div className="h-96 w-full border rounded-md p-4 mb-6 overflow-y-auto">
             <div className="prose prose-sm max-w-none text-foreground">
               <h3 className="text-lg font-semibold mb-4">NON-DISCLOSURE AGREEMENT</h3>
               
@@ -124,7 +123,7 @@ const StepNDA = ({ onNext, data }: StepNDAProps) => {
                 understood, and agree to be bound by all terms of this Non-Disclosure Agreement.
               </p>
             </div>
-          </ScrollArea>
+          </div>
           
           <div className="flex items-start space-x-3">
             <Checkbox 
