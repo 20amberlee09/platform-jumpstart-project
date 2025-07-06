@@ -31,3 +31,6 @@ port = 54328
 
 [functions.send-completion-notification]
 verify_jwt = false
+
+[functions.xrp-submit-document]
+verify_jwt = true

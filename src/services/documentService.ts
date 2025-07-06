@@ -65,12 +65,11 @@ export class BlockchainService {
       console.log('Document hash:', documentHash);
 
       // Use the real XRPLService for blockchain submission
-      const result = await XRPLService.submitDocumentToBlockchain({
-        documentId: documentId || `doc_${Date.now()}`,
-        hash: documentHash,
-        timestamp: new Date().toISOString(),
-        userInfo: userInfo || {}
-      });
+      const result = await XRPLService.submitDocumentToBlockchain(
+        documentHash,
+        documentId || `doc_${Date.now()}`,
+        userInfo || {}
+      );
       
       if (!result || !result.transactionHash) {
         throw new Error('Invalid blockchain submission result');
@@ -106,7 +105,7 @@ export class BlockchainService {
       
       return {
         success: true,
-        verified: result.isValid,
+        verified: result.verified,
         timestamp: result.timestamp,
         transactionHash: transactionHash
       };

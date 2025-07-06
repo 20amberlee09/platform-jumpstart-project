@@ -1,186 +1,121 @@
-import { Client, Wallet, convertStringToHex, Payment } from 'xrpl';
-
-interface DocumentHash {
-  documentId: string;
-  hash: string;
-  timestamp: string;
-  userInfo: {
-    userId: string;
-    ministerName?: string;
-    trustName?: string;
-  };
-}
-
-interface BlockchainResult {
-  transactionHash: string;
-  ledgerIndex: number;
-  verificationUrl: string;
-  qrCodeData: string;
-  timestamp: string;
-}
+import { supabase } from '@/integrations/supabase/client';
 
 export class XRPLService {
-  private static client: Client | null = null;
-  private static wallet: Wallet | null = null;
-
-  // Initialize XRP Ledger connection
-  static async initialize(): Promise<void> {
-    try {
-      // Use testnet for development, mainnet for production
-      const server = import.meta.env.PROD 
-        ? 'wss://xrplcluster.com/' 
-        : 'wss://s.altnet.rippletest.net:51233/';
-      
-      this.client = new Client(server);
-      await this.client.connect();
-      
-      // Create or load wallet for document verification
-      // In production, this should come from Supabase edge function with secure secrets
-      const seed = 'sEdSKaCy2JT7JaM7v95H9SxkhP9wS2r'; // This will be replaced with secure seed
-      this.wallet = Wallet.fromSeed(seed);
-      
-      console.log('XRPL Service initialized with wallet:', this.wallet.address);
-    } catch (error) {
-      console.error('Failed to initialize XRPL Service:', error);
-      throw error;
-    }
-  }
-
-  // Submit document hash to XRP Ledger
+  /**
+   * Submit document hash to XRP Ledger via secure Edge Function
+   */
   static async submitDocumentToBlockchain(
-    documentHash: DocumentHash
-  ): Promise<BlockchainResult> {
-    if (!this.client || !this.wallet) {
-      await this.initialize();
-    }
-
+    documentHash: string, 
+    documentId?: string, 
+    userInfo?: any
+  ) {
     try {
-      // Create memo with document information
-      const memoData = {
-        docId: documentHash.documentId,
-        hash: documentHash.hash,
-        timestamp: documentHash.timestamp,
-        user: documentHash.userInfo.userId,
-        minister: documentHash.userInfo.ministerName || '',
-        trust: documentHash.userInfo.trustName || ''
-      };
+      console.log('XRPLService: Submitting document to blockchain via Edge Function');
+      console.log('Document hash:', documentHash);
 
-      // Convert memo to hex format for XRP Ledger
-      const memoHex = convertStringToHex(JSON.stringify(memoData));
-
-      // Prepare transaction
-      const transaction: Payment = {
-        TransactionType: 'Payment',
-        Account: this.wallet!.address,
-        Destination: this.wallet!.address, // Self-payment for memo storage
-        Amount: '1', // Minimal amount (1 drop = 0.000001 XRP)
-        Memos: [
-          {
-            Memo: {
-              MemoType: convertStringToHex('TruthHurtsDocVerification'),
-              MemoData: memoHex,
-              MemoFormat: convertStringToHex('application/json')
-            }
-          }
-        ]
-      };
-
-      // Submit and wait for validation
-      const response = await this.client!.submitAndWait(transaction, {
-        wallet: this.wallet!
+      const { data, error } = await supabase.functions.invoke('xrp-submit-document', {
+        body: {
+          documentHash,
+          documentId: documentId || `doc_${Date.now()}`,
+          userInfo: userInfo || {}
+        }
       });
 
-      const transactionHash = response.result.hash;
-      const ledgerIndex = Number(response.result.ledger_index) || 0;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(`Edge function failed: ${error.message}`);
+      }
 
-      // Create verification URL
-      const verificationUrl = import.meta.env.PROD
-        ? `https://livenet.xrpl.org/transactions/${transactionHash}`
-        : `https://testnet.xrpl.org/transactions/${transactionHash}`;
+      if (!data || !data.success) {
+        console.error('Edge function returned error:', data);
+        throw new Error(data?.error || 'Unknown blockchain submission error');
+      }
 
-      // Create QR code data for verification
-      const qrCodeData = JSON.stringify({
-        platform: 'TruthHurts',
-        docId: documentHash.documentId,
-        txHash: transactionHash,
-        verifyUrl: verificationUrl,
-        timestamp: documentHash.timestamp
-      });
+      console.log('Blockchain submission successful:', data.transactionHash);
 
       return {
-        transactionHash,
-        ledgerIndex,
-        verificationUrl,
-        qrCodeData,
-        timestamp: new Date().toISOString()
+        transactionHash: data.transactionHash,
+        ledgerIndex: data.ledgerIndex,
+        verificationUrl: data.verificationUrl,
+        proof: `XRP Ledger ${data.network} Verification`,
+        timestamp: new Date().toISOString(),
+        network: data.network
       };
 
-    } catch (error: any) {
-      console.error('Blockchain submission failed:', error);
+    } catch (error) {
+      console.error('XRP Ledger submission failed:', error);
       throw new Error(`Blockchain verification failed: ${error.message}`);
     }
   }
 
-  // Verify document authenticity
-  static async verifyDocument(transactionHash: string): Promise<{
-    isValid: boolean;
-    documentInfo?: any;
-    timestamp?: string;
-  }> {
-    if (!this.client) {
-      await this.initialize();
-    }
-
+  /**
+   * Verify document authenticity using public XRP Ledger API
+   */
+  static async verifyDocument(transactionHash: string) {
     try {
-      const response = await this.client!.request({
-        command: 'tx',
-        transaction: transactionHash
-      });
-
-      if (response.result.validated) {
-        // Extract memo data
-        const memos = response.result.Memos;
-        if (memos && memos.length > 0) {
-          const memoData = memos[0].Memo.MemoData;
-          const documentInfo = JSON.parse(Buffer.from(memoData, 'hex').toString('utf8'));
-          
-          return {
-            isValid: true,
-            documentInfo,
-            timestamp: response.result.date ? String(response.result.date) : undefined
-          };
-        }
+      console.log('XRPLService: Verifying document with transaction:', transactionHash);
+      
+      // Use public XRP Ledger API for verification
+      const response = await fetch(`https://api.xrpscan.com/api/v1/transaction/${transactionHash}`);
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
       }
+      
+      const data = await response.json();
+      
+      const isValid = data.result === 'tesSUCCESS' && data.validated;
+      
+      return {
+        verified: isValid,
+        timestamp: data.date,
+        ledgerIndex: data.ledger_index,
+        transactionHash: transactionHash,
+        network: data.network || 'unknown'
+      };
 
-      return { isValid: false };
     } catch (error) {
       console.error('Document verification failed:', error);
-      return { isValid: false };
+      return { 
+        verified: false, 
+        error: error.message,
+        transactionHash 
+      };
     }
   }
 
-  // Generate document hash
-  static generateDocumentHash(documentContent: string | Buffer): string {
-    // Simple hash generation for browser compatibility
-    let hash = 0;
-    const str = typeof documentContent === 'string' ? documentContent : documentContent.toString();
-    
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
+  /**
+   * Generate secure document hash using Web Crypto API
+   */
+  static async generateDocumentHash(documentContent: ArrayBuffer): Promise<string> {
+    try {
+      const hashBuffer = await crypto.subtle.digest('SHA-512', documentContent);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      return hashHex;
+    } catch (error) {
+      console.error('Hash generation failed:', error);
+      throw new Error('Failed to generate document hash');
     }
-    
-    // Convert to hex and ensure positive
-    return Math.abs(hash).toString(16).padStart(8, '0');
   }
 
-  // Disconnect client
-  static async disconnect(): Promise<void> {
-    if (this.client) {
-      await this.client.disconnect();
-      this.client = null;
-      this.wallet = null;
+  /**
+   * Check XRP Ledger network status
+   */
+  static async getNetworkStatus(): Promise<{ network: string; connected: boolean }> {
+    try {
+      const response = await fetch('https://api.xrpscan.com/api/v1/ledger');
+      const isConnected = response.ok;
+      
+      return {
+        network: import.meta.env.PROD ? 'mainnet' : 'testnet',
+        connected: isConnected
+      };
+    } catch (error) {
+      return {
+        network: 'unknown',
+        connected: false
+      };
     }
   }
 }

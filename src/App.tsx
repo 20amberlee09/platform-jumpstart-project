@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Navigation from "./components/Navigation";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
@@ -32,10 +33,26 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/courses" element={<Courses />} />
-          <Route path="/course/:courseId" element={<CourseDetail />} />
-          <Route path="/automation" element={<Automation />} />
-          <Route path="/purchase" element={<Purchase />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/course/:courseId" element={
+            <ProtectedRoute>
+              <CourseDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/automation" element={
+            <ProtectedRoute>
+              <Automation />
+            </ProtectedRoute>
+          } />
+          <Route path="/purchase" element={
+            <ProtectedRoute>
+              <Purchase />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <ProtectedRoute requiredRole="admin">
+              <Admin />
+            </ProtectedRoute>
+          } />
           <Route path="/auth" element={<Auth />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/test-return-user" element={<TestingReturnUser />} />

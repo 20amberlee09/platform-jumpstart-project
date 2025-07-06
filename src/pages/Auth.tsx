@@ -73,7 +73,10 @@ const Auth = () => {
     const { error } = await signIn(signInData.email, signInData.password);
     
     if (!error) {
-      // The useEffect will handle redirect once user is set
+      // Handle return URL redirect
+      const searchParams = new URLSearchParams(location.search);
+      const returnUrl = searchParams.get('returnUrl') || '/';
+      navigate(returnUrl, { replace: true });
     }
     
     setIsLoading(false);
