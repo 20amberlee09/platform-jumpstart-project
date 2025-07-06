@@ -32,12 +32,12 @@ const Navigation = () => {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('minister_verified, first_name')
+          .select('minister_verified, first_name, minister_name')
           .eq('user_id', user.id)
           .single();
         
         if (profile?.minister_verified) {
-          setMinisterStatus(`Minister ${profile.first_name}`);
+          setMinisterStatus(`Minister ${profile.minister_name || profile.first_name}`);
         } else {
           setMinisterStatus(profile?.first_name || 'User');
         }
@@ -126,6 +126,8 @@ const Navigation = () => {
     return location.pathname.startsWith(href);
   };
 
+  const userDisplayName = ministerStatus || user?.email?.split('@')[0] || 'User';
+
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -186,7 +188,7 @@ const Navigation = () => {
               <>
                 <div className="flex items-center space-x-2 text-sm">
                   <User className="h-4 w-4" />
-                  <span className="text-muted-foreground">Welcome back!</span>
+                  <span className="text-muted-foreground">Welcome back, {userDisplayName}!</span>
                 </div>
                 <Button variant="ghost" size="sm" onClick={handleSignOut}>
                   Sign Out
@@ -269,7 +271,7 @@ const Navigation = () => {
                   <>
                     <div className="flex items-center space-x-2 text-sm px-2 py-1">
                       <User className="h-4 w-4" />
-                      <span className="text-muted-foreground">Welcome back!</span>
+                      <span className="text-muted-foreground">Welcome back, {userDisplayName}!</span>
                     </div>
                     <Button variant="ghost" size="sm" onClick={handleSignOut}>
                       Sign Out
