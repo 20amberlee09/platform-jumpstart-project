@@ -300,13 +300,18 @@ const PDFFooterTest = () => {
               setIsGenerating(true);
               try {
                 console.log('🧪 Testing PDFShift Simple API...');
+                console.log('🧪 Making request to edge function...');
+                
                 const { data, error } = await supabase.functions.invoke('test-pdfshift-simple');
+                
+                console.log('🧪 Response received:', { data: !!data, error: error });
                 
                 if (error) {
                   console.error('🧪 Simple test failed:', error);
+                  console.error('🧪 Error details:', JSON.stringify(error, null, 2));
                   toast({
                     title: "PDFShift Simple Test Failed",
-                    description: error.message || JSON.stringify(error),
+                    description: `${error.message || 'Unknown error'} - Check console for details`,
                     variant: "destructive"
                   });
                   return;
