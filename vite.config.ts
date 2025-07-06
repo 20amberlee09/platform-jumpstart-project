@@ -51,14 +51,7 @@ export default defineConfig(({ mode }) => ({
     
     // Build optimizations
     target: 'esnext',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: mode === 'production',
-        pure_funcs: mode === 'production' ? ['console.log', 'console.debug'] : []
-      }
-    },
+    minify: mode === 'production' ? 'esbuild' : false,
     
     // Chunk size warnings
     chunkSizeWarningLimit: 1000,
