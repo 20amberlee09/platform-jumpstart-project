@@ -380,11 +380,65 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_logs: {
+        Row: {
+          action: string
+          admin_id: string | null
+          admin_notes: string | null
+          created_at: string | null
+          id: string
+          user_id: string
+          verified_status: boolean | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          admin_notes?: string | null
+          created_at?: string | null
+          id?: string
+          user_id: string
+          verified_status?: boolean | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          admin_notes?: string | null
+          created_at?: string | null
+          id?: string
+          user_id?: string
+          verified_status?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_admin_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_minister_status: {
+        Args: { user_uuid: string }
+        Returns: {
+          is_minister: boolean
+          minister_name: string
+          verification_status: string
+          certificate_url: string
+        }[]
+      }
+      get_minister_verification_queue: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          profile_id: string
+          full_name: string
+          minister_name: string
+          certificate_url: string
+          submitted_at: string
+          verification_status: string
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -394,6 +448,10 @@ export type Database = {
       }
       is_admin_user: {
         Args: { _user_id: string }
+        Returns: boolean
+      }
+      update_minister_verification: {
+        Args: { user_uuid: string; verified: boolean; admin_notes?: string }
         Returns: boolean
       }
     }
