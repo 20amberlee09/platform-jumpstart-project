@@ -45,7 +45,7 @@ const DocumentUpload = ({
 
   const validateFile = (file: File): string | null => {
     if (!acceptedTypes.some(type => file.name.toLowerCase().endsWith(type.replace('.', '')))) {
-      return `File type not supported. Accepted types: ${acceptedTypes.join(', ')}`;
+      return `File type not supported. Accepted types: ${acceptedTypes.join(', ')} (PDF, JPG, JPEG, PNG)`;
     }
     
     if (file.size > maxSizeInMB * 1024 * 1024) {
@@ -216,7 +216,9 @@ const DocumentUpload = ({
 
   const getFileIcon = (fileType: string) => {
     if (fileType.includes('pdf')) return <FileText className="h-6 w-6" />;
-    if (fileType.includes('image')) return <Image className="h-6 w-6" />;
+    if (fileType.includes('image') || fileType.includes('png') || fileType.includes('jpg') || fileType.includes('jpeg')) {
+      return <Image className="h-6 w-6" />;
+    }
     return <File className="h-6 w-6" />;
   };
 
@@ -247,10 +249,10 @@ const DocumentUpload = ({
           {isDragOver ? 'Drop files here' : 'Upload Documents'}
         </div>
         <div className="text-sm text-muted-foreground mb-4">
-          Drag and drop files here, or click to browse
+          Drag and drop PDF, JPG, JPEG, or PNG files here, or click to browse
         </div>
         <div className="text-xs text-muted-foreground">
-          Supported: {acceptedTypes.join(', ')} • Max size: {maxSizeInMB}MB
+          Supported: PDF, JPG, JPEG, PNG • Max size: {maxSizeInMB}MB
         </div>
       </div>
 

@@ -270,13 +270,13 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
           {!certificateUploaded ? (
             <div className="space-y-4">
               <div className="text-sm text-muted-foreground">
-                After completing your ordination, download the PDF certificate and upload it here:
+                After completing your ordination, download the certificate (PDF or image format) and upload it here:
               </div>
               
               <DocumentUpload
                 onUploadSuccess={handleCertificateUpload}
                 onUploadError={handleUploadError}
-                acceptedTypes={['.pdf']}
+                acceptedTypes={['.pdf', '.png', '.jpg', '.jpeg']}
                 maxSizeInMB={10}
                 uploadPath="certificates/minister"
                 documentType="minister_certificate"
@@ -286,7 +286,7 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
               <div className="bg-gray-50 rounded-lg p-3">
                 <div className="text-sm font-medium mb-1">Upload Requirements:</div>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>• File must be in PDF format</li>
+                  <li>• File must be in PDF, PNG, JPG, or JPEG format</li>
                   <li>• Maximum file size: 10MB</li>
                   <li>• Certificate must be official and include your full name</li>
                   <li>• Ensure the document is clear and readable</li>
