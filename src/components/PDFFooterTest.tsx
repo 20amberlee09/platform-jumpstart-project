@@ -293,24 +293,88 @@ const PDFFooterTest = () => {
           </div>
         </div>
 
-        <Button
-          onClick={runFooterTest}
-          disabled={isGenerating}
-          className="w-full"
-          size="lg"
-        >
-          {isGenerating ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Generating Test PDF...
-            </>
-          ) : (
-            <>
-              <FileText className="mr-2 h-4 w-4" />
-              Generate Footer Test PDF
-            </>
-          )}
-        </Button>
+        <div className="space-y-3">
+          <Button
+            onClick={async () => {
+              setIsGenerating(true);
+              try {
+                console.log('🧪 Testing PDFShift Simple API...');
+                const { data, error } = await supabase.functions.invoke('test-pdfshift-simple');
+                
+                if (error) {
+                  console.error('🧪 Simple test failed:', error);
+                  toast({
+                    title: "PDFShift Simple Test Failed",
+                    description: error.message,
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                
+                // Download the test PDF
+                const pdfBlob = new Blob([data], { type: 'application/pdf' });
+                const url = URL.createObjectURL(pdfBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'pdfshift-simple-test.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                toast({
+                  title: "✅ PDFShift Simple Test Passed",
+                  description: "Basic PDF generation working!"
+                });
+                
+              } catch (error) {
+                console.error('🧪 Test error:', error);
+                toast({
+                  title: "Test Error",
+                  description: error instanceof Error ? error.message : 'Unknown error',
+                  variant: "destructive"
+                });
+              } finally {
+                setIsGenerating(false);
+              }
+            }}
+            disabled={isGenerating}
+            className="w-full"
+            size="lg"
+            variant="outline"
+          >
+            {isGenerating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                Testing PDFShift API...
+              </>
+            ) : (
+              <>
+                <TestTube className="mr-2 h-4 w-4" />
+                Test PDFShift API (Simple)
+              </>
+            )}
+          </Button>
+
+          <Button
+            onClick={runFooterTest}
+            disabled={isGenerating}
+            className="w-full"
+            size="lg"
+          >
+            {isGenerating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Generating Test PDF...
+              </>
+            ) : (
+              <>
+                <FileText className="mr-2 h-4 w-4" />
+                Generate Footer Test PDF
+              </>
+            )}
+          </Button>
+        </div>
 
         {testResults.length > 0 && (
           <div className="space-y-3">

@@ -34,3 +34,9 @@ verify_jwt = false
 
 [functions.xrp-submit-document]
 verify_jwt = true
+
+[functions.generate-pdf-with-pdfshift]
+verify_jwt = true
+
+[functions.test-pdfshift-simple]
+verify_jwt = true

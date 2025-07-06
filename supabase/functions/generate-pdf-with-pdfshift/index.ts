@@ -32,33 +32,47 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🔄 PDFShift Edge Function: Request received');
+    
     const pdfShiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
+    console.log('🔑 API Key present:', !!pdfShiftApiKey);
+    
     if (!pdfShiftApiKey) {
+      console.error('❌ PDFShift API key not configured');
       throw new Error('PDFShift API key not configured');
     }
 
-    const { templateHtml, documentData, options = {} }: PDFGenerationRequest = await req.json();
+    const requestBody = await req.json();
+    console.log('📥 Request received with keys:', Object.keys(requestBody));
+    
+    const { templateHtml, documentData, options = {} } = requestBody;
 
-    console.log('PDFShift Edge Function: Starting PDF generation');
-    console.log('Document data:', { 
-      ministerName: documentData.ministerName, 
-      trustName: documentData.trustName 
+    console.log('📄 Document data:', { 
+      ministerName: documentData?.ministerName, 
+      trustName: documentData?.trustName,
+      templateLength: templateHtml?.length 
     });
 
     // Process HTML template with data injection
     const processedHtml = processTemplate(templateHtml, documentData);
+    console.log('✨ Template processed, final length:', processedHtml.length);
     
     // Default PDF options
     const pdfOptions = {
       source: processedHtml,
       format: options.format || 'A4',
-      margin: options.margin || '0.5in',
+      margin: options.margin || '0.75in',
       orientation: options.orientation || 'portrait',
       sandbox: true,
       delay: 1000, // Wait for CSS/images to load
     };
 
-    console.log('PDFShift: Sending request to API');
+    console.log('🚀 PDFShift: Sending request to API with options:', {
+      format: pdfOptions.format,
+      margin: pdfOptions.margin,
+      orientation: pdfOptions.orientation,
+      htmlLength: pdfOptions.source.length
+    });
     
     // Make request to PDFShift API
     const response = await fetch('https://api.pdfshift.io/v3/convert/', {
@@ -70,14 +84,37 @@ serve(async (req) => {
       body: JSON.stringify(pdfOptions)
     });
 
+    console.log('📡 PDFShift response status:', response.status);
+    console.log('📡 PDFShift response headers:', Object.fromEntries(response.headers));
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('PDFShift API error:', response.status, errorText);
-      throw new Error(`PDFShift API error: ${response.status} - ${errorText}`);
+      console.error('❌ PDFShift API error:', response.status, errorText);
+      
+      // Try to parse error details
+      let errorDetails;
+      try {
+        errorDetails = JSON.parse(errorText);
+      } catch {
+        errorDetails = errorText;
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'PDFShift API error',
+          status: response.status,
+          details: errorDetails,
+          message: `PDFShift returned ${response.status}: ${errorText}`
+        }), 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     const pdfBuffer = await response.arrayBuffer();
-    console.log('PDFShift: PDF generated successfully, size:', pdfBuffer.byteLength);
+    console.log('✅ PDFShift: PDF generated successfully, size:', pdfBuffer.byteLength);
 
     return new Response(pdfBuffer, {
       headers: {
@@ -88,11 +125,14 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('PDF generation failed:', error);
+    console.error('💥 PDF generation failed:', error);
+    console.error('💥 Error stack:', error.stack);
+    
     return new Response(
       JSON.stringify({ 
         error: 'PDF generation failed', 
-        details: error.message 
+        details: error.message,
+        stack: error.stack
       }), 
       {
         status: 500,
