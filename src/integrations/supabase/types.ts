@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      blockchain_verifications: {
+        Row: {
+          blockchain_network: string | null
+          created_at: string | null
+          document_id: string | null
+          id: string
+          metadata: Json | null
+          transaction_hash: string
+          user_id: string | null
+          verification_url: string | null
+        }
+        Insert: {
+          blockchain_network?: string | null
+          created_at?: string | null
+          document_id?: string | null
+          id?: string
+          metadata?: Json | null
+          transaction_hash: string
+          user_id?: string | null
+          verification_url?: string | null
+        }
+        Update: {
+          blockchain_network?: string | null
+          created_at?: string | null
+          document_id?: string | null
+          id?: string
+          metadata?: Json | null
+          transaction_hash?: string
+          user_id?: string | null
+          verification_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blockchain_verifications_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "document_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           created_at: string
@@ -50,6 +91,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      document_files: {
+        Row: {
+          course_id: string | null
+          document_type: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          metadata: Json | null
+          upload_date: string | null
+          user_id: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          document_type?: string | null
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          metadata?: Json | null
+          upload_date?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          course_id?: string | null
+          document_type?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          metadata?: Json | null
+          upload_date?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_files_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gift_codes: {
         Row: {
@@ -180,31 +268,58 @@ export type Database = {
       }
       profiles: {
         Row: {
+          barcode_certificate_url: string | null
           company: string | null
           created_at: string
+          display_name: string | null
+          first_name: string | null
           full_name: string | null
+          google_drive_url: string | null
           id: string
+          last_name: string | null
+          minister_certificate_url: string | null
+          minister_name: string | null
+          minister_verified: boolean | null
           phone: string | null
           updated_at: string
           user_id: string
+          verification_status: string | null
         }
         Insert: {
+          barcode_certificate_url?: string | null
           company?: string | null
           created_at?: string
+          display_name?: string | null
+          first_name?: string | null
           full_name?: string | null
+          google_drive_url?: string | null
           id?: string
+          last_name?: string | null
+          minister_certificate_url?: string | null
+          minister_name?: string | null
+          minister_verified?: boolean | null
           phone?: string | null
           updated_at?: string
           user_id: string
+          verification_status?: string | null
         }
         Update: {
+          barcode_certificate_url?: string | null
           company?: string | null
           created_at?: string
+          display_name?: string | null
+          first_name?: string | null
           full_name?: string | null
+          google_drive_url?: string | null
           id?: string
+          last_name?: string | null
+          minister_certificate_url?: string | null
+          minister_name?: string | null
+          minister_verified?: boolean | null
           phone?: string | null
           updated_at?: string
           user_id?: string
+          verification_status?: string | null
         }
         Relationships: []
       }
