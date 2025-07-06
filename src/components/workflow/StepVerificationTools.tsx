@@ -28,21 +28,32 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
   const { toast } = useToast();
 
   const handleBarcodeUpload = async (fileUrl: string, fileName: string) => {
+    console.log('Barcode upload success:', { fileUrl, fileName });
+    
+    // Update state FIRST
     setBarcodeUploaded(true);
     const newStatus = { ...verificationStatus, barcode: true };
     setVerificationStatus(newStatus);
 
     toast({
       title: "Barcode Certificate Uploaded",
-      description: "Certificate processed successfully",
+      description: "Certificate processed successfully - you can now proceed if all fields are complete",
     });
   };
 
   const handleEmailChange = async (email: string) => {
+    console.log('Email changed:', email);
     setTrustEmail(email);
     const isValid = email.includes('@gmail.com') && email.includes('trust');
     const newStatus = { ...verificationStatus, email: isValid };
     setVerificationStatus(newStatus);
+    
+    if (isValid) {
+      toast({
+        title: "Valid Trust Email",
+        description: "Trust email format is correct",
+      });
+    }
   };
 
   const handleDriveUrlChange = async (url: string) => {
@@ -81,7 +92,20 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
     });
   };
 
-  const canProceed = Object.values(verificationStatus).every(status => status);
+  const canProceed = barcodeUploaded && 
+                   verificationStatus.barcode && 
+                   verificationStatus.email && 
+                   verificationStatus.drive &&
+                   trustEmail.trim() !== '' &&
+                   googleDriveUrl.trim() !== '';
+
+  console.log('StepVerificationTools canProceed check:', {
+    barcodeUploaded,
+    verificationStatus,
+    trustEmail: !!trustEmail.trim(),
+    googleDriveUrl: !!googleDriveUrl.trim(),
+    canProceed
+  });
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -281,17 +305,36 @@ const StepVerificationTools = ({ onNext, onPrev, data }: StepVerificationToolsPr
 
       {/* Navigation */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={onPrev}>
+        <Button variant="outline" onClick={onPrev} disabled={!onPrev}>
           Previous
         </Button>
         <Button 
-          onClick={() => onNext({ barcodeUploaded, googleDriveUrl, trustEmail, verificationStatus })} 
+          onClick={() => {
+            console.log('Verification Tools continue clicked, canProceed:', canProceed);
+            if (canProceed) {
+              onNext({ 
+                barcodeUploaded, 
+                googleDriveUrl, 
+                trustEmail, 
+                verificationStatus,
+                completedAt: new Date().toISOString()
+              });
+            }
+          }} 
           disabled={!canProceed}
           className={canProceed ? "bg-green-600 hover:bg-green-700" : ""}
         >
           {canProceed ? "Continue to Document Generation" : "Complete Setup First"}
         </Button>
       </div>
+
+      {/* Debug info (development only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
+          <div>Debug: barcodeUploaded={barcodeUploaded.toString()}, email={verificationStatus.email.toString()}, drive={verificationStatus.drive.toString()}</div>
+          <div>canProceed={canProceed.toString()}, onPrev available: {!!onPrev}</div>
+        </div>
+      )}
     </div>
   );
 };

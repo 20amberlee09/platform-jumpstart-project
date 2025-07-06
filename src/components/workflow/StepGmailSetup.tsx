@@ -61,6 +61,7 @@ const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
   };
 
   const handleNext = () => {
+    console.log('Gmail setup continue clicked:', { isGmailCreated, isDriveFolderCreated });
     if (!isGmailCreated || !isDriveFolderCreated) {
       toast({
         title: "Setup Required",
@@ -74,7 +75,8 @@ const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
       gmailAccount,
       googleDriveFolder,
       isGmailCreated: true,
-      isDriveFolderCreated: true
+      isDriveFolderCreated: true,
+      completedAt: new Date().toISOString()
     });
   };
 
@@ -241,18 +243,26 @@ const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
       )}
 
       <div className="flex justify-between pt-6">
-        <Button onClick={onPrev} variant="outline" size="lg">
+        <Button onClick={onPrev} variant="outline" size="lg" disabled={!onPrev}>
           Back to Ordination
         </Button>
         <Button 
           onClick={handleNext} 
           disabled={!isGmailCreated || !isDriveFolderCreated} 
           size="lg"
-          variant="neon-green"
+          className={isGmailCreated && isDriveFolderCreated ? "bg-green-600 hover:bg-green-700" : ""}
         >
-          Continue to Verification Tools
+          {isGmailCreated && isDriveFolderCreated ? "Continue to Verification Tools" : "Complete Setup First"}
         </Button>
       </div>
+
+      {/* Debug info (development only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
+          <div>Debug: gmailCreated={isGmailCreated.toString()}, driveCreated={isDriveFolderCreated.toString()}</div>
+          <div>onPrev available: {!!onPrev}</div>
+        </div>
+      )}
     </div>
   );
 };

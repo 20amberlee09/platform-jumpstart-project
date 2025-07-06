@@ -404,12 +404,14 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
         </Button>
       </div>
 
-      {/* Debug info temporarily */}
-      <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
-        <div>Debug: isOrdained={isOrdained.toString()}, certificateUploaded={certificateUploaded.toString()}</div>
-        <div>hasUrl={!!certificateUrl}, canProceed={canProceed.toString()}, isProcessing={isProcessing.toString()}</div>
-        <div>onPrev available: {!!onPrev}, onNext available: {!!onNext}</div>
-      </div>
+      {/* Debug info (development only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
+          <div>Debug: isOrdained={isOrdained.toString()}, certificateUploaded={certificateUploaded.toString()}</div>
+          <div>hasUrl={!!certificateUrl}, canProceed={canProceed.toString()}, isProcessing={isProcessing.toString()}</div>
+          <div>onPrev available: {!!onPrev}, onNext available: {!!onNext}</div>
+        </div>
+      )}
 
       {/* Progress Indicator */}
       {!canProceed && (

@@ -63,6 +63,7 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
   };
 
   const handleNext = () => {
+    console.log('Document generation continue clicked:', { documentsGenerated });
     if (!documentsGenerated) {
       toast({
         title: "Documents Required",
@@ -313,18 +314,26 @@ const StepDocumentGeneration = ({ onNext, onPrev, data }: StepDocumentGeneration
       )}
 
       <div className="flex justify-between pt-6">
-        <Button onClick={onPrev} variant="outline" size="lg">
+        <Button onClick={onPrev} variant="outline" size="lg" disabled={!onPrev}>
           Back to Verification Tools
         </Button>
         <Button 
           onClick={handleNext} 
           disabled={!documentsGenerated} 
           size="lg"
-          variant="neon-gold"
+          className={documentsGenerated ? "bg-green-600 hover:bg-green-700" : ""}
         >
-          Complete Boot Camp
+          {documentsGenerated ? "Complete Boot Camp" : "Generate Documents First"}
         </Button>
       </div>
+
+      {/* Debug info (development only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
+          <div>Debug: documentsGenerated={documentsGenerated.toString()}, isGenerating={isGenerating.toString()}</div>
+          <div>onPrev available: {!!onPrev}</div>
+        </div>
+      )}
     </div>
   );
 };

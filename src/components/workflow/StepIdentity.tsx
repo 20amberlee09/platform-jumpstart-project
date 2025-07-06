@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface StepIdentityProps {
   onNext: () => void;
-  onPrevious: () => void;
+  onPrev?: () => void;
   courseId: string;
 }
 
@@ -29,7 +29,7 @@ interface IdentityData {
   zipCode: string;
 }
 
-const StepIdentity = ({ onNext, onPrevious, courseId }: StepIdentityProps) => {
+const StepIdentity = ({ onNext, onPrev, courseId }: StepIdentityProps) => {
   const [identityData, setIdentityData] = useState<IdentityData>({
     firstName: '',
     lastName: '',
@@ -84,9 +84,14 @@ const StepIdentity = ({ onNext, onPrevious, courseId }: StepIdentityProps) => {
       saveStepData('identity', identityData);
     }
 
-    // Validate form
+    // Validate form - enhanced validation
     const required = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'zipCode'];
-    const valid = required.every(field => identityData[field as keyof IdentityData]);
+    const valid = required.every(field => {
+      const value = identityData[field as keyof IdentityData];
+      return value && value.trim() !== '';
+    });
+    
+    console.log('Form validation updated:', { valid, identityData });
     setIsValid(valid);
   }, [identityData, saveStepData]);
 
@@ -281,17 +286,29 @@ const StepIdentity = ({ onNext, onPrevious, courseId }: StepIdentityProps) => {
 
       {/* Navigation */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={onPrevious}>
+        <Button variant="outline" onClick={onPrev} disabled={!onPrev}>
           Previous
         </Button>
         <Button 
-          onClick={onNext} 
+          onClick={() => {
+            console.log('Form submit clicked, isValid:', isValid);
+            if (isValid) {
+              onNext();
+            }
+          }} 
           disabled={!isValid}
           className={isValid ? "bg-green-600 hover:bg-green-700" : ""}
         >
           {isValid ? "Continue" : "Complete Required Fields"}
         </Button>
       </div>
+
+      {/* Debug info (development only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
+          Debug: isValid={isValid.toString()}, onPrev available: {!!onPrev}
+        </div>
+      )}
     </div>
   );
 };
