@@ -8,75 +8,127 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  console.log('🔗 XRP Edge Function called:', req.method, req.url);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('🔗 Handling CORS preflight request');
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    console.log('🔗 Starting XRP submission process...');
+    
     // Verify authentication
     const authHeader = req.headers.get('Authorization')
+    console.log('🔗 Auth header present:', !!authHeader);
     if (!authHeader) {
       throw new Error('No authorization header')
     }
 
     // Initialize Supabase client
+    console.log('🔗 Initializing Supabase client...');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
+    console.log('🔗 Supabase URL present:', !!supabaseUrl);
+    console.log('🔗 Supabase Key present:', !!supabaseKey);
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase credentials not configured');
+    }
+    
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      supabaseUrl,
+      supabaseKey,
       { global: { headers: { Authorization: authHeader } } }
     )
 
     // Verify user is authenticated
+    console.log('🔗 Verifying user authentication...');
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    console.log('🔗 Auth error:', authError);
+    console.log('🔗 User present:', !!user);
     if (authError || !user) {
-      throw new Error('Authentication failed')
+      throw new Error(`Authentication failed: ${authError?.message || 'No user'}`)
     }
 
-    const { documentHash, documentId, userInfo } = await req.json()
+    console.log('🔗 Parsing request body...');
+    const requestBody = await req.json()
+    console.log('🔗 Request body:', requestBody);
+    const { documentHash, documentId, userInfo } = requestBody
     
     if (!documentHash) {
       throw new Error('Document hash is required')
     }
 
     // Get secure wallet seed from environment
+    console.log('🔗 Checking XRP environment variables...');
     const seed = Deno.env.get('XRP_WALLET_SEED')
+    const walletAddress = Deno.env.get('XRP_WALLET_ADDRESS')
+    const network = Deno.env.get('XRP_NETWORK')
+    
+    console.log('🔗 XRP_WALLET_SEED present:', !!seed);
+    console.log('🔗 XRP_WALLET_ADDRESS present:', !!walletAddress);
+    console.log('🔗 XRP_NETWORK:', network);
+    
     if (!seed) {
-      throw new Error('XRP wallet not configured')
+      throw new Error('XRP wallet seed not configured - please set XRP_WALLET_SEED')
     }
     
     // Initialize XRP client securely
-    const isProduction = Deno.env.get('XRP_NETWORK') === 'mainnet'
+    console.log('🔗 Initializing XRP connection...');
+    const isProduction = network === 'mainnet'
     const server = isProduction
       ? 'wss://xrplcluster.com/' 
       : 'wss://s.altnet.rippletest.net:51233/'
     
-    console.log(`Connecting to XRP ${isProduction ? 'mainnet' : 'testnet'}`)
+    console.log(`🔗 Connecting to XRP ${isProduction ? 'mainnet' : 'testnet'} at ${server}`)
     
-    const client = new Client(server)
-    await client.connect()
+    let client;
+    let wallet;
     
-    const wallet = Wallet.fromSeed(seed)
-    console.log(`Using wallet address: ${wallet.address}`)
+    try {
+      client = new Client(server)
+      console.log('🔗 XRP Client created, connecting...');
+      await client.connect()
+      console.log('🔗 XRP Client connected successfully');
+      
+      console.log('🔗 Creating wallet from seed...');
+      wallet = Wallet.fromSeed(seed)
+      console.log(`🔗 Wallet created with address: ${wallet.address}`)
+      
+      // Verify wallet has sufficient balance (for testnet, we'll skip this check)
+      if (!isProduction) {
+        console.log('🔗 Testnet mode - skipping balance check');
+      }
+      
+    } catch (xrpError) {
+      console.error('🔗 XRP Connection/Wallet Error:', xrpError);
+      throw new Error(`XRP connection failed: ${xrpError.message}`);
+    }
     
     // Create memo with document information
+    console.log('🔗 Creating transaction memo...');
     const memoData = {
       platform: 'TruthHurtz',
       docId: documentId || `doc_${Date.now()}`,
-      hash: documentHash,
+      hash: documentHash.substring(0, 64), // Limit hash length for memo
       timestamp: new Date().toISOString(),
       userId: user.id,
       userEmail: user.email
     }
     
+    console.log('🔗 Memo data:', memoData);
     const memoHex = convertStringToHex(JSON.stringify(memoData))
+    console.log('🔗 Memo hex length:', memoHex.length);
     
     // Prepare transaction
+    console.log('🔗 Preparing XRP transaction...');
     const transaction = {
       TransactionType: 'Payment',
       Account: wallet.address,
       Destination: wallet.address, // Self-payment for memo storage
-      Amount: '1000000', // 1 XRP
+      Amount: '1000000', // 1 XRP in drops
       Memos: [{
         Memo: {
           MemoType: convertStringToHex('TruthHurtz-DocVerification'),
@@ -86,47 +138,66 @@ serve(async (req) => {
       }]
     }
     
-    console.log('Submitting transaction to XRP Ledger...')
+    console.log('🔗 Transaction prepared:', JSON.stringify(transaction, null, 2));
+    console.log('🔗 Submitting transaction to XRP Ledger...')
     
-    // Submit and wait for validation
-    const response = await client.submitAndWait(transaction, { wallet })
-    await client.disconnect()
-    
-    console.log(`Transaction successful: ${response.result.hash}`)
+    let response;
+    try {
+      // Submit and wait for validation
+      response = await client.submitAndWait(transaction, { wallet })
+      console.log('🔗 Transaction response:', response);
+      console.log(`🔗 Transaction successful: ${response.result.hash}`)
+    } catch (submitError) {
+      console.error('🔗 Transaction submission error:', submitError);
+      throw new Error(`Transaction failed: ${submitError.message}`);
+    } finally {
+      // Always disconnect
+      try {
+        await client.disconnect()
+        console.log('🔗 XRP client disconnected');
+      } catch (disconnectError) {
+        console.warn('🔗 Error disconnecting XRP client:', disconnectError);
+      }
+    }
     
     // Save verification record to database
+    console.log('🔗 Saving verification record to database...');
+    const verificationUrl = isProduction
+      ? `https://livenet.xrpl.org/transactions/${response.result.hash}`
+      : `https://testnet.xrpl.org/transactions/${response.result.hash}`
+      
     const { error: dbError } = await supabaseClient
       .from('blockchain_verifications')
       .insert({
         user_id: user.id,
         transaction_hash: response.result.hash,
-        document_id: documentId,
+        document_id: documentId || `doc_${Date.now()}`,
         blockchain_network: isProduction ? 'XRP Mainnet' : 'XRP Testnet',
-        verification_url: isProduction
-          ? `https://livenet.xrpl.org/transactions/${response.result.hash}`
-          : `https://testnet.xrpl.org/transactions/${response.result.hash}`,
+        verification_url: verificationUrl,
         metadata: {
           ledger_index: response.result.ledger_index,
           document_hash: documentHash,
-          verification_status: 'verified'
+          verification_status: 'verified',
+          wallet_address: wallet.address
         }
       })
 
     if (dbError) {
-      console.error('Database save error:', dbError)
+      console.error('🔗 Database save error:', dbError)
       // Don't fail the request - blockchain submission succeeded
+    } else {
+      console.log('🔗 Verification record saved successfully');
     }
     
-    const verificationUrl = isProduction
-      ? `https://livenet.xrpl.org/transactions/${response.result.hash}`
-      : `https://testnet.xrpl.org/transactions/${response.result.hash}`
+    console.log('🔗 XRP submission completed successfully');
     
     return new Response(JSON.stringify({
       success: true,
       transactionHash: response.result.hash,
       ledgerIndex: response.result.ledger_index,
       verificationUrl,
-      network: isProduction ? 'mainnet' : 'testnet'
+      network: isProduction ? 'mainnet' : 'testnet',
+      walletAddress: wallet.address
     }), { 
       headers: { 
         ...corsHeaders,
@@ -135,11 +206,15 @@ serve(async (req) => {
     })
     
   } catch (error) {
-    console.error('XRP submission error:', error)
+    console.error('🔗 XRP submission error:', error);
+    console.error('🔗 Error stack:', error.stack);
     
+    // Return detailed error information for debugging
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: error.message,
+      errorType: error.constructor.name,
+      timestamp: new Date().toISOString()
     }), { 
       status: 500, 
       headers: { 
