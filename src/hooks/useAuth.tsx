@@ -11,6 +11,8 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  updateMinisterStatus: (verified: boolean, certificateUrl?: string, ministerName?: string) => Promise<void>;
+  getMinisterStatus: () => Promise<{ verified: boolean; name: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -146,6 +148,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateMinisterStatus = async (verified: boolean, certificateUrl?: string, ministerName?: string) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        minister_verified: verified,
+        minister_certificate_url: certificateUrl,
+        minister_name: ministerName,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', user.id);
+      
+    if (error) {
+      console.error('Error updating minister status:', error);
+      throw error;
+    }
+
+    toast({
+      title: verified ? "Minister Status Activated" : "Minister Status Updated",
+      description: verified ? "You are now recognized as an ordained minister!" : "Minister status has been updated.",
+    });
+  };
+
+  const getMinisterStatus = async () => {
+    if (!user) return { verified: false, name: null };
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('minister_verified, minister_name, first_name')
+      .eq('user_id', user.id)
+      .single();
+      
+    if (error) {
+      console.error('Error getting minister status:', error);
+      return { verified: false, name: null };
+    }
+    
+    return {
+      verified: data.minister_verified || false,
+      name: data.minister_name || data.first_name || null
+    };
+  };
+
   const value = {
     user,
     session,
@@ -153,6 +199,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signIn,
     signOut,
+    updateMinisterStatus,
+    getMinisterStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
