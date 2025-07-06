@@ -45,7 +45,6 @@ const Index = () => {
     "AUTOMATED: Final document delivery to your Google Drive"
   ];
 
-  // Check if user has already purchased this course or redeemed a gift code
   const checkPurchaseStatus = useCallback(async () => {
     if (!user) {
       setCheckingAccess(false);
@@ -53,8 +52,8 @@ const Index = () => {
     }
     
     try {
-      // Check for paid orders
-      const { data: orderData } = await supabase
+      // Check for paid orders with error handling
+      const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .select('*')
         .eq('user_id', user.id)
@@ -62,22 +61,31 @@ const Index = () => {
         .eq('status', 'paid')
         .maybeSingle();
       
-      if (orderData) {
+      if (orderError) {
+        console.error('Error checking orders:', orderError);
+        // Continue to check gift codes even if orders check fails
+      } else if (orderData) {
         setHasPurchased(true);
         setCheckingAccess(false);
         return;
       }
       
-      // Check for redeemed gift codes
-      const { data: giftData } = await supabase
+      // Check for redeemed gift codes with error handling
+      const { data: giftData, error: giftError } = await supabase
         .from('gift_codes')
         .select('*')
         .eq('used_by', user.id)
         .eq('course_id', courseId)
         .maybeSingle();
-        
-      setHasPurchased(!!giftData);
+      
+      if (giftError) {
+        console.error('Error checking gift codes:', giftError);
+        setHasPurchased(false);
+      } else {
+        setHasPurchased(!!giftData);
+      }
     } catch (error) {
+      console.error('Purchase status check failed:', error);
       setHasPurchased(false);
     } finally {
       setCheckingAccess(false);
@@ -89,7 +97,14 @@ const Index = () => {
       navigate('/auth');
       return;
     }
-    navigate('/purchase');
+    
+    try {
+      navigate('/purchase');
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback: redirect using window.location if navigate fails
+      window.location.href = '/purchase';
+    }
   };
 
   const validateGiftCode = async () => {
@@ -145,7 +160,11 @@ const Index = () => {
 
   const startWorkflow = () => {
     if (!user) {
-      navigate('/auth');
+      try {
+        navigate('/auth');
+      } catch (error) {
+        window.location.href = '/auth';
+      }
       return;
     }
     if (!hasPurchased) {
@@ -172,7 +191,8 @@ const Index = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Loading TruthHurtz...</p>
+          <p className="text-xs text-muted-foreground mt-2">Preparing your personalized experience</p>
         </div>
       </div>
     );

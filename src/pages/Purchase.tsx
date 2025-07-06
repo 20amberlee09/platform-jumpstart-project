@@ -67,12 +67,18 @@ const Purchase = () => {
         description: "Please log in to purchase this course.",
         variant: "destructive"
       });
-      navigate('/auth');
+      try {
+        navigate('/auth');
+      } catch (error) {
+        window.location.href = '/auth';
+      }
       return;
     }
 
     try {
       setIsPaymentLoading(true);
+      
+      // Create order with better error handling
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -85,20 +91,61 @@ const Purchase = () => {
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error('Order creation error:', orderError);
+        throw new Error('Failed to create order. Please try again.');
+      }
 
+      // Store order info for confirmation
       localStorage.setItem('pendingOrderId', order.id);
+      localStorage.setItem('pendingCourseId', courseId);
+      
+      // Open payment in new tab
       window.open('https://www.paypal.com/ncp/payment/4QSTXR5Z9UVEW', '_blank');
       
       toast({
         title: "Redirecting to PayPal",
-        description: "Complete your payment to access the course.",
+        description: "Complete your payment to access the course. This page will update automatically.",
       });
-    } catch (error) {
-      console.error('Error creating order:', error);
+
+      // Poll for payment completion (basic implementation)
+      const checkPaymentStatus = setInterval(async () => {
+        try {
+          const { data: updatedOrder } = await supabase
+            .from('orders')
+            .select('status')
+            .eq('id', order.id)
+            .single();
+            
+          if (updatedOrder?.status === 'paid') {
+            clearInterval(checkPaymentStatus);
+            localStorage.removeItem('pendingOrderId');
+            localStorage.removeItem('pendingCourseId');
+            
+            toast({
+              title: "Payment Successful! 🎉",
+              description: "Welcome to Boot Camp documents! Starting your course now...",
+            });
+            
+            setTimeout(() => {
+              navigate('/');
+            }, 2000);
+          }
+        } catch (error) {
+          console.error('Payment status check error:', error);
+        }
+      }, 5000);
+
+      // Clear the interval after 5 minutes to prevent infinite polling
+      setTimeout(() => {
+        clearInterval(checkPaymentStatus);
+      }, 300000);
+      
+    } catch (error: any) {
+      console.error('Payment error:', error);
       toast({
         title: "Payment Error",
-        description: "Unable to process payment. Please try again.",
+        description: error.message || "Unable to process payment. Please try again.",
         variant: "destructive"
       });
     } finally {

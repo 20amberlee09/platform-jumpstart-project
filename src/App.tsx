@@ -19,8 +19,23 @@ import AdvancedTestSuite from "./pages/AdvancedTestSuite";
 import CodeQualityTestSuite from "./pages/CodeQualityTestSuite";
 import NotFound from "./pages/NotFound";
 
-// Lazy load heavy components
-const Index = lazy(() => import('./pages/Index'));
+// Lazy load heavy components - Fix router context issue
+const Index = lazy(() => import('./pages/Index').then(module => ({ 
+  default: (props: any) => {
+    // Ensure router context is available before rendering
+    try {
+      return <module.default {...props} />;
+    } catch (error) {
+      console.error('Index component error:', error);
+      return <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-2">Loading TruthHurtz...</h2>
+          <p className="text-muted-foreground">Please wait while we prepare your experience</p>
+        </div>
+      </div>;
+    }
+  }
+})));
 const Admin = lazy(() => import('./pages/Admin'));
 const Automation = lazy(() => import('./pages/Automation'));
 const CourseDetail = lazy(() => import('./pages/CourseDetail'));
