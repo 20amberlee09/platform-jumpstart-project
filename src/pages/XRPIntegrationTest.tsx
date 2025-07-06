@@ -628,6 +628,42 @@ const XRPIntegrationTest = () => {
               <Hash className="mr-2 h-4 w-4" />
               Run XRP Diagnostic
             </Button>
+            
+            <Button
+              onClick={async () => {
+                console.log('🧪 Checking testnet wallet balance...');
+                const response = await supabase.functions.invoke('xrp-diagnostic');
+                console.log('🧪 Balance check response:', response);
+                
+                if (response.data?.diagnostics?.results?.account) {
+                  const account = response.data.diagnostics.results.account;
+                  if (account.faucet_needed) {
+                    toast({
+                      title: "⚠️ Testnet Wallet Needs Funding",
+                      description: `Address: ${account.address} - Use XRP faucet to fund`,
+                      variant: "destructive"
+                    });
+                  } else if (account.balance_xrp) {
+                    toast({
+                      title: "✅ Wallet Balance",
+                      description: `${account.balance_xrp} XRP available`,
+                    });
+                  }
+                } else {
+                  toast({
+                    title: "Wallet Check Failed",
+                    description: "Check console for detailed error information",
+                    variant: "destructive"
+                  });
+                }
+              }}
+              disabled={!!currentTest || !user}
+              variant="outline"
+              size="sm"
+            >
+              <QrCode className="mr-2 h-4 w-4" />
+              Check Testnet Balance
+            </Button>
           </div>
           
           {!user && (
@@ -638,6 +674,25 @@ const XRPIntegrationTest = () => {
               </AlertDescription>
             </Alert>
           )}
+          
+          {/* Testnet Funding Information */}
+          <Alert className="mt-4 border-amber-200 bg-amber-50">
+            <QrCode className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <div className="space-y-2">
+                <p className="font-medium">XRP Testnet Wallet Funding Required</p>
+                <p className="text-sm">
+                  If tests fail with "account not found" or balance errors, your testnet wallet needs funding:
+                </p>
+                <div className="text-sm space-y-1">
+                  <p>1. <strong>Expected Wallet Address:</strong> <code className="bg-amber-100 px-1 rounded">rJyNTXCZ8kbjheAbytJUrgtB4edLBbYqct</code></p>
+                  <p>2. <strong>Faucet URL:</strong> <a href="https://xrpl.org/xrp-testnet-faucet.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">https://xrpl.org/xrp-testnet-faucet.html</a></p>
+                  <p>3. <strong>Minimum Balance:</strong> 10+ XRP recommended for transactions</p>
+                  <p>4. Use "Check Testnet Balance" button above to verify funding status</p>
+                </div>
+              </div>
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
 

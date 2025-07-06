@@ -78,17 +78,30 @@ serve(async (req) => {
     // Initialize XRP client securely
     console.log('🔗 Initializing XRP connection...');
     const isProduction = network === 'mainnet'
-    const server = isProduction
-      ? 'wss://xrplcluster.com/' 
-      : 'wss://s.altnet.rippletest.net:51233/'
     
-    console.log(`🔗 Connecting to XRP ${isProduction ? 'mainnet' : 'testnet'} at ${server}`)
+    // Multiple testnet endpoints for reliability
+    const testnetServers = [
+      'wss://s.altnet.rippletest.net:51233/',
+      'wss://s.altnet.rippletest.net/',
+      'wss://testnet.xrpl-labs.com/'
+    ];
+    
+    const productionServers = [
+      'wss://xrplcluster.com/',
+      'wss://s1.ripple.com/',
+      'wss://s2.ripple.com/'
+    ];
+    
+    const servers = isProduction ? productionServers : testnetServers;
+    console.log(`🔗 Connecting to XRP ${isProduction ? 'mainnet' : 'testnet'}`)
+    console.log('🔗 Available servers:', servers);
     console.log('🔗 Seed format check:', seed.substring(0, 5) + '...' + seed.substring(seed.length - 5));
     console.log('🔗 Seed length:', seed.length);
     console.log('🔗 Seed starts with "s":', seed.startsWith('s'));
     
     let client;
     let wallet;
+    let connectedServer = null;
     
     try {
       console.log('🔗 Creating wallet from seed...');
@@ -101,23 +114,61 @@ serve(async (req) => {
       wallet = Wallet.fromSeed(seed)
       console.log(`🔗 Wallet created with address: ${wallet.address}`)
       
-      client = new Client(server)
-      console.log('🔗 XRP Client created, connecting...');
-      await client.connect()
-      console.log('🔗 XRP Client connected successfully');
+      // Try connecting to different servers with timeout and retry
+      for (const server of servers) {
+        try {
+          console.log('🔗 Attempting connection to:', server);
+          client = new Client(server);
+          
+          // Set connection timeout
+          const connectPromise = client.connect();
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Connection timeout')), 10000)
+          );
+          
+          await Promise.race([connectPromise, timeoutPromise]);
+          
+          if (client.isConnected()) {
+            connectedServer = server;
+            console.log('🔗 Successfully connected to:', server);
+            break;
+          }
+        } catch (serverError) {
+          console.log('🔗 Failed to connect to:', server, serverError.message);
+          if (client) {
+            try { await client.disconnect(); } catch {}
+          }
+          continue;
+        }
+      }
       
-      // Verify wallet has sufficient balance (for testnet, we'll skip this check)
+      if (!connectedServer) {
+        throw new Error(`Failed to connect to any XRP ${isProduction ? 'mainnet' : 'testnet'} server. Tried: ${servers.join(', ')}`);
+      }
+      
+      // Test account balance and funding status
       if (!isProduction) {
-        console.log('🔗 Testnet mode - checking account status');
+        console.log('🔗 Testnet mode - checking account status and balance');
         try {
           const accountInfo = await client.request({
             command: 'account_info',
             account: wallet.address,
             ledger_index: 'validated'
           });
-          console.log('🔗 Account balance:', accountInfo.result.account_data.Balance, 'drops');
+          
+          const balanceDrops = parseInt(accountInfo.result.account_data.Balance);
+          const balanceXRP = balanceDrops / 1000000;
+          console.log('🔗 Account balance:', balanceXRP, 'XRP');
+          
+          if (balanceXRP < 10) {
+            console.log('🔗 ⚠️  Warning: Low testnet balance. Minimum 10 XRP recommended for transactions.');
+          }
+          
         } catch (accountError) {
-          console.log('🔗 Account not found on testnet (normal for new wallets)');
+          console.log('🔗 ⚠️  Account not found on testnet. Please fund wallet from XRP faucet:');
+          console.log('🔗 Wallet Address:', wallet.address);
+          console.log('🔗 Faucet URL: https://xrpl.org/xrp-testnet-faucet.html');
+          throw new Error(`Testnet wallet needs funding. Please send testnet XRP to: ${wallet.address}`);
         }
       }
       
