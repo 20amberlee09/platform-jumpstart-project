@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface ValidateGiftCodeRequest {
   code: string;
-  courseId: string;
+  userId: string;
 }
 
 serve(async (req: Request) => {
@@ -22,11 +22,11 @@ serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { code, courseId }: ValidateGiftCodeRequest = await req.json();
+    const { code, userId }: ValidateGiftCodeRequest = await req.json();
 
-    if (!code || !courseId) {
+    if (!code || !userId) {
       return new Response(
-        JSON.stringify({ error: "Code and course ID are required" }),
+        JSON.stringify({ error: "Code and user ID are required" }),
         {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -34,19 +34,18 @@ serve(async (req: Request) => {
       );
     }
 
-    // Find the gift code
+    // Find the gift code (no need for course ID since code should be unique)
     const { data: giftCode, error: fetchError } = await supabase
       .from("gift_codes")
       .select("*")
       .eq("code", code)
-      .eq("course_id", courseId)
       .single();
 
     if (fetchError || !giftCode) {
       return new Response(
         JSON.stringify({ 
           valid: false, 
-          error: "Invalid gift code for this course" 
+          error: "Invalid gift code" 
         }),
         {
           status: 200,
@@ -87,6 +86,7 @@ serve(async (req: Request) => {
       JSON.stringify({ 
         valid: true, 
         giftCodeId: giftCode.id,
+        courseId: giftCode.course_id,
         message: "Gift code is valid!" 
       }),
       {
