@@ -15,6 +15,14 @@ interface CompletionNotificationRequest {
   trustName: string;
   completionDate: string;
   ministerName: string;
+  // New fields for document delivery
+  documents?: Array<{
+    fileName: string;
+    downloadUrl: string;
+    documentType: string;
+  }>;
+  folderUrl?: string;
+  emailType?: 'completion' | 'documents'; // defaults to completion
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,9 +32,99 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { userEmail, userName, trustName, completionDate, ministerName }: CompletionNotificationRequest = await req.json();
+    const { 
+      userEmail, 
+      userName, 
+      trustName, 
+      completionDate, 
+      ministerName,
+      documents,
+      folderUrl,
+      emailType = 'completion'
+    }: CompletionNotificationRequest = await req.json();
 
-    console.log("Sending completion notification for user:", userEmail);
+    console.log("Sending notification for user:", userEmail, "Type:", emailType);
+
+    // Handle document delivery email
+    if (emailType === 'documents' && documents && folderUrl) {
+      const documentsList = documents.map((doc, index) => 
+        `<li style="margin-bottom: 8px;">
+          <a href="${doc.downloadUrl}" target="_blank" style="color: #2563eb; text-decoration: none;">
+            ${doc.fileName}
+          </a>
+          <span style="color: #6b7280; font-size: 14px;"> (${doc.documentType.replace('_', ' ').toUpperCase()})</span>
+        </li>`
+      ).join('');
+
+      const documentsEmailResponse = await resend.emails.send({
+        from: "Trust Documents <noreply@troothhurtz.com>",
+        to: [userEmail],
+        subject: "🎉 Your Trust Documents Are Ready - Download Links Inside",
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Your Trust Documents</title>
+          </head>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+              <h1 style="margin: 0; font-size: 28px;">🎉 Congratulations, Minister ${userName}!</h1>
+              <p style="margin: 10px 0 0 0; font-size: 18px; opacity: 0.9;">Your Trust Documents Are Ready</p>
+            </div>
+
+            <div style="background: #f8fafc; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
+              <h2 style="color: #1e293b; margin-top: 0;">✅ Documents Ready for Download!</h2>
+              <p>Your legal documents are now ready for download and use.</p>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+              <h3 style="color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📄 Download Your Documents</h3>
+              <p style="margin-bottom: 15px;">Click each link below to download your official trust documents:</p>
+              <ul style="background: #f1f5f9; padding: 20px; border-radius: 8px; list-style-type: none; padding-left: 0;">
+                ${documentsList}
+              </ul>
+            </div>
+
+            <div style="background: #e0f2fe; border: 2px solid #0284c7; border-radius: 10px; padding: 20px; margin-bottom: 25px;">
+              <h3 style="color: #0c4a6e; margin-top: 0;">💾 Save to Google Drive</h3>
+              <p style="margin-bottom: 15px; color: #0c4a6e;">Follow these steps to organize your documents:</p>
+              <ol style="color: #0c4a6e; margin-bottom: 15px;">
+                <li>Click the download links above to save documents to your computer</li>
+                <li>Open your Google Drive folder: <a href="${folderUrl}" target="_blank" style="color: #2563eb;">Open Drive Folder</a></li>
+                <li>Drag and drop the downloaded files into your Drive folder</li>
+              </ol>
+              <p style="color: #0c4a6e; font-weight: bold; margin-bottom: 0;">💡 Tip: Keep these documents safe - they are your official legal trust documents!</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <p style="font-size: 18px; font-weight: bold; color: #059669;">Thank you for choosing our trust creation platform!</p>
+              <p style="color: #6b7280;">If you have any questions, please don't hesitate to contact our support team.</p>
+            </div>
+
+            <div style="border-top: 2px solid #e5e7eb; padding-top: 20px; text-align: center; color: #6b7280; font-size: 14px;">
+              <p>Best regards,<br>The TROOTHHURTZ Team</p>
+              <p style="margin-top: 15px;">This email was sent to ${userEmail}</p>
+            </div>
+          </body>
+          </html>
+        `,
+      });
+
+      console.log("Documents email sent successfully:", documentsEmailResponse);
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        emailId: documentsEmailResponse.data?.id 
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
+    }
 
     // Send notification to admin
     const adminEmailResponse = await resend.emails.send({

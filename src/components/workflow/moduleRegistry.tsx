@@ -6,6 +6,7 @@ import StepOrdination from './StepOrdination';
 import StepGmailSetup from './StepGmailSetup';
 import StepVerificationTools from './StepVerificationTools';
 import StepDocumentGeneration from './StepDocumentGeneration';
+import DocumentDelivery from './DocumentDelivery';
 
 export const moduleRegistry: Record<string, React.ComponentType<any>> = {
   StepNDA,
@@ -15,5 +16,6 @@ export const moduleRegistry: Record<string, React.ComponentType<any>> = {
   StepOrdination,
   StepGmailSetup,
   StepVerificationTools,
-  StepDocumentGeneration
+  StepDocumentGeneration,
+  DocumentDelivery
 };

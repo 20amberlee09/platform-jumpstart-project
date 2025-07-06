@@ -98,6 +98,15 @@ export const courseConfigs: Record<string, CourseConfig> = {
           required: true,
           order: 7,
           icon: 'FileText'
+        },
+        {
+          id: 'document-delivery',
+          name: 'Document Delivery',
+          description: 'Download your completed documents and save them to your Google Drive folder for safekeeping',
+          component: 'DocumentDelivery',
+          required: true,
+          order: 8,
+          icon: 'FolderOpen'
         }
       ]
   }
