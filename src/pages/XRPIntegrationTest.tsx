@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDocumentDownload } from '@/hooks/useDocumentDownload';
 import { supabase } from '@/integrations/supabase/client';
 import { XRPLService } from '@/services/xrplService';
+import PDFFooterTest from '@/components/PDFFooterTest';
 
 interface TestResult {
   name: string;
@@ -733,6 +734,11 @@ const XRPIntegrationTest = () => {
           ))}
         </div>
       )}
+
+      {/* PDF Footer Testing Section */}
+      <div className="mb-8">
+        <PDFFooterTest />
+      </div>
 
       {/* Blockchain Data Display */}
       {blockchainData && (
