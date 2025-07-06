@@ -101,14 +101,8 @@ const WorkflowEngine = ({ courseId, onComplete }: WorkflowEngineProps) => {
 
   const sortedModules = [...courseConfig.modules].sort((a, b) => a.order - b.order);
   
-  // Skip payment step if user has already paid or redeemed gift code
-  const availableModules = sortedModules.filter(module => {
-    // Skip payment step if user has course access
-    if (module.component === 'StepPayment' && hasCourseAccess) {
-      return false;
-    }
-    return true;
-  });
+  // All modules are available - let StepPayment handle access logic internally
+  const availableModules = sortedModules;
   
   // Convert 1-based step to 0-based index for array access
   const currentStepIndex = Math.max(0, workflowState.currentStep - 1);
