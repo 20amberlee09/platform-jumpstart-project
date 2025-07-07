@@ -7,19 +7,33 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('🚀 Edge Function: test-pdfshift-simple called');
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('🚀 Handling CORS preflight');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('🧪 PDFShift Simple Test: Starting (v2)');
+    console.log('🧪 PDFShift Simple Test: Starting (v3)');
     
     const pdfShiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
     console.log('🧪 API Key present:', !!pdfShiftApiKey);
+    console.log('🧪 API Key length:', pdfShiftApiKey?.length || 0);
     
     if (!pdfShiftApiKey) {
-      throw new Error('PDFShift API key not configured');
+      console.error('❌ PDFShift API key not configured');
+      return new Response(
+        JSON.stringify({ 
+          error: 'PDFShift API key not configured',
+          message: 'PDFSHIFT_API_KEY environment variable is missing'
+        }), 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // Super simple HTML for testing
@@ -38,6 +52,7 @@ serve(async (req) => {
     <h1>PDFShift Test Document</h1>
     <p>This is a simple test to verify PDFShift API connection.</p>
     <p>Generated at: ${new Date().toISOString()}</p>
+    <p>Function version: v3</p>
 </body>
 </html>`;
 
@@ -49,7 +64,7 @@ serve(async (req) => {
     };
 
     console.log('🧪 PDFShift: Making API request');
-    console.log('🧪 Request body:', JSON.stringify(pdfOptions));
+    console.log('🧪 HTML length:', simpleHtml.length);
     
     // Make request to PDFShift API
     const response = await fetch('https://api.pdfshift.io/v3/convert/', {
@@ -62,7 +77,7 @@ serve(async (req) => {
     });
 
     console.log('🧪 PDFShift response status:', response.status);
-    console.log('🧪 PDFShift response headers:', Object.fromEntries(response.headers));
+    console.log('🧪 PDFShift response ok:', response.ok);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -73,7 +88,8 @@ serve(async (req) => {
           error: 'PDFShift API error',
           status: response.status,
           details: errorText,
-          apiKeyPresent: !!pdfShiftApiKey
+          apiKeyPresent: !!pdfShiftApiKey,
+          apiKeyLength: pdfShiftApiKey?.length || 0
         }), 
         {
           status: 500,
@@ -95,11 +111,14 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('🧪 Test failed:', error);
+    console.error('🧪 Error stack:', error.stack);
+    
     return new Response(
       JSON.stringify({ 
         error: 'Test failed', 
         details: error.message,
-        stack: error.stack
+        stack: error.stack,
+        name: error.name
       }), 
       {
         status: 500,
