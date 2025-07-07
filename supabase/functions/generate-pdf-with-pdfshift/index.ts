@@ -26,7 +26,7 @@ interface PDFGenerationRequest {
 }
 
 serve(async (req) => {
-  console.log('🚀 PDFShift Edge Function: Starting v4');
+  console.log('🚀 PDFShift Edge Function: Starting v5 - Emergency Fix');
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -35,7 +35,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🔄 PDFShift Edge Function: Request received');
+    console.log('🔄 PDFShift Edge Function: Request received (Emergency Fix v5)');
     
     const pdfShiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
     console.log('🔑 API Key present:', !!pdfShiftApiKey);
@@ -48,7 +48,7 @@ serve(async (req) => {
           error: 'PDFShift API key not configured',
           details: 'PDFSHIFT_API_KEY environment variable is missing',
           apiKeyPresent: false,
-          functionVersion: 'v4'
+          functionVersion: 'v5'
         }), 
         {
           status: 500,
@@ -57,9 +57,10 @@ serve(async (req) => {
       );
     }
 
-    // Log first few characters of API key for debugging (safely)
+    // Enhanced API key validation
     console.log('🔑 API Key first 10 chars:', pdfShiftApiKey.substring(0, 10));
     console.log('🔑 API Key starts with sk_:', pdfShiftApiKey.startsWith('sk_'));
+    console.log('🔑 API Key format looks valid:', /^sk_[a-f0-9]{64}$/.test(pdfShiftApiKey));
 
     const requestBody = await req.json();
     console.log('📥 Request received with keys:', Object.keys(requestBody));

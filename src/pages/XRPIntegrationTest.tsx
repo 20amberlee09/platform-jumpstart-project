@@ -22,6 +22,7 @@ import { useDocumentDownload } from '@/hooks/useDocumentDownload';
 import { supabase } from '@/integrations/supabase/client';
 import { XRPLService } from '@/services/xrplService';
 import PDFFooterTest from '@/components/PDFFooterTest';
+import EmergencyPDFTest from '@/components/EmergencyPDFTest';
 
 interface TestResult {
   name: string;
@@ -57,7 +58,7 @@ const XRPIntegrationTest = () => {
   // Initialize test session
   const initializeTestSession = () => {
     const session: TestSession = {
-      sessionId: `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      sessionId: `test_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       startTime: new Date(),
       results: [],
       overallStatus: 'running'
@@ -735,6 +736,11 @@ const XRPIntegrationTest = () => {
         </div>
       )}
 
+      {/* Emergency PDF Testing Section */}
+      <div className="mb-8">
+        <EmergencyPDFTest />
+      </div>
+      
       {/* PDF Footer Testing Section */}
       <div className="mb-8">
         <PDFFooterTest />
