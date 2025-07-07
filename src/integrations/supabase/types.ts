@@ -389,6 +389,7 @@ export type Database = {
           id: string
           is_complete: boolean | null
           step_data: Json | null
+          step_key: string | null
           updated_at: string
           user_id: string
         }
@@ -400,6 +401,7 @@ export type Database = {
           id?: string
           is_complete?: boolean | null
           step_data?: Json | null
+          step_key?: string | null
           updated_at?: string
           user_id: string
         }
@@ -411,6 +413,7 @@ export type Database = {
           id?: string
           is_complete?: boolean | null
           step_data?: Json | null
+          step_key?: string | null
           updated_at?: string
           user_id?: string
         }
