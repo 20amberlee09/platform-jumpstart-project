@@ -55,7 +55,7 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
         console.error('Error in auto-save:', error);
       }
     }
-  }, [isOrdained, certificateUploaded, certificateUrl, updateStepData, currentStepKey]);
+  }, [isOrdained, certificateUploaded, certificateUrl, currentStepKey]); // REMOVED updateStepData from dependencies
 
   useEffect(() => {
     // Ensure consistency - if we have a certificate uploaded, user should be considered ordained
