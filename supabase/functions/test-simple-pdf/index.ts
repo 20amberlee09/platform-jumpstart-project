@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log('🚀 Simple PDF Test Function Called - v1');
+  console.log('🚀 Simple PDF Test Function Called - v2');
   
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -18,7 +18,6 @@ serve(async (req) => {
     
     const pdfShiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
     console.log('🔑 API Key present:', !!pdfShiftApiKey);
-    console.log('🔑 API Key length:', pdfShiftApiKey?.length || 0);
     
     if (!pdfShiftApiKey) {
       console.error('❌ No API key found in environment');
@@ -34,8 +33,17 @@ serve(async (req) => {
       );
     }
 
-    // Ultra-simple HTML for testing
-    const simpleHtml = `<!DOCTYPE html>
+    // Get HTML content from request body if provided, otherwise use default
+    let htmlContent;
+    try {
+      const requestBody = await req.json();
+      htmlContent = requestBody.htmlContent;
+    } catch (e) {
+      // If no body or invalid JSON, use default HTML
+      htmlContent = null;
+    }
+
+    const simpleHtml = htmlContent || `<!DOCTYPE html>
 <html>
 <head>
     <title>PDF Test</title>
@@ -44,7 +52,7 @@ serve(async (req) => {
 <body>
     <h1>PDF Generation Test</h1>
     <p>Generated: ${new Date().toISOString()}</p>
-    <p>Function Version: v1</p>
+    <p>Function Version: v2</p>
 </body>
 </html>`;
 

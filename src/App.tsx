@@ -19,23 +19,8 @@ import AdvancedTestSuite from "./pages/AdvancedTestSuite";
 import CodeQualityTestSuite from "./pages/CodeQualityTestSuite";
 import NotFound from "./pages/NotFound";
 
-// Lazy load heavy components - Fix router context issue
-const Index = lazy(() => import('./pages/Index').then(module => ({ 
-  default: (props: any) => {
-    // Ensure router context is available before rendering
-    try {
-      return <module.default {...props} />;
-    } catch (error) {
-      console.error('Index component error:', error);
-      return <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-bold mb-2">Loading TruthHurtz...</h2>
-          <p className="text-muted-foreground">Please wait while we prepare your experience</p>
-        </div>
-      </div>;
-    }
-  }
-})));
+// Lazy load components
+const Index = lazy(() => import('./pages/Index'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Automation = lazy(() => import('./pages/Automation'));
 const CourseDetail = lazy(() => import('./pages/CourseDetail'));
@@ -46,61 +31,60 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Navigation />
-        <Routes>
-          <Route path="/" element={
-            <LazyWrapper fallback={<PageLoader message="Loading TruthHurtz..." />}>
-              <Index />
-            </LazyWrapper>
-          } />
-          <Route path="/courses" element={<Courses />} />
-          <Route path="/course/:courseId" element={
-            <ProtectedRoute>
-              <LazyWrapper fallback={<PageLoader message="Loading course details..." />}>
-                <CourseDetail />
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Navigation />
+          <Routes>
+            <Route path="/" element={
+              <LazyWrapper fallback={<PageLoader message="Loading TruthHurtz..." />}>
+                <Index />
               </LazyWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/automation" element={
-            <ProtectedRoute>
-              <LazyWrapper fallback={<WorkflowLoader />}>
-                <Automation />
-              </LazyWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/purchase" element={
-            <ProtectedRoute>
-              <Purchase />
-            </ProtectedRoute>
-          } />
-          <Route path="/admin" element={
-            <ProtectedRoute requiredRole="admin">
-              <LazyWrapper fallback={<AdminLoader />}>
-                <Admin />
-              </LazyWrapper>
-            </ProtectedRoute>
-          } />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/xrp-test" element={
-            <ProtectedRoute requiredRole="admin">
-              <XRPIntegrationTest />
-            </ProtectedRoute>
-          } />
-          <Route path="/test-return-user" element={<TestingReturnUser />} />
-          <Route path="/production-test-suite" element={<ProductionTestSuite />} />
-          <Route path="/advanced-test-suite" element={<AdvancedTestSuite />} />
-          <Route path="/code-quality-test-suite" element={<CodeQualityTestSuite />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </AuthProvider>
-</QueryClientProvider>
+            } />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/course/:courseId" element={
+              <ProtectedRoute>
+                <LazyWrapper fallback={<PageLoader message="Loading course details..." />}>
+                  <CourseDetail />
+                </LazyWrapper>
+              </ProtectedRoute>
+            } />
+            <Route path="/automation" element={
+              <ProtectedRoute>
+                <LazyWrapper fallback={<WorkflowLoader />}>
+                  <Automation />
+                </LazyWrapper>
+              </ProtectedRoute>
+            } />
+            <Route path="/purchase" element={
+              <ProtectedRoute>
+                <Purchase />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute requiredRole="admin">
+                <LazyWrapper fallback={<AdminLoader />}>
+                  <Admin />
+                </LazyWrapper>
+              </ProtectedRoute>
+            } />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/xrp-test" element={
+              <ProtectedRoute requiredRole="admin">
+                <XRPIntegrationTest />
+              </ProtectedRoute>
+            } />
+            <Route path="/test-return-user" element={<TestingReturnUser />} />
+            <Route path="/production-test-suite" element={<ProductionTestSuite />} />
+            <Route path="/advanced-test-suite" element={<AdvancedTestSuite />} />
+            <Route path="/code-quality-test-suite" element={<CodeQualityTestSuite />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
+  </QueryClientProvider>
 );
 
 export default App;

@@ -22,7 +22,7 @@ import { useDocumentDownload } from '@/hooks/useDocumentDownload';
 import { supabase } from '@/integrations/supabase/client';
 import { XRPLService } from '@/services/xrplService';
 import PDFFooterTest from '@/components/PDFFooterTest';
-import EmergencyPDFTest from '@/components/EmergencyPDFTest';
+import SimpleDocumentTest from '@/components/SimpleDocumentTest';
 
 interface TestResult {
   name: string;
@@ -736,9 +736,9 @@ const XRPIntegrationTest = () => {
         </div>
       )}
 
-      {/* Emergency PDF Testing Section */}
+      {/* Simple Document Test Section */}
       <div className="mb-8">
-        <EmergencyPDFTest />
+        <SimpleDocumentTest />
       </div>
       
       {/* PDF Footer Testing Section */}
