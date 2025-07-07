@@ -61,8 +61,15 @@ const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
   };
 
   const handleNext = () => {
-    console.log('Gmail setup continue clicked:', { isGmailCreated, isDriveFolderCreated });
+    console.log('🚀 Gmail setup continue clicked:', { 
+      isGmailCreated, 
+      isDriveFolderCreated, 
+      gmailAccount: gmailAccount.length > 0,
+      googleDriveFolder: googleDriveFolder.length > 0 
+    });
+    
     if (!isGmailCreated || !isDriveFolderCreated) {
+      console.log('❌ Setup not complete:', { isGmailCreated, isDriveFolderCreated });
       toast({
         title: "Setup Required",
         description: "Please complete both Gmail and Google Drive setup before continuing.",
@@ -70,6 +77,14 @@ const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
       });
       return;
     }
+    
+    console.log('✅ Gmail setup complete, calling onNext with data:', {
+      gmailAccount,
+      googleDriveFolder,
+      isGmailCreated: true,
+      isDriveFolderCreated: true,
+      completedAt: new Date().toISOString()
+    });
     
     onNext({ 
       gmailAccount,
