@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
   const [showInstructions, setShowInstructions] = useState(true);
   const { toast } = useToast();
   const { user, updateMinisterStatus } = useAuth();
+  const saveDataRef = useRef(false);
 
   useEffect(() => {
     // Load saved step data
@@ -39,23 +40,25 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
   }, [data, currentStepKey]);
 
   useEffect(() => {
-    // Auto-save when data changes (but only if we have meaningful data)
     if ((isOrdained || certificateUploaded || certificateUrl) && updateStepData && currentStepKey) {
-      console.log('Auto-saving step data:', { isOrdained, certificateUploaded, certificateUrl });
-      const stepData = {
-        isOrdained,
-        certificateUploaded,
-        certificateUrl
-      };
-      
-      // Use try-catch to prevent saving errors from breaking the component
-      try {
+      // Prevent multiple saves of the same data
+      if (!saveDataRef.current) {
+        console.log('Auto-saving step data:', { isOrdained, certificateUploaded, certificateUrl });
+        saveDataRef.current = true;
+        const stepData = {
+          isOrdained,
+          certificateUploaded,
+          certificateUrl
+        };
         updateStepData(currentStepKey, stepData);
-      } catch (error) {
-        console.error('Error in auto-save:', error);
+        
+        // Reset after a delay to allow new changes
+        setTimeout(() => {
+          saveDataRef.current = false;
+        }, 1000);
       }
     }
-  }, [isOrdained, certificateUploaded, certificateUrl, currentStepKey]); // REMOVED updateStepData from dependencies
+  }, [isOrdained, certificateUploaded, certificateUrl, currentStepKey]);
 
   useEffect(() => {
     // Ensure consistency - if we have a certificate uploaded, user should be considered ordained
@@ -139,6 +142,41 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
     canProceed, 
     isProcessing 
   });
+
+  // Navigation handlers
+  const handleNext = () => {
+    if (isOrdained && (certificateUploaded || certificateUrl)) {
+      // Save data one final time before proceeding
+      if (updateStepData && currentStepKey) {
+        const stepData = {
+          isOrdained,
+          certificateUploaded,
+          certificateUrl
+        };
+        updateStepData(currentStepKey, stepData);
+      }
+      // Small delay to ensure save completes
+      setTimeout(() => {
+        onNext({
+          isOrdained: true,
+          certificateUploaded: true,
+          certificateUrl
+        });
+      }, 100);
+    } else {
+      toast({
+        title: "Completion Required",
+        description: "Please complete the ordination verification to continue.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePrev = () => {
+    if (onPrev) {
+      onPrev();
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -370,33 +408,16 @@ const StepOrdination = ({ onNext, onPrev, data, updateStepData, currentStepKey }
       <div className="flex justify-between">
         <Button 
           variant="outline" 
-          onClick={onPrev} 
+          onClick={handlePrev} 
           disabled={!onPrev || isProcessing}
+          type="button"
         >
           Previous
         </Button>
         <Button 
-          onClick={() => {
-            console.log('Continue button clicked:', { certificateUploaded, certificateUrl });
-            console.log('About to call onNext with data:', { 
-              isOrdained: true,
-              certificateUploaded: true,
-              certificateUrl
-            });
-            
-            // Force the step completion
-            if (certificateUploaded && certificateUrl) {
-              console.log('Calling onNext...');
-              onNext({ 
-                isOrdained: true,
-                certificateUploaded: true,
-                certificateUrl
-              });
-            } else {
-              console.error('Button clicked but certificate not ready:', { certificateUploaded, certificateUrl });
-            }
-          }} 
-          disabled={!certificateUploaded || !certificateUrl || isProcessing}
+          onClick={handleNext}
+          disabled={!isOrdained || (!certificateUploaded && !certificateUrl) || isProcessing}
+          type="button"
           className={certificateUploaded && certificateUrl ? "bg-green-600 hover:bg-green-700" : ""}
         >
           {isProcessing ? "Processing..." : 
