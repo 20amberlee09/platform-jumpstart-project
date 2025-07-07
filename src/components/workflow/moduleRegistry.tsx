@@ -6,6 +6,7 @@ import StepOrdination from './StepOrdination';
 import StepBarcode from './StepBarcode';
 import StepGmailSetup from './StepGmailSetup';
 import StepVerificationTools from './StepVerificationTools';
+import StepDocumentSummary from './StepDocumentSummary';
 import StepDocumentGeneration from './StepDocumentGeneration';
 import DocumentDelivery from './DocumentDelivery';
 
@@ -18,6 +19,7 @@ export const moduleRegistry: Record<string, React.ComponentType<any>> = {
   StepBarcode,
   StepGmailSetup,
   StepVerificationTools,
+  StepDocumentSummary,
   StepDocumentGeneration,
   DocumentDelivery
 };
