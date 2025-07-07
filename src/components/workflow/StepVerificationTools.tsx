@@ -90,7 +90,11 @@ const StepVerificationTools = ({ onNext, onPrev, data, onDataChange, updateStepD
         console.log('Auto-saving verification data:', stepData);
         saveDataRef.current = true;
         updateStepData(currentStepKey, stepData);
-        onDataChange(stepData);
+        
+        // Only call onDataChange if it's provided
+        if (onDataChange && typeof onDataChange === 'function') {
+          onDataChange(stepData);
+        }
         
         setTimeout(() => {
           saveDataRef.current = false;
@@ -179,7 +183,11 @@ const StepVerificationTools = ({ onNext, onPrev, data, onDataChange, updateStepD
       if (updateStepData && currentStepKey) {
         updateStepData(currentStepKey, stepData);
       }
-      onDataChange(stepData);
+      
+      // Only call onDataChange if it's provided
+      if (onDataChange && typeof onDataChange === 'function') {
+        onDataChange(stepData);
+      }
       
       setTimeout(() => {
         onNext();
