@@ -242,6 +242,41 @@ const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
         </div>
       )}
 
+      {/* Clear status indicators */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className={`p-3 rounded-lg border-2 ${isGmailCreated ? 'bg-green-50 border-green-500' : 'bg-yellow-50 border-yellow-500'}`}>
+          <div className="flex items-center">
+            {isGmailCreated ? (
+              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+            ) : (
+              <div className="h-5 w-5 rounded-full border-2 border-yellow-500 mr-2"></div>
+            )}
+            <span className={`font-medium ${isGmailCreated ? 'text-green-700' : 'text-yellow-700'}`}>
+              Gmail Account
+            </span>
+          </div>
+          <p className={`text-sm mt-1 ${isGmailCreated ? 'text-green-600' : 'text-yellow-600'}`}>
+            {isGmailCreated ? 'Confirmed ✓' : 'Click "Confirm" button above'}
+          </p>
+        </div>
+        
+        <div className={`p-3 rounded-lg border-2 ${isDriveFolderCreated ? 'bg-green-50 border-green-500' : 'bg-yellow-50 border-yellow-500'}`}>
+          <div className="flex items-center">
+            {isDriveFolderCreated ? (
+              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+            ) : (
+              <div className="h-5 w-5 rounded-full border-2 border-yellow-500 mr-2"></div>
+            )}
+            <span className={`font-medium ${isDriveFolderCreated ? 'text-green-700' : 'text-yellow-700'}`}>
+              Drive Folder
+            </span>
+          </div>
+          <p className={`text-sm mt-1 ${isDriveFolderCreated ? 'text-green-600' : 'text-yellow-600'}`}>
+            {isDriveFolderCreated ? 'Confirmed ✓' : 'Click "Confirm" button above'}
+          </p>
+        </div>
+      </div>
+
       <div className="flex justify-between pt-6">
         <Button onClick={onPrev} variant="outline" size="lg" disabled={!onPrev}>
           Back to Ordination
@@ -250,9 +285,16 @@ const StepGmailSetup = ({ onNext, onPrev, data }: StepGmailSetupProps) => {
           onClick={handleNext} 
           disabled={!isGmailCreated || !isDriveFolderCreated} 
           size="lg"
-          className={isGmailCreated && isDriveFolderCreated ? "bg-green-600 hover:bg-green-700" : ""}
+          className={isGmailCreated && isDriveFolderCreated ? "bg-green-600 hover:bg-green-700" : "opacity-50 cursor-not-allowed"}
         >
-          {isGmailCreated && isDriveFolderCreated ? "Continue to Verification Tools" : "Complete Setup First"}
+          {isGmailCreated && isDriveFolderCreated ? (
+            <>
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Continue to Verification Tools
+            </>
+          ) : (
+            "Complete Both Steps Above First"
+          )}
         </Button>
       </div>
 
