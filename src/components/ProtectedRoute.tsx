@@ -3,7 +3,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminData } from '@/hooks/useAdminData';
 import { ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -21,7 +20,6 @@ export const ProtectedRoute = ({
   const { user, loading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminData();
   const location = useLocation();
-  const { toast } = useToast();
 
   // Show loading spinner while checking authentication
   if (loading || adminLoading) {
@@ -45,11 +43,6 @@ export const ProtectedRoute = ({
   // Check admin role requirement
   if (requiredRole === 'admin' && !isAdmin) {
     console.log('🔍 ProtectedRoute: Access denied for user:', user?.email, 'isAdmin:', isAdmin, 'requiredRole:', requiredRole);
-    toast({
-      title: "Access Denied",
-      description: "You don't have permission to access this page.",
-      variant: "destructive"
-    });
     return <Navigate to="/" replace />;
   }
 
