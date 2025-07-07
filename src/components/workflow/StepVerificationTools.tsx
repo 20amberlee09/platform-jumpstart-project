@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, CheckCircle, AlertCircle, ExternalLink, FileText, Image as ImageIcon, Mail, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAutoSave } from '@/hooks/useAutoSave';
 
 interface StepVerificationToolsProps {
   onNext: () => void;
@@ -35,22 +36,8 @@ const StepVerificationTools = ({ onNext, onPrev, data, onDataChange, updateStepD
   const [isValid, setIsValid] = useState(false);
   const saveDataRef = useRef(false);
 
-  // Initialize from existing data
-  useEffect(() => {
-    // Initialize barcode data
-    if (data?.barcodeCertificate || data?.barcodeImage) {
-      if (data.barcodeCertificate) setCertificateStatus('success');
-      if (data.barcodeImage) setImageStatus('success');
-    }
-    
-    // Initialize email data
-    if (data?.gmailAddress) setGmailAddress(data.gmailAddress);
-    if (data?.googleDriveLink) setGoogleDriveLink(data.googleDriveLink);
-    if (data?.emailSetupComplete) setEmailSetupComplete(data.emailSetupComplete);
-  }, []);
-
   // Prepare comprehensive step data
-  const stepData = {
+  const stepData = React.useMemo(() => ({
     // Barcode data
     barcodeCertificate: certificateFile?.name || data?.barcodeCertificate,
     barcodeImage: barcodeImageFile?.name || data?.barcodeImage,
@@ -81,15 +68,31 @@ const StepVerificationTools = ({ onNext, onPrev, data, onDataChange, updateStepD
         setupComplete: emailValid
       }
     }
-  };
+  }), [certificateFile, barcodeImageFile, data, barcodeValid, gmailAddress, googleDriveLink, emailSetupComplete, emailValid]);
+
+  // Auto-save this step data using consistent key
+  useAutoSave({ key: 'step_7', data: stepData });
+
+  // Initialize from existing data
+  useEffect(() => {
+    // Initialize barcode data
+    if (data?.barcodeCertificate || data?.barcodeImage) {
+      if (data.barcodeCertificate) setCertificateStatus('success');
+      if (data.barcodeImage) setImageStatus('success');
+    }
+    
+    // Initialize email data
+    if (data?.gmailAddress) setGmailAddress(data.gmailAddress);
+    if (data?.googleDriveLink) setGoogleDriveLink(data.googleDriveLink);
+    if (data?.emailSetupComplete) setEmailSetupComplete(data.emailSetupComplete);
+  }, []);
 
   // Auto-save when data changes (with loop prevention)
   useEffect(() => {
-    if ((barcodeValid || emailValid) && updateStepData && currentStepKey) {
+    if ((barcodeValid || emailValid)) {
       if (!saveDataRef.current) {
         console.log('Auto-saving verification data:', stepData);
         saveDataRef.current = true;
-        updateStepData(currentStepKey, stepData);
         
         // Only call onDataChange if it's provided
         if (onDataChange && typeof onDataChange === 'function') {
@@ -101,7 +104,7 @@ const StepVerificationTools = ({ onNext, onPrev, data, onDataChange, updateStepD
         }, 1000);
       }
     }
-  }, [barcodeValid, emailValid, currentStepKey]);
+  }, [barcodeValid, emailValid, stepData]);
 
   // Validate barcode completion
   useEffect(() => {

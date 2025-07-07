@@ -30,7 +30,8 @@ export const useAutoSave = ({ key, data, debounceMs = 1000, enabled = true }: Us
         .from('user_progress')
         .upsert({
           user_id: user.id,
-          course_id: key, // Use course_id field instead
+          course_id: 'trust-course', // Default course ID
+          step_key: key,
           step_data: dataToSave,
           updated_at: new Date().toISOString()
         });
@@ -90,7 +91,7 @@ export const useAutoSave = ({ key, data, debounceMs = 1000, enabled = true }: Us
         .from('user_progress')
         .select('step_data')
         .eq('user_id', user.id)
-        .eq('course_id', key)
+        .eq('step_key', key)
         .single();
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found

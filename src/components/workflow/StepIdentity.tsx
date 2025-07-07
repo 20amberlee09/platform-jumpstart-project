@@ -51,7 +51,7 @@ const StepIdentity = ({ onNext, onPrev, courseId }: StepIdentityProps) => {
 
   useEffect(() => {
     // Load saved step data
-    const stepData = getStepData('identity');
+    const stepData = getStepData('step_2');
     const ministerStatus = getMinisterStatus();
     
     if (stepData) {
@@ -81,7 +81,7 @@ const StepIdentity = ({ onNext, onPrev, courseId }: StepIdentityProps) => {
   useEffect(() => {
     // Auto-save when data changes
     if (identityData.firstName || identityData.email) {
-      saveStepData('identity', identityData);
+      saveStepData('step_2', identityData);
     }
 
     // Validate form - enhanced validation

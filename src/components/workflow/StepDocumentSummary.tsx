@@ -27,62 +27,85 @@ const StepDocumentSummary = ({ onNext, onPrev, data, onDataChange }: StepDocumen
       if (!user) return;
 
       try {
+        console.log('Loading all user data for summary...');
+        
+        // Get ALL user progress data
         const { data: progressData, error } = await supabase
           .from('user_progress')
           .select('*')
           .eq('user_id', user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error loading progress data:', error);
+          throw error;
+        }
 
-        // Combine all step data
-        const combinedData: any = {};
-        progressData?.forEach(step => {
-          combinedData[step.course_id] = step.step_data;
-        });
+        console.log('Raw progress data:', progressData);
 
         // Get profile data
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', user.id)
           .single();
 
+        if (profileError) {
+          console.error('Error loading profile:', profileError);
+        }
+
+        // Organize data by step keys
+        const organizedData: any = {};
+        progressData?.forEach(step => {
+          console.log(`Step ${step.step_key}:`, step.step_data);
+          organizedData[step.step_key] = step.step_data;
+        });
+
+        // Create comprehensive data structure with SINGLE SOURCE for each field
         const completeUserData = {
-          profile,
-          ...combinedData,
-          // Prepare comprehensive data for PDF generation
-          documentData: {
-            // Personal Information
-            identity: combinedData.step_2 || combinedData.identity,
-            trustInfo: combinedData.step_3,
-            businessInfo: combinedData.step_4,
-            
-            // Verification Elements
-            ministerCertificate: combinedData.step_6?.ministerCertificate,
-            barcodeCertificate: combinedData.verification_tools?.barcodeCertificate,
-            barcodeImage: combinedData.verification_tools?.barcodeImage,
-            
-            // Email & Drive
-            gmailAddress: combinedData.verification_tools?.gmailAddress,
-            googleDriveLink: combinedData.verification_tools?.googleDriveLink,
-            
-            // Generated Elements (will be populated during generation)
-            blockchainHash: null,
-            qrCodes: {
-              blockchain: null,
-              googleDrive: null
-            },
-            
-            // Document metadata
-            generatedAt: new Date().toISOString(),
-            userId: user.id,
-            userEmail: user.email
+          // Profile information
+          profile: profile,
+          
+          // SINGLE SOURCE: Personal Identity (from step_2 OR identity)
+          personalInfo: organizedData.step_2 || organizedData.identity || {},
+          
+          // SINGLE SOURCE: Trust Information (from step_3)
+          trustInfo: organizedData.step_3 || {},
+          
+          // SINGLE SOURCE: Business Information (from step_4) 
+          businessInfo: organizedData.step_4 || {},
+          
+          // SINGLE SOURCE: Ordination (from step_5)
+          ordinationInfo: organizedData.step_5 || {},
+          
+          // SINGLE SOURCE: Minister Verification (from step_6)
+          ministerInfo: organizedData.step_6 || {},
+          
+          // SINGLE SOURCE: Verification Tools (from verification_tools OR step_verification_tools)
+          verificationInfo: organizedData.verification_tools || organizedData.step_verification_tools || {},
+          
+          // SINGLE SOURCE: Document Summary (from document_summary)
+          summaryInfo: organizedData.document_summary || {},
+          
+          // Raw data for debugging
+          rawSteps: organizedData,
+          
+          // Completion status
+          completionStatus: {
+            personalComplete: !!(organizedData.step_2?.firstName || organizedData.identity?.firstName),
+            trustComplete: !!(organizedData.step_3?.trustName),
+            businessComplete: !!(organizedData.step_4?.businessName),
+            ordinationComplete: !!(organizedData.step_5?.isOrdained),
+            ministerComplete: !!(organizedData.step_6?.ministerCertificate),
+            verificationComplete: !!(organizedData.verification_tools?.barcodeImage || organizedData.step_verification_tools?.barcodeImage)
           }
         };
 
+        console.log('Organized complete user data:', completeUserData);
+        
         setAllUserData(completeUserData);
         onDataChange(completeUserData);
         setLoading(false);
+        
       } catch (error) {
         console.error('Error loading user data:', error);
         setLoading(false);
@@ -139,12 +162,6 @@ const StepDocumentSummary = ({ onNext, onPrev, data, onDataChange }: StepDocumen
     );
   }
 
-  const identity = allUserData.step_2 || allUserData.identity;
-  const trustInfo = allUserData.step_3;
-  const businessInfo = allUserData.step_4;
-  const ministerInfo = allUserData.step_6;
-  const verificationTools = allUserData.verification_tools;
-
   return (
     <div className="space-y-6">
       <Card>
@@ -160,38 +177,69 @@ const StepDocumentSummary = ({ onNext, onPrev, data, onDataChange }: StepDocumen
         {renderDataSection(
           "Personal Identity", 
           User, 
-          identity, 
-          !!(identity?.firstName && identity?.lastName)
+          allUserData.personalInfo, 
+          allUserData.completionStatus?.personalComplete || false
         )}
         
         {renderDataSection(
           "Trust Information", 
           FileText, 
-          trustInfo, 
-          !!(trustInfo?.trustName)
+          allUserData.trustInfo, 
+          allUserData.completionStatus?.trustComplete || false
         )}
         
         {renderDataSection(
           "Business Information", 
           FileText, 
-          businessInfo, 
-          !!(businessInfo?.businessName)
+          allUserData.businessInfo, 
+          allUserData.completionStatus?.businessComplete || false
+        )}
+        
+        {renderDataSection(
+          "Ordination Status", 
+          Upload, 
+          {
+            ordained: allUserData.ordinationInfo?.isOrdained ? 'Yes' : 'No',
+            certificate: allUserData.ordinationInfo?.certificateUploaded ? 'Uploaded' : 'Not uploaded',
+            url: allUserData.ordinationInfo?.certificateUrl || 'Not provided'
+          }, 
+          allUserData.completionStatus?.ordinationComplete || false
         )}
         
         {renderDataSection(
           "Minister Verification", 
           Upload, 
-          ministerInfo, 
-          !!(ministerInfo?.ministerCertificate)
+          {
+            certificate: allUserData.ministerInfo?.ministerCertificate || 'Not uploaded',
+            verified: allUserData.ministerInfo?.verified ? 'Yes' : 'No'
+          }, 
+          allUserData.completionStatus?.ministerComplete || false
         )}
         
         {renderDataSection(
           "Document Verification", 
           Hash, 
-          verificationTools, 
-          !!(verificationTools?.barcodeImage && verificationTools?.gmailAddress)
+          {
+            barcodeCertificate: allUserData.verificationInfo?.barcodeCertificate || 'Not uploaded',
+            barcodeImage: allUserData.verificationInfo?.barcodeImage || 'Not uploaded',
+            gmailAddress: allUserData.verificationInfo?.gmailAddress || 'Not provided',
+            googleDriveLink: allUserData.verificationInfo?.googleDriveLink ? 'Configured' : 'Not configured'
+          }, 
+          allUserData.completionStatus?.verificationComplete || false
         )}
       </div>
+
+      {/* Debug Information - REMOVE AFTER TESTING */}
+      <Card className="mt-4 bg-gray-50">
+        <CardHeader>
+          <CardTitle className="text-sm">Debug Information (Remove After Testing)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <pre className="text-xs overflow-auto max-h-40">
+            {JSON.stringify(allUserData.rawSteps, null, 2)}
+          </pre>
+        </CardContent>
+      </Card>
 
       {/* Summary Status */}
       <Card>
