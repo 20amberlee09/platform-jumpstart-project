@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🧪 PDFShift Simple Test: Starting');
+    console.log('🧪 PDFShift Simple Test: Starting (v2)');
     
     const pdfShiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
     console.log('🧪 API Key present:', !!pdfShiftApiKey);
