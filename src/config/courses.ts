@@ -5,7 +5,7 @@ export const courseConfigs: Record<string, CourseConfig> = {
     id: 'trust-bootcamp',
     title: 'Boot Camp documents',
     description: 'Complete ecclesiastic revocable living trust creation with ministerial ordination',
-    price: 150,
+    price: 15000,
     overview: {
       title: 'Boot Camp documents',
       subtitle: 'Complete Trust Creation Package',
