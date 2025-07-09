@@ -10,7 +10,7 @@ const CourseDetail = () => {
   const courseData = {
     "trust-bootcamp": {
       name: "Trust Formation Boot Camp",
-      price: "$150/week",
+      price: "$150",
       duration: "4 weeks",
       category: "Foundation",
       description: "Master trust formation with our comprehensive 4-week program. This bootcamp covers everything from legal fundamentals to advanced automation techniques.",

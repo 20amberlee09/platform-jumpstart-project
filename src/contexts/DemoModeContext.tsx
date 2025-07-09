@@ -99,7 +99,7 @@ const dummyData = {
     ]
   },
   'step-payment': {
-    amount: 297,
+    amount: 150,
     currency: 'USD',
     paymentMethod: 'Credit Card',
     status: 'completed',
