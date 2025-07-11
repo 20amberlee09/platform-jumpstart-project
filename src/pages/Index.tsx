@@ -26,8 +26,8 @@ const Index = () => {
   const [showWorkflow, setShowWorkflow] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   
-  const courseId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-  const courseConfig = courseConfigs[courseId];
+  const courseId = 'trust-bootcamp';
+  const courseConfig = courseConfigs[courseId] || courseConfigs['a1b2c3d4-e5f6-7890-abcd-ef1234567890'];
 
   const bootCampFeatures = [
     "Complete $150 package - no recurring fees",
